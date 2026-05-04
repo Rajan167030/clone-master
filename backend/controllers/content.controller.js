@@ -1,0 +1,427 @@
+import { BlogContent, EventContent, PartnerLogo, SiteNotice } from "../models/index.js";
+import { deleteCache, deleteCacheByPrefix, getCache, setCache } from "../utils/cache.js";
+
+const SITE_NOTICE_KEY = "landing-page-popup";
+
+const normalizeStringArray = (value) =>
+  Array.isArray(value)
+    ? value.map((item) => String(item || "").trim()).filter(Boolean)
+    : [];
+
+const normalizeFaqs = (value) =>
+  Array.isArray(value)
+    ? value
+        .map((item) => ({
+          question: String(item?.question || "").trim(),
+          answer: String(item?.answer || "").trim(),
+        }))
+        .filter((item) => item.question && item.answer)
+    : [];
+
+const normalizeSections = (value) =>
+  Array.isArray(value)
+    ? value
+        .map((item) => ({
+          heading: String(item?.heading || "").trim(),
+          content: String(item?.content || "").trim(),
+        }))
+        .filter((item) => item.heading && item.content)
+    : [];
+
+const sanitizeEventPayload = (body = {}) => ({
+  slug: String(body.slug || "").trim(),
+  title: String(body.title || "").trim(),
+  subtitle: String(body.subtitle || "").trim(),
+  shortDescription: String(body.shortDescription || "").trim(),
+  bannerImage: String(body.bannerImage || "").trim(),
+  bannerAlt: String(body.bannerAlt || "").trim(),
+  hostName: String(body.hostName || "").trim(),
+  hostLogoText: String(body.hostLogoText || "FC").trim(),
+  dateLabel: String(body.dateLabel || "").trim(),
+  locationLabel: String(body.locationLabel || "").trim(),
+  mapUrl: String(body.mapUrl || "").trim(),
+  calendarUrl: String(body.calendarUrl || "").trim(),
+  registrationUrl: String(body.registrationUrl || "").trim(),
+  ticketLabel: String(body.ticketLabel || "").trim(),
+  refundPolicy: String(body.refundPolicy || "").trim(),
+  about: normalizeStringArray(body.about),
+  expectations: normalizeStringArray(body.expectations),
+  differentiators: normalizeStringArray(body.differentiators),
+  audience: normalizeStringArray(body.audience),
+  tags: normalizeStringArray(body.tags),
+  photos: normalizeStringArray(body.photos),
+  videos: normalizeStringArray(body.videos),
+  faqs: normalizeFaqs(body.faqs),
+  isPublished: typeof body.isPublished === "boolean" ? body.isPublished : true,
+});
+
+const sanitizeBlogPayload = (body = {}) => ({
+  slug: String(body.slug || "").trim(),
+  title: String(body.title || "").trim(),
+  excerpt: String(body.excerpt || "").trim(),
+  author: String(body.author || "").trim(),
+  date: String(body.date || "").trim(),
+  readTime: String(body.readTime || "").trim(),
+  coverImage: String(body.coverImage || "").trim(),
+  tags: normalizeStringArray(body.tags),
+  sections: normalizeSections(body.sections),
+  isPublished: typeof body.isPublished === "boolean" ? body.isPublished : true,
+});
+
+const sanitizeSiteNoticePayload = (body = {}) => ({
+  key: SITE_NOTICE_KEY,
+  title: String(body.title || "Announcement").trim() || "Announcement",
+  message: String(body.message || "").trim(),
+  buttonLabel: String(body.buttonLabel || "").trim(),
+  buttonUrl: String(body.buttonUrl || "").trim(),
+  isActive: typeof body.isActive === "boolean" ? body.isActive : false,
+});
+
+const sanitizePartnerPayload = (body = {}) => ({
+  name: String(body.name || "").trim(),
+  logoUrl: String(body.logoUrl || "").trim(),
+  websiteUrl: String(body.websiteUrl || "").trim(),
+  order: Number(body.order || 0),
+  isActive: typeof body.isActive === "boolean" ? body.isActive : true,
+});
+
+const requireSlugAndTitle = (payload, res) => {
+  if (!payload.slug || !payload.title) {
+    res.status(400).json({ message: "slug and title are required." });
+    return false;
+  }
+
+  return true;
+};
+
+export const listPublicEvents = async (req, res, next) => {
+  try {
+    const cacheKey = "public:events";
+    const cached = await getCache(cacheKey);
+    if (cached) return res.status(200).json(cached);
+
+    const events = await EventContent.find({ isPublished: true }).sort({ createdAt: -1 }).lean();
+    const payload = { events };
+    await setCache(cacheKey, payload, 300);
+    return res.status(200).json(payload);
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const getPublicEventBySlug = async (req, res, next) => {
+  try {
+    const slug = String(req.params.slug || "").trim();
+    const cacheKey = `public:event:${slug}`;
+    const cached = await getCache(cacheKey);
+    if (cached) return res.status(200).json(cached);
+
+    const event = await EventContent.findOne({
+      slug,
+      isPublished: true,
+    }).lean();
+
+    if (!event) {
+      return res.status(404).json({ message: "Event not found." });
+    }
+
+    const payload = { event };
+    await setCache(cacheKey, payload, 300);
+    return res.status(200).json(payload);
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const listPublicBlogs = async (req, res, next) => {
+  try {
+    const cacheKey = "public:blogs";
+    const cached = await getCache(cacheKey);
+    if (cached) return res.status(200).json(cached);
+
+    const posts = await BlogContent.find({ isPublished: true }).sort({ createdAt: -1 }).lean();
+    const payload = { posts };
+    await setCache(cacheKey, payload, 300);
+    return res.status(200).json(payload);
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const getPublicBlogBySlug = async (req, res, next) => {
+  try {
+    const slug = String(req.params.slug || "").trim();
+    const cacheKey = `public:blog:${slug}`;
+    const cached = await getCache(cacheKey);
+    if (cached) return res.status(200).json(cached);
+
+    const post = await BlogContent.findOne({
+      slug,
+      isPublished: true,
+    }).lean();
+
+    if (!post) {
+      return res.status(404).json({ message: "Blog post not found." });
+    }
+
+    const payload = { post };
+    await setCache(cacheKey, payload, 300);
+    return res.status(200).json(payload);
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const getPublicSiteNotice = async (req, res, next) => {
+  try {
+    const cacheKey = "public:site-notice";
+    const cached = await getCache(cacheKey);
+    if (cached) return res.status(200).json(cached);
+
+    const notice = await SiteNotice.findOne({ key: SITE_NOTICE_KEY, isActive: true }).lean();
+    const payload = { notice: notice || null };
+    await setCache(cacheKey, payload, 120);
+    return res.status(200).json(payload);
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const listPublicPartnerLogos = async (req, res, next) => {
+  try {
+    const cacheKey = "public:partners";
+    const cached = await getCache(cacheKey);
+    if (cached) return res.status(200).json(cached);
+
+    const partners = await PartnerLogo.find({ isActive: true })
+      .sort({ order: 1, createdAt: -1 })
+      .lean();
+    const payload = { partners };
+    await setCache(cacheKey, payload, 300);
+    return res.status(200).json(payload);
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const listAdminEvents = async (req, res, next) => {
+  try {
+    const cacheKey = "admin:events";
+    const cached = await getCache(cacheKey);
+    if (cached) return res.status(200).json(cached);
+
+    const events = await EventContent.find({}).sort({ updatedAt: -1 }).lean();
+    const payload = { events };
+    await setCache(cacheKey, payload, 60);
+    return res.status(200).json(payload);
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const createAdminEvent = async (req, res, next) => {
+  try {
+    const payload = sanitizeEventPayload(req.body);
+    if (!requireSlugAndTitle(payload, res)) return;
+    const event = await EventContent.create(payload);
+    await deleteCache("public:events", "admin:events");
+    await deleteCacheByPrefix("public:event:");
+    return res.status(201).json({ message: "Event created successfully.", event });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const updateAdminEvent = async (req, res, next) => {
+  try {
+    const payload = sanitizeEventPayload(req.body);
+    const slug = String(req.params.slug || "").trim();
+    const event = await EventContent.findOneAndUpdate({ slug }, payload, { new: true });
+
+    if (!event) {
+      return res.status(404).json({ message: "Event not found." });
+    }
+
+    await deleteCache("public:events", "admin:events", `public:event:${slug}`, `public:event:${payload.slug}`);
+    return res.status(200).json({ message: "Event updated successfully.", event });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const deleteAdminEvent = async (req, res, next) => {
+  try {
+    const slug = String(req.params.slug || "").trim();
+    const event = await EventContent.findOneAndDelete({ slug });
+
+    if (!event) {
+      return res.status(404).json({ message: "Event not found." });
+    }
+
+    await deleteCache("public:events", "admin:events", `public:event:${slug}`);
+    return res.status(200).json({ message: "Event deleted successfully." });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const listAdminBlogs = async (req, res, next) => {
+  try {
+    const cacheKey = "admin:blogs";
+    const cached = await getCache(cacheKey);
+    if (cached) return res.status(200).json(cached);
+
+    const posts = await BlogContent.find({}).sort({ updatedAt: -1 }).lean();
+    const payload = { posts };
+    await setCache(cacheKey, payload, 60);
+    return res.status(200).json(payload);
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const createAdminBlog = async (req, res, next) => {
+  try {
+    const payload = sanitizeBlogPayload(req.body);
+    if (!requireSlugAndTitle(payload, res)) return;
+    const post = await BlogContent.create(payload);
+    await deleteCache("public:blogs", "admin:blogs");
+    await deleteCacheByPrefix("public:blog:");
+    return res.status(201).json({ message: "Blog post created successfully.", post });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const updateAdminBlog = async (req, res, next) => {
+  try {
+    const payload = sanitizeBlogPayload(req.body);
+    const slug = String(req.params.slug || "").trim();
+    const post = await BlogContent.findOneAndUpdate({ slug }, payload, { new: true });
+
+    if (!post) {
+      return res.status(404).json({ message: "Blog post not found." });
+    }
+
+    await deleteCache("public:blogs", "admin:blogs", `public:blog:${slug}`, `public:blog:${payload.slug}`);
+    return res.status(200).json({ message: "Blog post updated successfully.", post });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const deleteAdminBlog = async (req, res, next) => {
+  try {
+    const slug = String(req.params.slug || "").trim();
+    const post = await BlogContent.findOneAndDelete({ slug });
+
+    if (!post) {
+      return res.status(404).json({ message: "Blog post not found." });
+    }
+
+    await deleteCache("public:blogs", "admin:blogs", `public:blog:${slug}`);
+    return res.status(200).json({ message: "Blog post deleted successfully." });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const getAdminSiteNotice = async (req, res, next) => {
+  try {
+    const cacheKey = "admin:site-notice";
+    const cached = await getCache(cacheKey);
+    if (cached) return res.status(200).json(cached);
+
+    const notice = await SiteNotice.findOne({ key: SITE_NOTICE_KEY }).lean();
+    const payload = { notice: notice || null };
+    await setCache(cacheKey, payload, 60);
+    return res.status(200).json(payload);
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const listAdminPartnerLogos = async (req, res, next) => {
+  try {
+    const cacheKey = "admin:partners";
+    const cached = await getCache(cacheKey);
+    if (cached) return res.status(200).json(cached);
+
+    const partners = await PartnerLogo.find({}).sort({ order: 1, updatedAt: -1 }).lean();
+    const payload = { partners };
+    await setCache(cacheKey, payload, 60);
+    return res.status(200).json(payload);
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const createAdminPartnerLogo = async (req, res, next) => {
+  try {
+    const payload = sanitizePartnerPayload(req.body);
+
+    if (!payload.name) {
+      return res.status(400).json({ message: "name is required." });
+    }
+
+    const partner = await PartnerLogo.create(payload);
+    await deleteCache("public:partners", "admin:partners");
+    return res.status(201).json({ message: "Partner added successfully.", partner });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const updateAdminPartnerLogo = async (req, res, next) => {
+  try {
+    const id = String(req.params.id || "").trim();
+    const payload = sanitizePartnerPayload(req.body);
+    const partner = await PartnerLogo.findByIdAndUpdate(id, payload, { new: true });
+
+    if (!partner) {
+      return res.status(404).json({ message: "Partner not found." });
+    }
+
+    await deleteCache("public:partners", "admin:partners");
+    return res.status(200).json({ message: "Partner updated successfully.", partner });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const deleteAdminPartnerLogo = async (req, res, next) => {
+  try {
+    const id = String(req.params.id || "").trim();
+    const partner = await PartnerLogo.findByIdAndDelete(id);
+
+    if (!partner) {
+      return res.status(404).json({ message: "Partner not found." });
+    }
+
+    await deleteCache("public:partners", "admin:partners");
+    return res.status(200).json({ message: "Partner deleted successfully." });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const updateAdminSiteNotice = async (req, res, next) => {
+  try {
+    const payload = sanitizeSiteNoticePayload(req.body);
+
+    if (payload.isActive && !payload.message) {
+      return res.status(400).json({ message: "message is required for an active popup notice." });
+    }
+
+    const notice = await SiteNotice.findOneAndUpdate(
+      { key: SITE_NOTICE_KEY },
+      { $set: payload },
+      { new: true, upsert: true, setDefaultsOnInsert: true },
+    );
+
+    await deleteCache("public:site-notice", "admin:site-notice");
+    return res.status(200).json({ message: "Site notice updated successfully.", notice });
+  } catch (error) {
+    return next(error);
+  }
+};
