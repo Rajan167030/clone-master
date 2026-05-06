@@ -358,7 +358,43 @@ export const listAdminPartnerLogos = async (req, res, next) => {
 
 export const createAdminPartnerLogo = async (req, res, next) => {
   try {
+    // Only log POST requests and include method + headers for debugging
+    // eslint-disable-next-line no-console
+    if (String(req.method || '').toUpperCase() !== 'POST') {
+      // ignore non-POSTs (e.g., OPTIONS preflight)
+    } else {
+      try {
+        const safeHeaders = {
+          origin: req.get && req.get('origin'),
+          referer: req.get && req.get('referer'),
+          'user-agent': req.get && req.get('user-agent'),
+        };
+        // eslint-disable-next-line no-console
+        console.log('[DEBUG] createAdminPartnerLogo - method:', req.method, 'headers:', JSON.stringify(safeHeaders), 'body:', JSON.stringify(req.body));
+      } catch (e) {
+        // eslint-disable-next-line no-console
+        console.log('[DEBUG] createAdminPartnerLogo - req logging failed', e?.message || e);
+      }
+    }
+
+    // If body is empty, return early with clear message (helps clients)
+    if (!req.body || Object.keys(req.body).length === 0) {
+      return res.status(400).json({ message: 'Request body is empty.' });
+    }
     const payload = sanitizePartnerPayload(req.body);
+
+    // Attach metadata about who created this partner and request info
+    try {
+      payload.metadata = payload.metadata || {};
+      payload.metadata.createdBy = req.user?.sub || req.user?.id || null;
+      payload.metadata.createdByEmail = req.user?.email || null;
+      payload.metadata.ip = req.ip || (req.connection && req.connection.remoteAddress) || null;
+      payload.metadata.userAgent = req.get && req.get('user-agent') ? req.get('user-agent') : null;
+      payload.metadata.createdAt = new Date();
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.warn('Unable to attach partner metadata', e?.message || e);
+    }
 
     if (!payload.name) {
       return res.status(400).json({ message: "name is required." });
@@ -376,6 +412,17 @@ export const updateAdminPartnerLogo = async (req, res, next) => {
   try {
     const id = String(req.params.id || "").trim();
     const payload = sanitizePartnerPayload(req.body);
+    // Attach updater metadata
+    try {
+      payload.metadata = payload.metadata || {};
+      payload.metadata.updatedBy = req.user?.sub || req.user?.id || null;
+      payload.metadata.updatedByEmail = req.user?.email || null;
+      payload.metadata.updatedAt = new Date();
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.warn('Unable to attach partner update metadata', e?.message || e);
+    }
+
     const partner = await PartnerLogo.findByIdAndUpdate(id, payload, { new: true });
 
     if (!partner) {

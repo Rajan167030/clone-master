@@ -203,6 +203,256 @@ export const events: EventData[] = [
       },
     ],
   },
+  {
+    slug: "founders-connect-mumbai-edition",
+    title: "Founders Connect Mumbai Edition",
+    subtitle: "Funding & Growth Strategies",
+    shortDescription:
+      "A high-energy evening with India's top founders and investors discussing Series A fundraising and scaling playbooks.",
+    bannerImage: slide1,
+    bannerAlt: "Founders Connect Mumbai Edition banner",
+    hostName: "Founders Connect Team",
+    hostLogoText: "FC",
+    dateLabel: "Wed, 22 May - 05:00 PM (IST)",
+    locationLabel: "Mumbai, India",
+    mapUrl: "https://maps.google.com/?q=Mumbai,+India",
+    calendarUrl:
+      "https://calendar.google.com/calendar/render?action=TEMPLATE&text=Founders+Connect+Mumbai+Edition&details=Funding+%26+Growth+Strategies&location=Mumbai%2C+India&dates=20260522T113000Z/20260522T143000Z",
+    registrationUrl: "/register/user",
+    ticketLabel: "Limited seats available. Register now for confirmed access.",
+    refundPolicy: "Full refund available up to 48 hours before the event.",
+    about: [
+      "Mumbai's premier startup networking event brings together 80+ founders, VCs, and angel investors.",
+      "Focus on practical fundraising strategies, Series A readiness, and post-funding growth execution.",
+      "Exclusive fireside chat with a unicorn founder followed by structured networking.",
+    ],
+    expectations: [
+      "Fireside chat with Series A founder",
+      "VC feedback on live pitch deck reviews",
+      "Growth panel discussion",
+      "Founder-investor speed networking",
+    ],
+    differentiators: [
+      "Direct access to 5+ Series A investors",
+      "Deck review sessions",
+      "Post-event online community for follow-ups",
+    ],
+    audience: ["Pre-seed to Series A founders", "Active angels", "Growth-stage operators"],
+    tags: ["Fundraising", "Growth", "Investor Connect", "Mumbai"],
+    photos: ["Venue setup", "Panel speakers"],
+    videos: ["Promotional video"],
+    faqs: [
+      {
+        question: "Should I bring my pitch deck?",
+        answer: "Yes! Investors will provide direct feedback in our deck review sessions.",
+      },
+      {
+        question: "Is this hybrid or in-person only?",
+        answer: "In-person only in Mumbai. No virtual attendance option.",
+      },
+    ],
+  },
+  {
+    slug: "founders-connect-bangalore-investor-summit",
+    title: "Founders Connect Bangalore Investor Summit",
+    subtitle: "Q2 2026 Deal Flow & Opportunities",
+    shortDescription:
+      "India's largest investor gathering with 100+ VCs, angels, and corporates exploring next-gen startups and deal syndication.",
+    bannerImage: slide2,
+    bannerAlt: "Bangalore Investor Summit banner",
+    hostName: "Founders Connect x InvestIndia",
+    hostLogoText: "FC",
+    dateLabel: "Thu, 05 Jun - 09:00 AM (IST)",
+    locationLabel: "Bangalore, India (Prestige Convention Centre)",
+    mapUrl: "https://maps.google.com/?q=Prestige+Convention+Centre+Bangalore",
+    calendarUrl:
+      "https://calendar.google.com/calendar/render?action=TEMPLATE&text=Bangalore+Investor+Summit&details=Q2+2026+Deal+Flow&location=Bangalore%2C+India&dates=20260605T033000Z/20260605T093000Z",
+    registrationUrl: "/register/user",
+    ticketLabel: "Investor passes available. Founder applications open now.",
+    refundPolicy: "Refunds available until 72 hours before event start.",
+    about: [
+      "The largest investor-focused event in India bringing together decision-makers from top VCs, family offices, and corporate ventures.",
+      "Showcase 50 promising startups. Participate in panel discussions on market trends, sector deep-dives, and investment strategies.",
+      "Networking dedicated to founder-investor connections and large-ticket syndication opportunities.",
+    ],
+    expectations: [
+      "100+ investors in one room",
+      "50 vetted startup pitches",
+      "Sector-specific panel discussions",
+      "Deal syndication workshops",
+    ],
+    differentiators: [
+      "Largest investor concentration",
+      "Corporate venture participation",
+      "Sector deep-dives (FinTech, SaaS, Climate)",
+    ],
+    audience: ["VCs and angels", "Startup founders seeking growth capital", "Corporate innovators"],
+    tags: ["Investment", "Summit", "Investor Connect", "Bangalore"],
+    photos: ["Summit hall", "Founders pitching"],
+    videos: ["2025 Summit Recap"],
+    faqs: [
+      {
+        question: "How do I pitch at the summit?",
+        answer: "Apply as a founder. Selected startups get a 5-min pitch slot on the main stage.",
+      },
+      {
+        question: "Can I attend as an investor even if I'm not from a fund?",
+        answer: "Angel investors welcome. Corporate investors and LPs can apply for special passes.",
+      },
+    ],
+  },
+  {
+    slug: "women-founders-workshop-and-networking",
+    title: "Women Founders Workshop & Networking",
+    subtitle: "Scaling, Fundraising & Leadership",
+    shortDescription:
+      "An intimate workshop for women founders covering fundraising strategies, board dynamics, and building world-class teams.",
+    bannerImage: slide3,
+    bannerAlt: "Women Founders Workshop banner",
+    hostName: "Founders Connect Women's Initiative",
+    hostLogoText: "FC",
+    dateLabel: "Mon, 26 May - 03:00 PM (IST)",
+    locationLabel: "Delhi, India",
+    mapUrl: "https://maps.google.com/?q=Delhi,+India",
+    calendarUrl:
+      "https://calendar.google.com/calendar/render?action=TEMPLATE&text=Women+Founders+Workshop&details=Scaling%2C+Fundraising+%26+Leadership&location=Delhi%2C+India&dates=20260526T093000Z/20260526T143000Z",
+    registrationUrl: "/register/user",
+    ticketLabel: "Intimate group of 40 women founders. Early bird pricing available.",
+    refundPolicy: "Full refund 1 week before event.",
+    about: [
+      "Dedicated workshop for women founders to share learnings, challenges, and growth strategies.",
+      "Facilitated by women founders who have raised $100M+, built world-class teams, and navigated board dynamics.",
+      "Focused on practical frameworks and peer support in a safe, non-judgmental space.",
+    ],
+    expectations: [
+      "Deep-dive sessions on Series A & B fundraising",
+      "Board dynamics and founder-investor relations",
+      "Team building and hiring strategies",
+      "Peer mastermind groups",
+    ],
+    differentiators: [
+      "Women-only safe space",
+      "Mentorship from successful women founders",
+      "Ongoing cohort-based support",
+    ],
+    audience: ["Women founders", "Female co-founders", "First-time founders"],
+    tags: ["Women", "Founders", "Fundraising", "Leadership", "Workshop"],
+    photos: ["Workshop session", "Networking"],
+    videos: ["Testimonial video"],
+    faqs: [
+      {
+        question: "Is this event open only to women?",
+        answer: "Yes, this is a women-only space to encourage open conversations.",
+      },
+      {
+        question: "Do I need to have a registered company to attend?",
+        answer: "No. Aspiring and early-stage women founders are also welcome.",
+      },
+    ],
+  },
+  {
+    slug: "founders-connect-bootcamp-pre-launch",
+    title: "Founders Connect Bootcamp: Pre-Launch Edition",
+    subtitle: "From Idea to Product-Market Fit in 12 Weeks",
+    shortDescription:
+      "An intensive cohort-based bootcamp for first-time founders going from idea validation to their first 100 users.",
+    bannerImage: slide1,
+    bannerAlt: "Bootcamp Pre-Launch Edition banner",
+    hostName: "Founders Connect Academy",
+    hostLogoText: "FC",
+    dateLabel: "Jun 15 - Sep 5 (12 Weeks)",
+    locationLabel: "Hybrid (Delhi Hub + Online)",
+    mapUrl: "https://maps.google.com/?q=Delhi,+India",
+    calendarUrl:
+      "https://calendar.google.com/calendar/render?action=TEMPLATE&text=Founders+Bootcamp&details=12-week+pre-launch+program&location=Delhi%2C+India&dates=20260615/20260905",
+    registrationUrl: "/register/user",
+    ticketLabel: "Cohort size: 25 founders max. Applications close May 30.",
+    refundPolicy: "Refund available within first 2 weeks of bootcamp start.",
+    about: [
+      "A structured 12-week program designed for non-technical co-founders, designers, and domain experts ready to launch their startup.",
+      "Combines weekly masterclasses, peer learning, 1-on-1 mentorship, and real customer validation exercises.",
+      "Goal: Validate your idea, build your MVP, and secure your first 100 users by week 12.",
+    ],
+    expectations: [
+      "2 in-person days per week in Delhi hub",
+      "Weekly live masterclasses (online)",
+      "1-on-1 founder-mentor sessions",
+      "Customer discovery assignments",
+      "Pitch deck and investor prep",
+    ],
+    differentiators: [
+      "Cohort-based peer learning",
+      "Real-time customer feedback loops",
+      "Investor network access",
+      "Post-bootcamp acceleration program",
+    ],
+    audience: [
+      "First-time founders",
+      "Idea-stage entrepreneurs",
+      "Career switchers entering startup ecosystem",
+    ],
+    tags: ["Bootcamp", "Pre-launch", "Startup Academy", "Mentorship"],
+    photos: ["Cohort collaboration", "Mentor session"],
+    videos: ["Program overview", "Alumni stories"],
+    faqs: [
+      {
+        question: "Do I need technical skills to join?",
+        answer:
+          "No. We welcome non-technical founders. You'll work with technical co-founders or dev partners during the program.",
+      },
+      {
+        question: "What happens after the bootcamp?",
+        answer:
+          "Top 5 startups get access to our accelerator program and $25K seed grant applications.",
+      },
+    ],
+  },
+  {
+    slug: "quarterly-partner-summit-q2-2026",
+    title: "Founders Connect Quarterly Partner Summit",
+    subtitle: "Collaborate, Build, & Grow Together",
+    shortDescription:
+      "Exclusive gathering of Founders Connect partners including banks, corporate investors, service providers, and VCs.",
+    bannerImage: slide2,
+    bannerAlt: "Partner Summit Q2 2026 banner",
+    hostName: "Founders Connect Partnerships Team",
+    hostLogoText: "FC",
+    dateLabel: "Wed, 10 Jun - 02:00 PM (IST)",
+    locationLabel: "Hyderabad, India",
+    mapUrl: "https://maps.google.com/?q=Hyderabad,+India",
+    calendarUrl:
+      "https://calendar.google.com/calendar/render?action=TEMPLATE&text=Partner+Summit+Q2&details=Collaboration+and+Growth&location=Hyderabad%2C+India&dates=20260610T083000Z/20260610T123000Z",
+    registrationUrl: "/register/user",
+    ticketLabel: "Partner-only event. Invitation required.",
+    refundPolicy: "Partners can reschedule for next quarter.",
+    about: [
+      "Quarterly meeting of Founders Connect's 50+ institutional partners including financial institutions, corporate VCs, and service providers.",
+      "Discuss partnership opportunities, joint initiatives, founder success stories, and co-marketing plans.",
+      "Preview of upcoming launches and new partner benefits.",
+    ],
+    expectations: [
+      "Partner success stories & case studies",
+      "New partnership opportunities",
+      "Founder success metrics review",
+      "Co-marketing planning sessions",
+    ],
+    differentiators: [
+      "Invite-only for vetted partners",
+      "Executive-level discussions",
+      "Dedicated partnership framework review",
+    ],
+    audience: ["Corporate partners", "Bank reps", "Service providers", "Institutional partners"],
+    tags: ["Partnership", "B2B", "Corporate", "Quarterly"],
+    photos: ["Partner networking"],
+    videos: ["Partner testimonials"],
+    faqs: [
+      {
+        question: "How do we become a partner?",
+        answer:
+          "Reach out to partnerships@foundersconnect.com. We evaluate fit based on founder value alignment.",
+      },
+    ],
+  },
 ];
 
 export const getEventBySlug = (slug: string) => events.find((event) => event.slug === slug);

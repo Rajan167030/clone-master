@@ -9,6 +9,7 @@ const PartnerLogoSchema = new Schema(
     websiteUrl: { type: String, default: "", trim: true },
     order: { type: Number, default: 0 },
     isActive: { type: Boolean, default: true },
+    metadata: { type: Schema.Types.Mixed, default: {} },
   },
   {
     timestamps: true,

@@ -73,14 +73,14 @@ const Login = () => {
           <p className="text-xl text-slate-600">Welcome to the</p>
           <h1 className="text-balance text-5xl font-heading font-bold leading-tight text-slate-900 sm:text-6xl">
             Ecosystem built for
-            <span className="block bg-gradient-to-r from-cyan-500 to-sky-700 bg-clip-text text-transparent">growth and impact</span>
+            <span className="block bg-gradient-to-r from-violet-500 to-violet-700 bg-clip-text text-transparent">growth and impact</span>
           </h1>
           <p className="max-w-xl text-lg text-slate-500">
             Empowering 1k+ users to build, invest, and scale together in a bright and secure platform.
           </p>
         </section>
 
-        <section className="rounded-3xl border border-sky-100/80 bg-white/90 p-6 shadow-[0_30px_80px_-40px_rgba(14,116,144,0.45)] backdrop-blur-xl sm:p-8">
+        <section className="rounded-3xl border border-violet-100/80 bg-white/90 p-6 shadow-[0_30px_80px_-40px_rgba(139,92,246,0.45)] backdrop-blur-xl sm:p-8">
           <h2 className="mb-6 text-center text-3xl font-heading font-semibold text-slate-900">Secure Login</h2>
 
           <div className="mb-6 grid grid-cols-3 gap-3">

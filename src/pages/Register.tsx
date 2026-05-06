@@ -172,8 +172,8 @@ const Register = () => {
     <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,_#dff4ff_0%,_#f7fbff_45%,_#ffffff_75%)] px-4 py-8 sm:px-6 lg:px-10">
       <div className="mx-auto grid min-h-[calc(100vh-4rem)] w-full max-w-6xl items-center gap-10 lg:grid-cols-2">
         <section className="space-y-6">
-          <div className="inline-flex items-center gap-3 rounded-xl border border-sky-100 bg-white/90 px-4 py-3 shadow-[0_20px_50px_-35px_rgba(3,105,161,0.5)] backdrop-blur">
-            <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-gradient-to-br from-cyan-400 to-sky-600 text-lg font-bold text-white">
+          <div className="inline-flex items-center gap-3 rounded-xl border border-violet-100 bg-white/90 px-4 py-3 shadow-[0_20px_50px_-35px_rgba(139,92,246,0.5)] backdrop-blur">
+            <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-gradient-to-br from-violet-400 to-violet-600 text-lg font-bold text-white">
               SL
             </div>
             <span className="text-2xl font-heading font-bold text-slate-900">StartupLanes</span>
@@ -181,14 +181,14 @@ const Register = () => {
 
           <h1 className="text-balance text-5xl font-heading font-bold leading-tight text-slate-900 sm:text-6xl">
             Create your account and
-            <span className="block bg-gradient-to-r from-cyan-500 to-sky-700 bg-clip-text text-transparent">join the ecosystem</span>
+            <span className="block bg-gradient-to-r from-violet-500 to-violet-700 bg-clip-text text-transparent">join the ecosystem</span>
           </h1>
           <p className="max-w-xl text-lg text-slate-500">
             Register as a user, investor, or founder and personalize your onboarding in one step.
           </p>
         </section>
 
-        <section className="rounded-3xl border border-sky-100/80 bg-white/90 p-6 shadow-[0_30px_80px_-40px_rgba(14,116,144,0.45)] backdrop-blur-xl sm:p-8">
+        <section className="rounded-3xl border border-violet-100/80 bg-white/90 p-6 shadow-[0_30px_80px_-40px_rgba(139,92,246,0.45)] backdrop-blur-xl sm:p-8">
           <h2 className="mb-2 text-center text-3xl font-heading font-semibold text-slate-900">Register Account</h2>
           <p className="mb-6 text-center text-sm text-slate-600">Select your role and fill in the details.</p>
 
@@ -197,33 +197,33 @@ const Register = () => {
               to="/register/user"
               className={`flex flex-col items-center justify-center gap-2 rounded-xl border px-3 py-3 text-sm font-medium transition-colors ${
                 role === "user"
-                  ? "border-cyan-200 bg-cyan-50 text-slate-900"
-                  : "border-slate-200 bg-white text-slate-600 hover:border-cyan-200 hover:text-slate-900"
-              }`}
+                  ? "border-violet-200 bg-violet-50 text-slate-900"
+                  : "border-slate-200 bg-white text-slate-600 hover:border-violet-200 hover:text-slate-900"
+              }
             >
-              <User className="h-4 w-4 text-cyan-600" />
+              <User className="h-4 w-4 text-violet-600" />
               User
             </Link>
             <Link
               to="/register/investor"
               className={`flex flex-col items-center justify-center gap-2 rounded-xl border px-3 py-3 text-sm font-medium transition-colors ${
                 role === "investor"
-                  ? "border-cyan-200 bg-cyan-50 text-slate-900"
-                  : "border-slate-200 bg-white text-slate-600 hover:border-cyan-200 hover:text-slate-900"
-              }`}
+                  ? "border-violet-200 bg-violet-50 text-slate-900"
+                  : "border-slate-200 bg-white text-slate-600 hover:border-violet-200 hover:text-slate-900"
+              }
             >
-              <BarChart3 className="h-4 w-4 text-cyan-600" />
+              <BarChart3 className="h-4 w-4 text-violet-600" />
               Investor
             </Link>
             <Link
               to="/register/founder"
               className={`flex flex-col items-center justify-center gap-2 rounded-xl border px-3 py-3 text-sm font-medium transition-colors ${
                 role === "founder"
-                  ? "border-cyan-200 bg-cyan-50 text-slate-900"
-                  : "border-slate-200 bg-white text-slate-600 hover:border-cyan-200 hover:text-slate-900"
-              }`}
+                  ? "border-violet-200 bg-violet-50 text-slate-900"
+                  : "border-slate-200 bg-white text-slate-600 hover:border-violet-200 hover:text-slate-900"
+              }
             >
-              <Rocket className="h-4 w-4 text-cyan-600" />
+              <Rocket className="h-4 w-4 text-violet-600" />
               Founder
             </Link>
           </div>
@@ -383,7 +383,7 @@ const Register = () => {
               type="submit"
               disabled={isLoading}
               size="lg"
-              className="mt-2 h-12 w-full rounded-xl bg-gradient-to-r from-cyan-500 to-sky-600 text-base font-semibold text-white hover:opacity-95 disabled:opacity-50"
+              className="mt-2 h-12 w-full rounded-xl bg-gradient-to-r from-violet-500 to-violet-600 text-base font-semibold text-white hover:opacity-95 disabled:opacity-50"
             >
               {isLoading ? "Creating Account..." : `CREATE ${roleTitle.toUpperCase()} ACCOUNT`}
             </Button>

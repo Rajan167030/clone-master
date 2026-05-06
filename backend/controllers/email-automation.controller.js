@@ -2,7 +2,8 @@ import { Account, JoinRequest, NewsletterSubscriber, Campaign } from "../models/
 import { isEmailConfigured } from "../utils/email.js";
 import { scheduleCampaign } from "../config/agenda.js";
 
-const BULK_EMAIL_BATCH_SIZE = 10;
+// Optimized batch size for better performance
+const BULK_EMAIL_BATCH_SIZE = process.env.BULK_EMAIL_BATCH_SIZE || 50;
 const BULK_AUDIENCES = new Set(["subscribers", "members", "everyone"]);
 
 const normalizeEmail = (email) => String(email || "").trim().toLowerCase();
@@ -113,14 +114,19 @@ export const sendBulkEmail = async (req, res) => {
       html: trimmedHtml,
       audience: selectedAudience,
       status: trimmedHtml && trimmedSubject ? 'scheduled' : 'draft',
-      stats: { total: recipients.length },
+      stats: { total: recipients.length, sent: 0, failed: 0 },
       createdBy: req.user?.id,
     });
 
     // schedule sending via Agenda jobs
     await scheduleCampaign(campaign._id, recipients);
 
-    return res.json({ message: 'Campaign scheduled', campaignId: campaign._id, total: recipients.length });
+    return res.json({ 
+      message: 'Campaign queued for delivery',
+      campaignId: campaign._id, 
+      totalRecipients: recipients.length,
+      estimatedDuration: `${Math.ceil(recipients.length / 100)} minutes`
+    });
   } catch (error) {
     console.error("Bulk email send failed:", error?.message || error);
     return res.status(500).json({ message: "Server error" });

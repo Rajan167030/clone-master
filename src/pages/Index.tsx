@@ -48,8 +48,8 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background">
       <Dialog open={isNoticeOpen} onOpenChange={setIsNoticeOpen}>
-        <DialogContent className="max-w-xl overflow-hidden border-sky-100 p-0 sm:max-w-2xl">
-          <div className="bg-gradient-to-r from-cyan-500 to-sky-600 px-6 py-5 text-white">
+        <DialogContent className="max-w-xl overflow-hidden border-violet-100 p-0 sm:max-w-2xl">
+          <div className="bg-gradient-to-r from-violet-500 to-violet-600 px-6 py-5 text-white">
             <p className="text-xs font-semibold uppercase tracking-[0.22em] text-white/80">Announcement</p>
             <DialogTitle className="mt-2 text-2xl font-heading font-bold text-white">
               {siteNotice?.title || "Announcement"}
@@ -61,7 +61,7 @@ const Index = () => {
             </DialogDescription>
             {siteNotice?.buttonLabel && siteNotice?.buttonUrl && (
               <DialogFooter className="sm:justify-start">
-                <Button asChild className="w-full bg-gradient-to-r from-cyan-500 to-sky-600 text-white sm:w-auto">
+                <Button asChild className="w-full bg-gradient-to-r from-violet-500 to-violet-600 text-white sm:w-auto">
                   <a
                     href={siteNotice.buttonUrl}
                     target={siteNotice.buttonUrl.startsWith("/") ? undefined : "_blank"}

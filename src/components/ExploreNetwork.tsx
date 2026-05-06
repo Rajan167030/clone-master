@@ -5,15 +5,15 @@ import {
 } from "lucide-react";
 
 const items = [
-  { icon: Rocket, title: "Raise Funds", desc: "Fuel your startup growth", color: "from-emerald-500 to-teal-500" },
-  { icon: TrendingUp, title: "Invest in Startups", desc: "High ROI early-stage deals", color: "from-emerald-500 to-teal-400" },
-  { icon: Building2, title: "SME IPO", desc: "Go public on SME exchange", color: "from-teal-500 to-emerald-500" },
-  { icon: Users, title: "Chapter Director", desc: "Lead our Business Network", color: "from-emerald-500 to-teal-500" },
-  { icon: Handshake, title: "Venture Partner", desc: "Refer Startups & Investors", color: "from-teal-500 to-cyan-500" },
-  { icon: MapPin, title: "Explore Chapters", desc: "Connect with local ecosystems", color: "from-emerald-500 to-teal-400" },
-  { icon: BarChart3, title: "Unlisted Shares", desc: "Pre-IPO Company's Shares", color: "from-teal-500 to-emerald-500" },
-  { icon: Calendar, title: "Demo Day Events", desc: "Explore Angel Opportunities", color: "from-emerald-500 to-teal-500" },
-  { icon: Newspaper, title: "Startup News", desc: "Latest trends & global updates", color: "from-teal-500 to-cyan-500" },
+  { icon: Rocket, title: "Raise Funds", desc: "Fuel your startup growth", color: "from-violet-500 to-violet-600" },
+  { icon: TrendingUp, title: "Invest in Startups", desc: "High ROI early-stage deals", color: "from-violet-500 to-violet-400" },
+  { icon: Building2, title: "SME IPO", desc: "Go public on SME exchange", color: "from-violet-500 to-violet-500" },
+  { icon: Users, title: "Chapter Director", desc: "Lead our Business Network", color: "from-violet-500 to-violet-500" },
+  { icon: Handshake, title: "Venture Partner", desc: "Refer Startups & Investors", color: "from-violet-500 to-violet-500" },
+  { icon: MapPin, title: "Explore Chapters", desc: "Connect with local ecosystems", color: "from-violet-500 to-violet-400" },
+  { icon: BarChart3, title: "Unlisted Shares", desc: "Pre-IPO Company's Shares", color: "from-violet-500 to-violet-500" },
+  { icon: Calendar, title: "Demo Day Events", desc: "Explore Angel Opportunities", color: "from-violet-500 to-violet-500" },
+  { icon: Newspaper, title: "Startup News", desc: "Latest trends & global updates", color: "from-violet-500 to-violet-500" },
 ];
 
 const ExploreNetwork = () => (
@@ -31,8 +31,8 @@ const ExploreNetwork = () => (
       <div className="pointer-events-none absolute inset-0 rounded-[2.5rem] bg-[radial-gradient(circle_at_20%_10%,rgba(16,185,129,0.08),transparent_24%),radial-gradient(circle_at_85%_18%,rgba(34,197,94,0.07),transparent_18%),radial-gradient(circle_at_70%_80%,rgba(20,184,166,0.05),transparent_20%),linear-gradient(to_bottom,rgba(255,255,255,0.92),rgba(255,255,255,0.98))]" />
       <div className="pointer-events-none absolute left-[-10rem] top-[-8rem] h-[28rem] w-[28rem] rounded-full border border-emerald-200/45" />
       <div className="pointer-events-none absolute left-[-2rem] top-[-2rem] h-72 w-72 rounded-full border border-emerald-100/35" />
-      <div className="pointer-events-none absolute right-[-8rem] top-[2rem] h-[24rem] w-[24rem] rounded-full border border-teal-100/45" />
-      <div className="pointer-events-none absolute right-[-3rem] bottom-[-9rem] h-[22rem] w-[22rem] rounded-full border border-cyan-100/45" />
+      <div className="pointer-events-none absolute right-[-8rem] top-[2rem] h-[24rem] w-[24rem] rounded-full border border-violet-100/45" />
+      <div className="pointer-events-none absolute right-[-3rem] bottom-[-9rem] h-[22rem] w-[22rem] rounded-full border border-violet-100/45" />
       <div className="pointer-events-none absolute left-[15%] top-[12%] h-6 w-6 rounded-full border border-emerald-200/60" />
       <div className="pointer-events-none absolute right-[8%] top-[18%] h-8 w-8 rounded-full border border-emerald-200/60" />
       <div className="pointer-events-none absolute left-[9%] bottom-[14%] h-5 w-5 rounded-full border border-emerald-200/60" />

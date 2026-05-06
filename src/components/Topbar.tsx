@@ -46,8 +46,8 @@ const Topbar = ({
             <p className="text-sm font-semibold text-slate-900">{referralCode}</p>
           </div>
 
-          <div className="hidden rounded-2xl border border-cyan-100 bg-cyan-50 px-4 py-2 xl:block">
-            <p className="text-[11px] uppercase tracking-[0.18em] text-cyan-700">Event Participation</p>
+          <div className="hidden rounded-2xl border border-violet-100 bg-violet-50 px-4 py-2 xl:block">
+            <p className="text-[11px] uppercase tracking-[0.18em] text-violet-700">Event Participation</p>
             <p className="text-sm font-semibold text-slate-900">{participationCount} registered events</p>
           </div>
 
@@ -61,7 +61,7 @@ const Topbar = ({
 
           <Link
             to="/membership"
-            className="hidden items-center gap-2 rounded-xl bg-gradient-to-r from-cyan-500 to-sky-600 px-3 py-2 text-sm font-medium text-white sm:inline-flex"
+            className="hidden items-center gap-2 rounded-xl bg-gradient-to-r from-violet-500 to-violet-600 px-3 py-2 text-sm font-medium text-white sm:inline-flex"
           >
             <Ticket size={16} />
             <span className="hidden md:inline">Membership</span>

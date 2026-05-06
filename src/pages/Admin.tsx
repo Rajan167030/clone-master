@@ -367,7 +367,7 @@ const Admin = () => {
       <Navbar />
       <main className="container mx-auto px-4 pb-16 pt-24">
         <div className="mb-8">
-          <p className="text-sm font-medium uppercase tracking-[0.2em] text-cyan-700">Admin Control Center</p>
+          <p className="text-sm font-medium uppercase tracking-[0.2em] text-violet-700">Admin Control Center</p>
           <h1 className="mt-2 text-3xl font-bold text-slate-900 sm:text-4xl">Manage events, blogs, and member data</h1>
           <p className="mt-3 max-w-3xl text-slate-600">
             This admin workspace controls the dynamic event pages, blog content, member access data, and guest event registration requests.
@@ -382,7 +382,7 @@ const Admin = () => {
                   <p className="text-sm text-slate-600">Total Users</p>
                   <p className="mt-2 text-3xl font-bold text-slate-900">{members.length}</p>
                 </div>
-                <Users className="h-8 w-8 text-cyan-500" />
+                <Users className="h-8 w-8 text-violet-500" />
               </div>
             </CardContent>
           </Card>
@@ -448,7 +448,7 @@ const Admin = () => {
                       onClick={() => setEventImageMode("url")}
                       className={`px-3 py-1 rounded text-xs font-medium transition-colors ${
                         eventImageMode === "url"
-                          ? "bg-cyan-500 text-white"
+                          ? "bg-violet-500 text-white"
                           : "bg-transparent text-slate-600 hover:text-slate-900"
                       }`}
                     >
@@ -459,7 +459,7 @@ const Admin = () => {
                       onClick={() => setEventImageMode("upload")}
                       className={`px-3 py-1 rounded text-xs font-medium transition-colors ${
                         eventImageMode === "upload"
-                          ? "bg-cyan-500 text-white"
+                          ? "bg-violet-500 text-white"
                           : "bg-transparent text-slate-600 hover:text-slate-900"
                       }`}
                     >
@@ -546,7 +546,7 @@ const Admin = () => {
                       onClick={() => setBlogImageMode("url")}
                       className={`px-3 py-1 rounded text-xs font-medium transition-colors ${
                         blogImageMode === "url"
-                          ? "bg-cyan-500 text-white"
+                          ? "bg-violet-500 text-white"
                           : "bg-transparent text-slate-600 hover:text-slate-900"
                       }`}
                     >
@@ -557,7 +557,7 @@ const Admin = () => {
                       onClick={() => setBlogImageMode("upload")}
                       className={`px-3 py-1 rounded text-xs font-medium transition-colors ${
                         blogImageMode === "upload"
-                          ? "bg-cyan-500 text-white"
+                          ? "bg-violet-500 text-white"
                           : "bg-transparent text-slate-600 hover:text-slate-900"
                       }`}
                     >
@@ -860,7 +860,7 @@ const Admin = () => {
                         <p className="text-sm text-slate-500">{member.email}</p>
                       </div>
                       <div className="flex flex-wrap gap-2 text-xs">
-                        <span className="rounded-full bg-cyan-50 px-3 py-1 font-medium text-cyan-800">{member.role}</span>
+                        <span className="rounded-full bg-violet-50 px-3 py-1 font-medium text-violet-800">{member.role}</span>
                         <span className="rounded-full bg-slate-100 px-3 py-1 font-medium text-slate-700">{member.city}</span>
                       </div>
                     </div>

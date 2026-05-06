@@ -29,7 +29,7 @@ const PortfolioTable = ({ title, items, showRiskSpread }: PortfolioTableProps) =
                 <span className="text-slate-600">Medium</span>
               </div>
               <div className="flex items-center gap-2 text-sm">
-                <div className="w-3 h-3 rounded-full bg-cyan-400"></div>
+                <div className="w-3 h-3 rounded-full bg-violet-400"></div>
                 <span className="text-slate-600">Low</span>
               </div>
             </div>

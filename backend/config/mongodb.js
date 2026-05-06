@@ -18,6 +18,11 @@ export const connectMongo = async (mongoUri = process.env.MONGODB_URI || DEFAULT
   connectionPromise = mongoose
     .connect(mongoUri, {
       autoIndex: true,
+      maxPoolSize: 20,  // Concurrency improve karega
+      minPoolSize: 5,   // Minimum connections hamesha ready
+      maxIdleTimeMS: 30000,  // Idle connections 30s baad close hoga
+      serverSelectionTimeoutMS: 5000,
+      socketTimeoutMS: 45000,
     })
     .then(() => mongoose.connection)
     .catch((error) => {

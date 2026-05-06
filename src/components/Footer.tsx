@@ -57,31 +57,13 @@ const Footer = () => (
       <div className="grid grid-cols-2 gap-8 mb-12 md:grid-cols-5">
         <div className="col-span-2">
           <div className="flex items-center gap-3 mb-4">
-            {/* Professional Founders Connect Logo */}
-            <div className="flex items-center gap-2">
-              <svg
-                viewBox="0 0 40 40"
-                className="w-10 h-10 text-primary"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.5"
-              >
-                {/* Modern geometric icon - interconnected nodes */}
-                <circle cx="12" cy="12" r="3" fill="currentColor" />
-                <circle cx="28" cy="12" r="3" fill="currentColor" />
-                <circle cx="12" cy="28" r="3" fill="currentColor" />
-                <circle cx="28" cy="28" r="3" fill="currentColor" />
-                <circle cx="20" cy="20" r="3" fill="currentColor" opacity="0.6" />
-
-                {/* Connecting lines */}
-                <line x1="12" y1="12" x2="20" y2="20" strokeLinecap="round" />
-                <line x1="28" y1="12" x2="20" y2="20" strokeLinecap="round" />
-                <line x1="12" y1="28" x2="20" y2="20" strokeLinecap="round" />
-                <line x1="28" y1="28" x2="20" y2="20" strokeLinecap="round" />
-              </svg>
-              <span className="text-lg font-bold tracking-tight text-foreground">
-                Founders<span className="text-primary">.</span>Connect
-              </span>
+            {/* Founders Connect Logo */}
+            <div className="flex items-center gap-3">
+              <img 
+                src="/founders_connect_global_logo.jpg" 
+                alt="Founders Connect" 
+                className="h-14 w-auto object-contain"
+              />
             </div>
           </div>
           <p className="text-sm text-muted-foreground max-w-xs leading-relaxed">

@@ -163,7 +163,7 @@ const Dashboard = () => {
           <button
             type="button"
             onClick={() => window.location.reload()}
-            className="rounded-lg bg-cyan-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-cyan-700"
+            className="rounded-lg bg-violet-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-violet-700"
           >
             Retry
           </button>
@@ -193,7 +193,7 @@ const Dashboard = () => {
         <main className="px-4 py-5 sm:px-6 sm:py-6 lg:px-8 lg:py-8">
           <div className="mb-6 flex flex-col gap-4 lg:mb-8 lg:flex-row lg:items-end lg:justify-between">
             <div>
-              <p className="text-sm font-medium uppercase tracking-[0.22em] text-cyan-700">Dashboard</p>
+              <p className="text-sm font-medium uppercase tracking-[0.22em] text-violet-700">Dashboard</p>
               <h1 className="mt-2 text-2xl font-bold text-slate-900 sm:text-3xl">{roleTitle} Workspace</h1>
               <p className="mt-2 max-w-2xl text-sm text-slate-600 sm:text-base">
                 Track your core dashboard metrics, manage event registrations, and keep notes from every founder-focused session in one place.
@@ -210,7 +210,7 @@ const Dashboard = () => {
               </Link>
               <Link
                 to="/membership"
-                className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-cyan-500 to-sky-600 px-4 py-3 text-sm font-medium text-white shadow-sm"
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-500 to-violet-600 px-4 py-3 text-sm font-medium text-white shadow-sm"
               >
                 <Sparkles size={16} />
                 Membership Access
@@ -318,7 +318,7 @@ const Dashboard = () => {
                   </p>
                 </div>
                 {eventSummary.latestRegistration && (
-                  <div className="rounded-full bg-cyan-50 px-3 py-1 text-xs font-medium text-cyan-800">
+                  <div className="rounded-full bg-violet-50 px-3 py-1 text-xs font-medium text-violet-800">
                     Latest: {eventSummary.latestRegistration.title}
                   </div>
                 )}
@@ -344,7 +344,7 @@ const Dashboard = () => {
                           </span>
                           <Link
                             to={`/events/${item.slug}`}
-                            className="rounded-full bg-cyan-50 px-3 py-1 text-xs font-medium text-cyan-800"
+                            className="rounded-full bg-violet-50 px-3 py-1 text-xs font-medium text-violet-800"
                           >
                             Open event
                           </Link>
@@ -363,7 +363,7 @@ const Dashboard = () => {
               ) : (
                 <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-8 text-center">
                   <p className="text-sm text-slate-600">No event registrations yet.</p>
-                  <Link to="/events" className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-cyan-700 hover:underline">
+                  <Link to="/events" className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-violet-700 hover:underline">
                     Browse upcoming events
                   </Link>
                 </div>

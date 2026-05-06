@@ -200,6 +200,8 @@ const AdminDashboard = () => {
   const [newsletterSending, setNewsletterSending] = useState(false);
   const [newsletterResult, setNewsletterResult] = useState<NewsletterSendSummary | null>(null);
   const [partnerForm, setPartnerForm] = useState(emptyPartnerForm);
+  const [savingPartner, setSavingPartner] = useState(false);
+  const [showMobileNav, setShowMobileNav] = useState(false);
   const [selectedEventSlug, setSelectedEventSlug] = useState("");
   const [selectedBlogSlug, setSelectedBlogSlug] = useState("");
   const [selectedPartnerId, setSelectedPartnerId] = useState("");
@@ -567,19 +569,26 @@ const AdminDashboard = () => {
   };
 
   const handleSavePartner = () => {
-    if (!partnerForm.name.trim()) {
-      window.alert("Partner name is required.");
+    // More robust validation
+    const nameValue = partnerForm?.name;
+    const trimmedName = String(nameValue ?? "").trim();
+    
+    console.log("Partner form debug:", { nameValue, trimmedName, formState: partnerForm });
+    
+    if (!trimmedName) {
+      window.alert("Partner name is required. Please enter a name.");
       return;
     }
 
     const payload = {
-      name: partnerForm.name.trim(),
-      logoUrl: partnerForm.logoUrl.trim(),
-      websiteUrl: partnerForm.websiteUrl.trim(),
-      order: Number(partnerForm.order || 0),
-      isActive: partnerForm.isActive,
+      name: trimmedName,
+      logoUrl: String(partnerForm?.logoUrl ?? "").trim(),
+      websiteUrl: String(partnerForm?.websiteUrl ?? "").trim(),
+      order: Number(partnerForm?.order ?? 0),
+      isActive: Boolean(partnerForm?.isActive ?? true),
     };
 
+    setSavingPartner(true);
     const request = selectedPartnerId
       ? updateAdminPartnerApi(token, selectedPartnerId, payload)
       : createAdminPartnerApi(token, payload);
@@ -594,7 +603,8 @@ const AdminDashboard = () => {
       })
       .catch((error) => {
         window.alert(error instanceof Error ? error.message : "Unable to save partner.");
-      });
+      })
+      .finally(() => setSavingPartner(false));
   };
 
   const StatCard = ({ icon: Icon, label, value, trend }: any) => (
@@ -605,8 +615,8 @@ const AdminDashboard = () => {
             <p className="text-sm font-medium text-slate-600">{label}</p>
             <p className="text-3xl font-bold text-slate-900">{value}</p>
           </div>
-          <div className="rounded-lg bg-cyan-50 p-2.5">
-            <Icon className="h-5 w-5 text-cyan-600" />
+          <div className="rounded-lg bg-violet-50 p-2.5">
+            <Icon className="h-5 w-5 text-violet-600" />
           </div>
         </div>
         {trend && (
@@ -631,11 +641,11 @@ const AdminDashboard = () => {
 
   return (
     <div className="flex min-h-screen bg-slate-100">
-      {/* Sidebar */}
-      <aside className="w-64 bg-slate-950 text-white fixed h-screen flex flex-col overflow-y-auto">
+      {/* Sidebar (desktop) */}
+      <aside className="hidden md:flex w-64 bg-slate-950 text-white fixed h-screen flex flex-col overflow-y-auto">
         <div className="border-b border-slate-800 p-5">
           <Link to="/admin" className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-400 to-sky-600 font-bold text-white">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-violet-400 to-violet-600 font-bold text-white">
               FC
             </div>
             <div>
@@ -649,7 +659,7 @@ const AdminDashboard = () => {
           <p className="text-xs uppercase tracking-wide text-slate-500">Admin Info</p>
           <p className="mt-2 text-sm font-semibold">{account?.fullName || "Admin"}</p>
           <p className="text-xs text-slate-400">{account?.email}</p>
-          <div className="mt-3 inline-flex items-center gap-2 rounded-full bg-slate-900 px-3 py-1 text-xs text-cyan-300">
+          <div className="mt-3 inline-flex items-center gap-2 rounded-full bg-slate-900 px-3 py-1 text-xs text-violet-300">
             <BarChart3 size={12} />
             Administrator
           </div>
@@ -664,7 +674,7 @@ const AdminDashboard = () => {
                 onClick={() => setActiveTab(id as typeof activeTab)}
                 className={`w-full flex items-center gap-3 rounded-xl px-4 py-3 text-sm transition-colors ${
                   active
-                    ? "bg-cyan-500/15 text-cyan-200"
+                    ? "bg-violet-500/15 text-violet-200"
                     : "text-slate-300 hover:bg-slate-900 hover:text-white"
                 }`}
               >
@@ -686,12 +696,53 @@ const AdminDashboard = () => {
         </div>
       </aside>
 
+      {/* Mobile sidebar drawer */}
+      {showMobileNav && (
+        <div className="md:hidden fixed inset-0 z-50">
+          <div className="absolute inset-0 bg-black/40" onClick={() => setShowMobileNav(false)} />
+          <div className="absolute left-0 top-0 bottom-0 w-72 bg-slate-950 text-white p-4 overflow-y-auto">
+            <div className="border-b border-slate-800 p-5">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-violet-400 to-violet-600 font-bold text-white">FC</div>
+                <div>
+                  <p className="font-semibold text-sm">Founders Connect</p>
+                  <p className="text-xs text-slate-400">Admin Panel</p>
+                </div>
+              </div>
+            </div>
+            <div className="border-b border-slate-800 px-5 py-4">
+              <p className="text-xs uppercase tracking-wide text-slate-500">Admin Info</p>
+              <p className="mt-2 text-sm font-semibold">{account?.fullName || "Admin"}</p>
+              <p className="text-xs text-slate-400">{account?.email}</p>
+            </div>
+            <nav className="mt-4 space-y-1">
+              {adminMenuItems.map(({ label, id, icon: Icon }) => (
+                <button
+                  key={`mobile-${id}`}
+                  onClick={() => { setActiveTab(id as typeof activeTab); setShowMobileNav(false); }}
+                  className="w-full flex items-center gap-3 rounded-xl px-4 py-3 text-sm text-slate-300 hover:bg-slate-900 hover:text-white"
+                >
+                  <Icon size={18} />
+                  <span>{label}</span>
+                </button>
+              ))}
+            </nav>
+          </div>
+        </div>
+      )}
+
       {/* Main Content */}
-      <main className="flex-1 ml-64 p-6">
+      <main className="flex-1 ml-0 md:ml-64 p-4 md:p-6">
         <div className="max-w-7xl mx-auto">
           {/* Header */}
           <div className="mb-8">
-            <p className="text-sm font-medium uppercase tracking-[0.2em] text-cyan-700">Admin Dashboard</p>
+            <div className="flex items-center justify-between md:hidden mb-3">
+              <Button variant="ghost" size="sm" onClick={() => setShowMobileNav(true)} className="gap-2">
+                Menu
+              </Button>
+              <div className="text-sm text-slate-700">Admin</div>
+            </div>
+            <p className="text-sm font-medium uppercase tracking-[0.2em] text-violet-700">Admin Dashboard</p>
             <h1 className="mt-2 text-3xl font-bold text-slate-900 sm:text-4xl">
               {activeTab === "dashboard" && "Control Center"}
               {activeTab === "events" && "Events Management"}
@@ -761,7 +812,7 @@ const AdminDashboard = () => {
                 </CardContent>
               </Card>
 
-              <Card className="border-cyan-200 bg-cyan-50/70">
+              <Card className="border-violet-200 bg-violet-50/70">
                 <CardHeader>
                   <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                     <div>
@@ -877,7 +928,7 @@ const AdminDashboard = () => {
               </div>
 
               {showEventForm && (
-                <Card className="border-2 border-cyan-200 bg-cyan-50">
+                <Card className="border-2 border-violet-200 bg-violet-50">
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
                     <div>
                       <CardTitle>{selectedEventSlug ? "Edit Event" : "Create New Event"}</CardTitle>
@@ -907,7 +958,7 @@ const AdminDashboard = () => {
                             onClick={() => setEventImageMode("url")}
                             className={`px-3 py-1 rounded text-xs font-medium transition-colors ${
                               eventImageMode === "url"
-                                ? "bg-cyan-500 text-white"
+                                ? "bg-violet-500 text-white"
                                 : "bg-transparent text-slate-600 hover:text-slate-900"
                             }`}
                           >
@@ -918,7 +969,7 @@ const AdminDashboard = () => {
                             onClick={() => setEventImageMode("upload")}
                             className={`px-3 py-1 rounded text-xs font-medium transition-colors ${
                               eventImageMode === "upload"
-                                ? "bg-cyan-500 text-white"
+                                ? "bg-violet-500 text-white"
                                 : "bg-transparent text-slate-600 hover:text-slate-900"
                             }`}
                           >
@@ -1094,7 +1145,7 @@ const AdminDashboard = () => {
               </div>
 
               {showBlogForm && (
-                <Card className="border-2 border-cyan-200 bg-cyan-50">
+                <Card className="border-2 border-violet-200 bg-violet-50">
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
                     <div>
                       <CardTitle>{selectedBlogSlug ? "Edit Blog Post" : "Create New Blog Post"}</CardTitle>
@@ -1124,7 +1175,7 @@ const AdminDashboard = () => {
                             onClick={() => setBlogImageMode("url")}
                             className={`px-3 py-1 rounded text-xs font-medium transition-colors ${
                               blogImageMode === "url"
-                                ? "bg-cyan-500 text-white"
+                                ? "bg-violet-500 text-white"
                                 : "bg-transparent text-slate-600 hover:text-slate-900"
                             }`}
                           >
@@ -1135,7 +1186,7 @@ const AdminDashboard = () => {
                             onClick={() => setBlogImageMode("upload")}
                             className={`px-3 py-1 rounded text-xs font-medium transition-colors ${
                               blogImageMode === "upload"
-                                ? "bg-cyan-500 text-white"
+                                ? "bg-violet-500 text-white"
                                 : "bg-transparent text-slate-600 hover:text-slate-900"
                             }`}
                           >
@@ -1527,7 +1578,7 @@ const AdminDashboard = () => {
               </Card>
 
               {showPartnerForm && (
-                <Card className="border-2 border-cyan-200 bg-cyan-50">
+                <Card className="border-2 border-violet-200 bg-violet-50">
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
                     <div>
                       <CardTitle>{selectedPartnerId ? "Edit Partner" : "Add Partner"}</CardTitle>
@@ -1548,26 +1599,42 @@ const AdminDashboard = () => {
                   <CardContent className="space-y-4 bg-white rounded-b-lg p-4">
                     <div className="grid gap-4 sm:grid-cols-2">
                       <Input
+                        type="text"
                         placeholder="Partner Name"
-                        value={partnerForm.name}
-                        onChange={(e) => setPartnerForm((current) => ({ ...current, name: e.target.value }))}
+                        value={partnerForm.name || ""}
+                        onChange={(e) => {
+                          const value = e.currentTarget.value;
+                          setPartnerForm((current) => ({ ...current, name: value }));
+                        }}
+                        required
                       />
                       <Input
                         placeholder="Display Order"
                         type="number"
-                        value={partnerForm.order}
-                        onChange={(e) => setPartnerForm((current) => ({ ...current, order: e.target.value }))}
+                        value={partnerForm.order || "0"}
+                        onChange={(e) => {
+                          const value = e.currentTarget.value;
+                          setPartnerForm((current) => ({ ...current, order: value }));
+                        }}
                       />
                     </div>
                     <Input
+                      type="text"
                       placeholder="Logo URL (optional)"
-                      value={partnerForm.logoUrl}
-                      onChange={(e) => setPartnerForm((current) => ({ ...current, logoUrl: e.target.value }))}
+                      value={partnerForm.logoUrl || ""}
+                      onChange={(e) => {
+                        const value = e.currentTarget.value;
+                        setPartnerForm((current) => ({ ...current, logoUrl: value }));
+                      }}
                     />
                     <Input
+                      type="text"
                       placeholder="Website URL (optional)"
-                      value={partnerForm.websiteUrl}
-                      onChange={(e) => setPartnerForm((current) => ({ ...current, websiteUrl: e.target.value }))}
+                      value={partnerForm.websiteUrl || ""}
+                      onChange={(e) => {
+                        const value = e.currentTarget.value;
+                        setPartnerForm((current) => ({ ...current, websiteUrl: value }));
+                      }}
                     />
 
                     <div className="flex items-center gap-3">
@@ -1581,9 +1648,9 @@ const AdminDashboard = () => {
                     </div>
 
                     <div className="flex flex-wrap gap-3 pt-2">
-                      <Button onClick={handleSavePartner} className="gap-2">
+                      <Button onClick={handleSavePartner} className="gap-2" disabled={savingPartner}>
                         <CheckCircle2 className="h-4 w-4" />
-                        {selectedPartnerId ? "Update Partner" : "Create Partner"}
+                        {savingPartner ? 'Saving...' : selectedPartnerId ? 'Update Partner' : 'Create Partner'}
                       </Button>
                       <Button
                         variant="outline"
@@ -1903,7 +1970,7 @@ const AdminDashboard = () => {
                           onClick={() => loadCampaignDetails(campaign._id)}
                           className={`w-full rounded-lg border p-4 text-left transition-colors ${
                             selectedCampaignId === campaign._id
-                              ? "border-cyan-400 bg-cyan-50"
+                              ? "border-violet-400 bg-violet-50"
                               : "border-slate-200 bg-white hover:bg-slate-50"
                           }`}
                         >

@@ -64,7 +64,7 @@ const Events = () => {
               Every event card is dynamic and linked to its own detail page with FAQ, registration, host details, and full context.
             </p>
             <div className="mt-6 space-y-3">
-              <div className="inline-flex rounded-full border border-cyan-200 bg-cyan-50 px-4 py-2 text-sm font-medium text-cyan-800">
+              <div className="inline-flex rounded-full border border-violet-200 bg-violet-50 px-4 py-2 text-sm font-medium text-violet-800">
                 You currently have {registrations.length} event registration{registrations.length === 1 ? "" : "s"}.
               </div>
               <div className="mt-3">

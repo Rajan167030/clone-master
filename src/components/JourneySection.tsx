@@ -45,14 +45,14 @@ const JourneySection = () => (
     <div className="pointer-events-none absolute inset-0 opacity-40 [background:radial-gradient(circle_at_top,_rgba(45,212,191,0.12),_transparent_58%)]" />
     <div className="container relative mx-auto px-4">
       <div className="mx-auto mb-14 max-w-2xl text-center">
-        <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-teal-100/40 bg-teal-50 px-4 py-1.5">
-          <Sparkles size={12} className="text-teal-700" />
-          <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-teal-900">
+        <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-violet-100/40 bg-violet-50 px-4 py-1.5">
+          <Sparkles size={12} className="text-violet-700" />
+          <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-violet-900">
             Your Roadmap
           </span>
         </div>
         <h2 className="font-heading text-4xl font-bold tracking-tight text-white md:text-6xl">
-          Start Our <span className="bg-gradient-to-r from-teal-300 to-emerald-400 bg-clip-text text-transparent">Journey</span>
+          Start Our <span className="bg-gradient-to-r from-violet-300 to-violet-400 bg-clip-text text-transparent">Journey</span>
         </h2>
         <p className="mt-4 text-lg text-slate-300">
           A clear path to discover, connect, and grow inside the Founders Connect ecosystem.
@@ -62,10 +62,10 @@ const JourneySection = () => (
       <div className="mx-auto mb-12 hidden max-w-xl items-center justify-center gap-3 sm:flex">
         {steps.map((step, i) => (
           <div key={step.number} className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full border border-teal-100/50 bg-teal-50 text-sm font-semibold text-teal-900">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full border border-violet-100/50 bg-violet-50 text-sm font-semibold text-violet-900">
               {step.number}
             </div>
-            {i < steps.length - 1 && <div className="h-px w-10 bg-teal-100/60" />}
+            {i < steps.length - 1 && <div className="h-px w-10 bg-violet-100/60" />}
           </div>
         ))}
       </div>
@@ -78,15 +78,15 @@ const JourneySection = () => (
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: i * 0.12, duration: 0.45 }}
-            className="group relative overflow-hidden rounded-3xl border border-white/12 bg-white/[0.03] p-6 shadow-[0_10px_35px_-22px_rgba(20,184,166,0.8)] transition-all hover:-translate-y-1 hover:border-teal-200/35 hover:bg-white/[0.05]"
+            className="group relative overflow-hidden rounded-3xl border border-white/12 bg-white/[0.03] p-6 shadow-[0_10px_35px_-22px_rgba(139,92,246,0.8)] transition-all hover:-translate-y-1 hover:border-violet-200/35 hover:bg-white/[0.05]"
           >
             <div className="pointer-events-none absolute right-0 top-0 h-24 w-24 rounded-bl-[2.8rem] bg-white/50 opacity-35" />
 
-            <div className="mb-5 inline-flex h-14 w-14 items-center justify-center rounded-2xl border border-teal-300/25 bg-gradient-to-b from-teal-500 to-emerald-500 shadow-[0_14px_30px_-18px_rgba(20,184,166,1)]">
-              <step.icon size={24} className="text-teal-50" />
+            <div className="mb-5 inline-flex h-14 w-14 items-center justify-center rounded-2xl border border-violet-300/25 bg-gradient-to-b from-violet-500 to-violet-600 shadow-[0_14px_30px_-18px_rgba(139,92,246,1)]">
+              <step.icon size={24} className="text-violet-50" />
             </div>
 
-            <div className="mb-3 inline-flex rounded-full border border-teal-100/35 bg-teal-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-teal-900">
+            <div className="mb-3 inline-flex rounded-full border border-violet-100/35 bg-violet-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-violet-900">
               Step {step.number}: {step.tag}
             </div>
 
@@ -95,7 +95,7 @@ const JourneySection = () => (
 
             <button
               type="button"
-              className="mt-8 inline-flex h-10 w-10 items-center justify-center rounded-full border border-teal-100/45 bg-teal-50 text-teal-800 transition-colors group-hover:bg-teal-100"
+              className="mt-8 inline-flex h-10 w-10 items-center justify-center rounded-full border border-violet-100/45 bg-violet-50 text-violet-800 transition-colors group-hover:bg-violet-100"
               aria-label={`Go to ${step.title}`}
             >
               <ArrowRight size={18} />
@@ -107,7 +107,7 @@ const JourneySection = () => (
       <div className="flex flex-col items-center justify-center gap-3 sm:flex-row">
         <Button
           size="lg"
-          className="h-12 border border-teal-100/20 bg-white/[0.02] px-8 font-semibold text-white transition-all hover:bg-white/[0.06]"
+          className="h-12 border border-violet-100/20 bg-white/[0.02] px-8 font-semibold text-white transition-all hover:bg-white/[0.06]"
         >
           Get Started Free <ArrowRight size={18} />
         </Button>
