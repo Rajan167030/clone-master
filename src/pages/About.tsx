@@ -2,8 +2,17 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import JoinUsSection from "@/components/JoinUsSection";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useSEO } from "@/hooks/useSEO";
 
 const About = () => {
+  // SEO Hook
+  useSEO({
+    title: "About Founders Connect",
+    description: "Learn about Founders Connect - India's most valuable founder network connecting builders, founders, and investors with intent. Discover our mission and events.",
+    keywords: "about founders connect, founder network, startup ecosystem, investor network India",
+    ogType: "website",
+    canonicalUrl: "https://founders.connect/about",
+  });
   return (
     <div className="min-h-screen bg-background">
       <Navbar />

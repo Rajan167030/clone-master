@@ -10,6 +10,7 @@ import Testimonials from "@/components/Testimonials";
 import JoinUsSection from "@/components/JoinUsSection";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
+import { useSEO, useStructuredData } from "@/hooks/useSEO";
 import {
   Dialog,
   DialogContent,
@@ -23,6 +24,39 @@ import { getPublicSiteNoticeApi, type SiteNotice } from "@/lib/api";
 const Index = () => {
   const [siteNotice, setSiteNotice] = useState<SiteNotice | null>(null);
   const [isNoticeOpen, setIsNoticeOpen] = useState(false);
+
+  // SEO Hook
+  useSEO({
+    title: "Founders Connect | India's Founder & Investor Network",
+    description: "Connect with startup founders, investors, and builders at curated events, founder meetups, and exclusive membership experiences. Build meaningful relationships in India's founder ecosystem.",
+    keywords: "founder network, investor meetup, startup events, founder community, startup networking, India startups, entrepreneur events",
+    ogImage: "https://founders.connect/og-image.jpg",
+    ogType: "website",
+    canonicalUrl: "https://founders.connect/",
+  });
+
+  // Structured Data (Organization + WebSite schema)
+  useStructuredData({
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: "Founders Connect",
+    url: "https://founders.connect",
+    logo: "https://founders.connect/logo.png",
+    description: "India's premier founder and investor networking platform",
+    founder: {
+      "@type": "Person",
+      name: "Founders Connect Team",
+    },
+    sameAs: [
+      "https://twitter.com/FoundersConnect",
+      "https://linkedin.com/company/founders-connect",
+    ],
+    contactPoint: {
+      "@type": "ContactPoint",
+      contactType: "General",
+      email: "hello@founders.connect",
+    },
+  });
 
   useEffect(() => {
     let isMounted = true;

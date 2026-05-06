@@ -8,11 +8,42 @@ import { Card, CardContent } from "@/components/ui/card";
 import NotFound from "./NotFound";
 import { getBlogBySlug } from "@/lib/blogs";
 import { getPublicBlogBySlugApi, type DynamicBlogPost } from "@/lib/api";
+import { useSEO, useStructuredData } from "@/hooks/useSEO";
 
 const BlogDetails = () => {
   const { slug = "" } = useParams();
   const fallbackPost = useMemo(() => getBlogBySlug(slug), [slug]);
   const [post, setPost] = useState<DynamicBlogPost | null>(fallbackPost || null);
+
+  const seoTitle = post?.title || fallbackPost?.title || "Blog Post";
+  const seoDescription = post?.excerpt || fallbackPost?.excerpt || "Read the latest insights from Founders Connect.";
+  const seoKeywords = post?.tags?.length
+    ? `${post.tags.join(", ")}, startup blog, founder insights, Founders Connect`
+    : "startup blog, founder insights, Founders Connect";
+
+  useSEO({
+    title: seoTitle,
+    description: seoDescription,
+    keywords: seoKeywords,
+    ogImage: post?.coverImage || fallbackPost?.coverImage || "",
+    ogType: "article",
+    canonicalUrl: `https://founders.connect/blog/${slug}`,
+  });
+
+  useStructuredData({
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    headline: seoTitle,
+    description: seoDescription,
+    image: post?.coverImage || fallbackPost?.coverImage || undefined,
+    author: {
+      "@type": "Person",
+      name: post?.author || fallbackPost?.author || "Founders Connect Editorial",
+    },
+    datePublished: post?.date || fallbackPost?.date || undefined,
+    mainEntityOfPage: `https://founders.connect/blog/${slug}`,
+    keywords: seoKeywords,
+  });
 
   useEffect(() => {
     getPublicBlogBySlugApi(slug)
@@ -37,7 +68,13 @@ const BlogDetails = () => {
             <ArrowLeft size={15} /> Back to Blog
           </Link>
 
-          <img src={post.coverImage} alt={post.title} className="mb-8 h-[300px] w-full rounded-2xl object-cover shadow-xl md:h-[420px]" />
+          <img
+            src={post.coverImage}
+            alt={post.title}
+            loading="lazy"
+            decoding="async"
+            className="mb-8 h-[300px] w-full rounded-2xl object-cover shadow-xl md:h-[420px]"
+          />
 
           <h1 className="font-heading text-3xl font-extrabold leading-tight md:text-5xl">{post.title}</h1>
 

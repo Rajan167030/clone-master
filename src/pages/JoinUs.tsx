@@ -6,6 +6,7 @@ import { Users, Zap, Target, TrendingUp, Link as LinkIcon, Copy, CheckCircle, Me
 import EmailVerificationBox from "@/components/EmailVerificationBox";
 import { Button } from "@/components/ui/button";
 import { submitJoinRequestApi } from "@/lib/api";
+import { useSEO } from "@/hooks/useSEO";
 
 const WHATSAPP_GROUP_URL = "https://chat.whatsapp.com/Hm4ZKUpvxsy9u2L7SqcfV3";
 
@@ -46,6 +47,14 @@ const benefits = [
 ];
 
 const JoinUs = () => {
+  // SEO Hook
+  useSEO({
+    title: "Join Founders Connect Community",
+    description: "Join India's most valuable founder and investor network. Connect with top founders, get mentorship, and accelerate your startup journey.",
+    keywords: "join founders connect, founder community, startup network India",
+    ogType: "website",
+    canonicalUrl: "https://founders.connect/join-us",
+  });
   const [formData, setFormData] = useState(initialFormData);
   const [submitting, setSubmitting] = useState(false);
   const [copyMessage, setCopyMessage] = useState("");

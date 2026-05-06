@@ -6,6 +6,7 @@ import Footer from "@/components/Footer";
 import { events } from "@/lib/events";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useSEO } from "@/hooks/useSEO";
 import {
   getMyEventRegistrationsApi,
   getPublicEventsApi,
@@ -15,6 +16,14 @@ import {
 import { getToken, getSession } from "@/lib/session";
 
 const Events = () => {
+  // SEO Hook
+  useSEO({
+    title: "Upcoming Events | Founders Connect",
+    description: "Discover founder meetups, investor networking nights, and exclusive member events. Connect with India's top founders and investors at Founders Connect events.",
+    keywords: "founder events, networking events, startup events India, investor meetups, founder meetups",
+    ogType: "website",
+    canonicalUrl: "https://founders.connect/events",
+  });
   const token = useMemo(() => getToken(), []);
   const session = useMemo(() => getSession(), []);
   const isMember = useMemo(() => {

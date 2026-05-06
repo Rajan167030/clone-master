@@ -14,6 +14,7 @@ import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { useSEO } from "@/hooks/useSEO";
 
 type PricingPeriod = "monthly" | "yearly";
 
@@ -101,6 +102,15 @@ const membershipTiers: MembershipTier[] = [
 const Membership = () => {
   const [billingPeriod, setBillingPeriod] = useState<PricingPeriod>("yearly");
   const [openFaqId, setOpenFaqId] = useState<number | null>(0);
+
+  // SEO Hook
+  useSEO({
+    title: "Membership Plans | Founders Connect",
+    description: "Join Founders Connect membership to access exclusive founder and investor networks. Choose from investor, founder, or community tiers with premium benefits.",
+    keywords: "founders connect membership, founder membership, investor membership, membership pricing",
+    ogType: "website",
+    canonicalUrl: "https://founders.connect/membership",
+  });
 
   return (
     <div className="min-h-screen bg-background">

@@ -7,8 +7,17 @@ import { blogPosts } from "@/lib/blogs";
 import { getPublicBlogsApi, type DynamicBlogPost } from "@/lib/api";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { useSEO } from "@/hooks/useSEO";
 
 const Blog = () => {
+  // SEO Hook
+  useSEO({
+    title: "Blog | Founders Connect",
+    description: "Read insights and stories from India's startup ecosystem. Learn about founder journeys, startup tips, investor perspectives, and industry trends.",
+    keywords: "startup blog, founder stories, startup insights, entrepreneurship tips, startup advice",
+    ogType: "website",
+    canonicalUrl: "https://founders.connect/blog",
+  });
   const [posts, setPosts] = useState<DynamicBlogPost[]>(blogPosts);
 
   useEffect(() => {
@@ -39,7 +48,7 @@ const Blog = () => {
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {posts.map((post) => (
               <Card key={post.slug} className="overflow-hidden border-border/60 shadow-lg hover-scale">
-                <img src={post.coverImage} alt={post.title} className="h-48 w-full object-cover" />
+                <img src={post.coverImage} alt={post.title} loading="lazy" decoding="async" className="h-48 w-full object-cover" />
                 <CardHeader>
                   <CardTitle className="text-xl leading-snug">{post.title}</CardTitle>
                   <CardDescription>{post.excerpt}</CardDescription>
