@@ -144,4 +144,61 @@
   filter: blur(60px);
 }
 
+.network-glow-line {
+  pointer-events: none;
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: conic-gradient(
+    from 0deg,
+    rgba(56, 189, 248, 0) 0deg,
+    rgba(56, 189, 248, 0.76) 52deg,
+    rgba(34, 211, 238, 0.72) 78deg,
+    rgba(56, 189, 248, 0) 118deg,
+    rgba(56, 189, 248, 0) 360deg
+  );
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0.72;
+  animation: network-glow-spin 5.3s linear infinite;
+}
+
+.glowing-effect-line {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: conic-gradient(
+    from 0deg,
+    rgba(56, 189, 248, 0) 0deg,
+    rgba(56, 189, 248, 0.96) 48deg,
+    rgba(14, 165, 233, 1) 74deg,
+    rgba(59, 130, 246, 0.95) 104deg,
+    rgba(56, 189, 248, 0) 140deg,
+    rgba(56, 189, 248, 0) 360deg
+  );
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0.95;
+  filter: drop-shadow(0 0 6px rgba(56, 189, 248, 0.45));
+  transform-origin: center;
+  will-change: transform;
+  animation: glowing-effect-spin 3.2s linear infinite;
+}
+
+@keyframes glowing-effect-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes network-glow-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .text-balance { text-wrap: balance; }

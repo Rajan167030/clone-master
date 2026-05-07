@@ -1,8 +1,30 @@
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import JoinUsSection from "@/components/JoinUsSection";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useSEO } from "@/hooks/useSEO";
+import { cn } from "@/lib/utils";
+import { CalendarDays, Target, UsersRound } from "lucide-react";
+
+const cards = [
+  {
+    title: "Our Mission",
+    description:
+      "Enable founders to access the right people, practical insights, and growth opportunities at every stage.",
+    icon: <Target className="h-5 w-5" />,
+  },
+  {
+    title: "What We Run",
+    description:
+      "Founder meetups, investor networking nights, and members-only sessions focused on execution and outcomes.",
+    icon: <CalendarDays className="h-5 w-5" />,
+  },
+  {
+    title: "Who It&apos;s For",
+    description:
+      "Startup founders, co-founders, and serious builders looking for real conversations and quality connections.",
+    icon: <UsersRound className="h-5 w-5" />,
+  },
+];
 
 const About = () => {
   // SEO Hook
@@ -32,33 +54,10 @@ const About = () => {
             </p>
           </div>
 
-          <div className="mt-12 grid gap-6 md:grid-cols-3">
-            <Card className="card-gradient shadow-lg">
-              <CardHeader>
-                <CardTitle className="text-xl">Our Mission</CardTitle>
-              </CardHeader>
-              <CardContent className="text-sm text-muted-foreground">
-                Enable founders to access the right people, practical insights, and growth opportunities at every stage.
-              </CardContent>
-            </Card>
-
-            <Card className="card-gradient shadow-lg">
-              <CardHeader>
-                <CardTitle className="text-xl">What We Run</CardTitle>
-              </CardHeader>
-              <CardContent className="text-sm text-muted-foreground">
-                Founder meetups, investor networking nights, and members-only sessions focused on execution and outcomes.
-              </CardContent>
-            </Card>
-
-            <Card className="card-gradient shadow-lg">
-              <CardHeader>
-                <CardTitle className="text-xl">Who It&apos;s For</CardTitle>
-              </CardHeader>
-              <CardContent className="text-sm text-muted-foreground">
-                Startup founders, co-founders, and serious builders looking for real conversations and quality connections.
-              </CardContent>
-            </Card>
+          <div className="relative z-10 mt-12 grid grid-cols-1 md:grid-cols-3">
+            {cards.map((card, index) => (
+              <FeatureCard key={card.title} {...card} index={index} />
+            ))}
           </div>
 
           <JoinUsSection showSocial={true} />
@@ -66,6 +65,41 @@ const About = () => {
       </section>
 
       <Footer />
+    </div>
+  );
+};
+
+const FeatureCard = ({
+  title,
+  description,
+  icon,
+  index,
+}: {
+  title: string;
+  description: string;
+  icon: React.ReactNode;
+  index: number;
+}) => {
+  return (
+    <div
+      className={cn(
+        "group/feature relative flex flex-col py-10 lg:border-r dark:border-neutral-800",
+        index === 0 && "lg:border-l dark:border-neutral-800"
+      )}
+    >
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-neutral-100 to-transparent opacity-0 transition duration-200 group-hover/feature:opacity-100 dark:from-neutral-800" />
+      <div className="relative z-10 mb-4 px-10 text-neutral-600 dark:text-neutral-400">
+        {icon}
+      </div>
+      <div className="relative z-10 mb-2 px-10 text-lg font-bold">
+        <div className="absolute left-0 inset-y-0 h-6 w-1 rounded-br-full rounded-tr-full bg-neutral-300 transition-all duration-200 group-hover/feature:h-8 group-hover/feature:bg-blue-500 dark:bg-neutral-700" />
+        <span className="inline-block text-neutral-800 transition duration-200 group-hover/feature:translate-x-2 dark:text-neutral-100">
+          {title}
+        </span>
+      </div>
+      <p className="relative z-10 max-w-xs px-10 text-sm text-neutral-600 dark:text-neutral-300">
+        {description}
+      </p>
     </div>
   );
 };
