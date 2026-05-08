@@ -270,6 +270,24 @@ export type PartnerLogo = {
   updatedAt?: string;
 };
 
+export type SpeakerInvestorProfile = {
+  _id: string;
+  slug: string;
+  category: "speaker" | "investor";
+  name: string;
+  designation: string;
+  company?: string;
+  photoUrl?: string;
+  photoAlt?: string;
+  summary?: string;
+  linkedinUrl?: string;
+  websiteUrl?: string;
+  order: number;
+  isActive: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+};
+
 export type PartnerInquiry = {
   _id: string;
   companyName: string;
@@ -323,6 +341,7 @@ export type JoinRequestPayload = {
   email: string;
   phone: string;
   occupation: string;
+  collegeName?: string;
   companyName: string;
   linkedinProfile: string;
   website: string;
@@ -338,6 +357,7 @@ export type AdminJoinRequest = {
   email: string;
   phone: string;
   occupation: string;
+  collegeName?: string;
   companyName: string;
   linkedinProfile: string;
   website: string;
@@ -459,7 +479,59 @@ export const getPublicPartnersApi = () =>
     method: "GET",
   });
 
-export const newsletterSubscribeApi = (payload: { email: string; name?: string }) =>
+export const getPublicSpeakerInvestorProfilesApi = () =>
+  request<{ profiles: SpeakerInvestorProfile[] }>("/content/speakers-investors", {
+    method: "GET",
+  });
+
+export const getPublicPartnerTypesApi = () =>
+  request<{ types: { slug: string; name: string }[] }>("/content/partner-types", {
+    method: "GET",
+  });
+
+export const getPublicCloudinaryUploadSignatureApi = (
+  payload?: { folder?: string; publicId?: string; resourceType?: string },
+) =>
+  request<CloudinarySignedUploadResponse>("/content/cloudinary/sign-upload", {
+    method: "POST",
+    body: JSON.stringify(payload || {}),
+  });
+
+export type FundingApplicationPayload = {
+  name: string;
+  mobile: string;
+  email: string;
+  address: string;
+  startupName: string;
+  startupLink?: string;
+  sector?: string;
+  sectorOther?: string;
+  mrr?: string;
+  mrrOther?: string;
+  brief: string;
+  pitchDeckUrl?: string;
+  pitchDeckName?: string;
+  problem: string;
+  solution: string;
+  targetCustomers: string;
+  revenue6Months?: string;
+  growthRate?: string;
+  payingCustomers?: string;
+  raisedBefore?: string;
+  raisedDetails?: string;
+  raiseAmountRange?: string;
+  stage?: string;
+  agreeAccurate: boolean;
+  agreePromo: boolean;
+};
+
+export const submitFundingApplicationApi = (payload: FundingApplicationPayload) =>
+  request<{ ok: boolean; id: string }>("/content/get-funding", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+
+export const newsletterSubscribeApi = (payload: { email: string; name?: string; emailVerificationToken: string }) =>
   request<{ message: string }>("/content/newsletter/subscribe", {
     method: "POST",
     body: JSON.stringify(payload),
@@ -658,6 +730,12 @@ export const getAdminPartnerInquiriesApi = (token: string) =>
     headers: { Authorization: `Bearer ${token}` },
   });
 
+export const getAdminPartnerTypesApi = (token: string) =>
+  request<{ types: { slug: string; name: string }[] }>("/admin/partner-types", {
+    method: "GET",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
 export const getAdminJoinRequestsApi = (token: string) =>
   request<{ requests: AdminJoinRequest[] }>("/admin/join-requests", {
     method: "GET",
@@ -687,6 +765,39 @@ export const updateAdminPartnerApi = (
 
 export const deleteAdminPartnerApi = (token: string, id: string) =>
   request<{ message: string }>(`/admin/partners/${id}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const getAdminSpeakerInvestorProfilesApi = (token: string) =>
+  request<{ profiles: SpeakerInvestorProfile[] }>("/admin/speaker-investors", {
+    method: "GET",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const createAdminSpeakerInvestorProfileApi = (
+  token: string,
+  payload: Pick<SpeakerInvestorProfile, "slug" | "category" | "name" | "designation" | "company" | "photoUrl" | "photoAlt" | "summary" | "linkedinUrl" | "websiteUrl" | "order" | "isActive">,
+) =>
+  request<{ message: string; profile: SpeakerInvestorProfile }>("/admin/speaker-investors", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify(payload),
+  });
+
+export const updateAdminSpeakerInvestorProfileApi = (
+  token: string,
+  slug: string,
+  payload: Pick<SpeakerInvestorProfile, "slug" | "category" | "name" | "designation" | "company" | "photoUrl" | "photoAlt" | "summary" | "linkedinUrl" | "websiteUrl" | "order" | "isActive">,
+) =>
+  request<{ message: string; profile: SpeakerInvestorProfile }>(`/admin/speaker-investors/${slug}`, {
+    method: "PATCH",
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify(payload),
+  });
+
+export const deleteAdminSpeakerInvestorProfileApi = (token: string, slug: string) =>
+  request<{ message: string }>(`/admin/speaker-investors/${slug}`, {
     method: "DELETE",
     headers: { Authorization: `Bearer ${token}` },
   });

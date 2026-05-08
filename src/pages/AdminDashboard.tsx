@@ -18,6 +18,7 @@ import {
   getAdminPartnerInquiriesApi,
   getAdminPartnersApi,
   getAdminSiteNoticeApi,
+  getAdminPartnerTypesApi,
   updateAdminPartnerApi,
   updateAdminBlogApi,
   updateAdminEventApi,
@@ -64,6 +65,7 @@ import {
   Mail,
   Send,
   Handshake,
+  Mic2,
   Upload,
 } from "lucide-react";
 
@@ -184,6 +186,8 @@ const AdminDashboard = () => {
   const [subscribers, setSubscribers] = useState<NewsletterSubscriber[]>([]);
   const [partners, setPartners] = useState<PartnerLogo[]>([]);
   const [partnerInquiries, setPartnerInquiries] = useState<PartnerInquiry[]>([]);
+  const [partnerTypes, setPartnerTypes] = useState<Array<{ slug: string; name: string }>>([]);
+  const [partnerTypeFilter, setPartnerTypeFilter] = useState<string>("");
   const [templates, setTemplates] = useState<EmailTemplate[]>([]);
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [selectedCampaignId, setSelectedCampaignId] = useState<string>("");
@@ -281,6 +285,7 @@ const AdminDashboard = () => {
       getAdminCampaignsApi(token),
       getAdminPartnersApi(token),
       getAdminPartnerInquiriesApi(token),
+      getAdminPartnerTypesApi(token),
       getAdminSiteNoticeApi(token),
     ])
       .then(([
@@ -294,6 +299,7 @@ const AdminDashboard = () => {
         campaignsResponse,
         partnersResponse,
         partnerInquiriesResponse,
+        partnerTypesResponse,
         noticeResponse,
       ]) => {
         setEvents(eventsResponse.events);
@@ -304,6 +310,7 @@ const AdminDashboard = () => {
         setSubscribers(subscribersResponse.subscribers);
         setPartners(partnersResponse.partners);
         setPartnerInquiries(partnerInquiriesResponse.inquiries);
+        setPartnerTypes(partnerTypesResponse.types || []);
         setTemplates(templatesResponse.templates || []);
         setCampaigns(campaignsResponse.campaigns || []);
         setSiteNoticeForm(
@@ -322,6 +329,11 @@ const AdminDashboard = () => {
         window.alert(error instanceof Error ? error.message : "Unable to load admin data.");
       });
   };
+
+  const filteredPartnerInquiries = useMemo(() => {
+    if (!partnerTypeFilter) return partnerInquiries;
+    return partnerInquiries.filter((p) => p.partnershipType === partnerTypeFilter);
+  }, [partnerInquiries, partnerTypeFilter]);
 
   useEffect(() => {
     loadAdminData();
@@ -809,6 +821,10 @@ const AdminDashboard = () => {
                     <Handshake className="h-4 w-4" />
                     Partners
                   </Button>
+                  <Link to="/admin/speaker-investors" className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium hover:bg-slate-50">
+                    <Upload className="h-4 w-4" />
+                    Speakers & Investors
+                  </Link>
                 </CardContent>
               </Card>
 
@@ -1510,16 +1526,20 @@ const AdminDashboard = () => {
                       <CardTitle>Partnership Form Submissions</CardTitle>
                       <CardDescription>Structured data submitted from the Partner With Us page.</CardDescription>
                     </div>
-                    <div className="ml-4">
-                      <Button variant="outline" size="sm" onClick={() => exportToCSV(partnerInquiries, "partner-inquiries")}>Export CSV</Button>
+                    <div className="ml-4 flex items-center gap-2">
+                      <select value={partnerTypeFilter} onChange={(e) => setPartnerTypeFilter(e.target.value)} className="rounded border border-border bg-background px-3 py-2 text-sm">
+                        <option value="">All partnership types</option>
+                        {partnerTypes.map((t) => <option key={t.slug} value={t.name}>{t.name}</option>)}
+                      </select>
+                      <Button variant="outline" size="sm" onClick={() => exportToCSV(filteredPartnerInquiries, "partner-inquiries")}>Export CSV</Button>
                     </div>
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {partnerInquiries.length === 0 ? (
+                  {filteredPartnerInquiries.length === 0 ? (
                     <p className="py-8 text-center text-slate-500">No partnership inquiries yet.</p>
                   ) : (
-                    partnerInquiries.map((inquiry) => (
+                    filteredPartnerInquiries.map((inquiry) => (
                       <div key={inquiry._id} className="rounded-xl border border-slate-200 p-4">
                         <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                           <div>

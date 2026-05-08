@@ -93,6 +93,7 @@ export function Globe3D({ markers, config, onMarkerClick, onMarkerHover }: Globe
 
   const [angle, setAngle] = useState(0);
   const rafRef = useRef<number | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   useEffect(() => {
     const speed = (config?.autoRotateSpeed ?? 0.3) * (Math.PI / 180);
@@ -118,83 +119,72 @@ export function Globe3D({ markers, config, onMarkerClick, onMarkerHover }: Globe
     return { x, y, z };
   };
 
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = width * dpr;
+    canvas.height = height * dpr;
+    canvas.style.width = `${width}px`;
+    canvas.style.height = `${height}px`;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    ctx.resetTransform && ctx.resetTransform();
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.scale(dpr, dpr);
+
+    // draw globe background
+    ctx.beginPath();
+    ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+    ctx.fillStyle = "#ffffff";
+    ctx.fill();
+
+    // draw faint outline
+    ctx.beginPath();
+    ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = "rgba(2,6,23,0.06)";
+    ctx.stroke();
+
+    // draw simple world outline via helper component logic
+    // reuse WorldOutline projection logic by drawing polylines
+    const drawPolyline = (pts: { x: number; y: number }[], stroke = "rgba(148,163,184,0.25)", width = 1) => {
+      if (pts.length < 2) return;
+      ctx.beginPath();
+      ctx.moveTo(pts[0].x, pts[0].y);
+      for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
+      ctx.strokeStyle = stroke;
+      ctx.lineWidth = width;
+      ctx.stroke();
+    };
+
+    // equator points
+    const equator = Array.from({ length: 180 }, (_, i) => {
+      const lng = (i / 180) * 360 - 180;
+      const p = project(0, lng);
+      return { x: p.x, y: p.y, z: p.z };
+    }).filter(p => p.z > -0.2).map(p => ({ x: p.x, y: p.y }));
+    drawPolyline(equator, "rgba(148,163,184,0.25)", 1);
+
+    // draw markers
+    markers.forEach((m) => {
+      const p = project(m.lat, m.lng);
+      if (p.z <= 0) return; // hide backside
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, 5, 0, Math.PI * 2);
+      ctx.fillStyle = "#0369a1";
+      ctx.fill();
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = "#fff";
+      ctx.stroke();
+    });
+
+  }, [angle, markers]);
+
   return (
     <div className="w-full flex justify-center">
-      <div className="rounded-xl overflow-hidden shadow-2xl bg-gradient-to-b from-slate-900 to-black p-2">
-        <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-auto" style={{ maxWidth: "520px", display: "block" }}>
-          <defs>
-            <radialGradient id="globeGradient" cx="35%" cy="35%">
-              <stop offset="0%" stopColor={config?.atmosphereColor ?? "#0ea5e9"} stopOpacity="0.4" />
-              <stop offset="50%" stopColor={config?.atmosphereColor ?? "#0ea5e9"} stopOpacity="0.2" />
-              <stop offset="100%" stopColor="#1e293b" stopOpacity="0.5" />
-            </radialGradient>
-            <filter id="glowEffect">
-              <feGaussianBlur stdDeviation="3" result="coloredBlur" />
-              <feMerge>
-                <feMergeNode in="coloredBlur" />
-                <feMergeNode in="SourceGraphic" />
-              </feMerge>
-            </filter>
-            <filter id="markerShadow">
-              <feDropShadow dx="0" dy="2" stdDeviation="3" floodOpacity="0.6" />
-            </filter>
-          </defs>
-
-          {/* Background atmosphere */}
-          <circle cx={cx} cy={cy} r={radius + 12} fill="#0f172a" opacity="0.6" />
-
-          {/* Globe sphere */}
-          <circle cx={cx} cy={cy} r={radius} fill="url(#globeGradient)" stroke="#334155" strokeWidth="2.5" />
-
-          {/* World grid outline */}
-          <WorldOutline cx={cx} cy={cy} radius={radius} rotation={angle} />
-
-          {/* Markers */}
-          {markers.map((m, idx) => {
-            const p = project(m.lat, m.lng);
-            const visible = p.z > 0.05;
-            const markerColors = ["#0ea5e9", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#ec4899"];
-            const markerColor = markerColors[idx % markerColors.length];
-
-            if (!visible) return null;
-
-            return (
-              <g key={idx} transform={`translate(${p.x}, ${p.y})`} filter="url(#markerShadow)" style={{ cursor: "pointer" }} onClick={() => onMarkerClick?.(m)}>
-                {/* Glow aura */}
-                <circle cx={0} cy={0} r={32} fill={markerColor} opacity="0.1" />
-                <circle cx={0} cy={0} r={24} fill={markerColor} opacity="0.15" />
-
-                {/* Main marker circle */}
-                <circle cx={0} cy={0} r={20} fill="#ffffff" stroke={markerColor} strokeWidth="3" filter="url(#glowEffect)" />
-
-                {/* Inner icon/avatar */}
-                {m.src ? (
-                  <image href={m.src} x={-13} y={-13} width={26} height={26} clipPath="circle(13px)" />
-                ) : (
-                  <circle cx={0} cy={0} r={9} fill={markerColor} />
-                )}
-
-                {/* Label badge */}
-                {m.label && (
-                  <g>
-                    <rect x={28} y={-12} width={m.label.length * 6 + 10} height={20} rx={10} fill={markerColor} opacity="0.95" />
-                    <text
-                      x={33}
-                      y={3}
-                      fontSize={11}
-                      fontWeight="700"
-                      fill="#ffffff"
-                      fontFamily="system-ui, -apple-system, sans-serif"
-                      textAnchor="start"
-                    >
-                      {m.label}
-                    </text>
-                  </g>
-                )}
-              </g>
-            );
-          })}
-        </svg>
+      <div className="rounded-lg overflow-hidden shadow-2xl bg-black">
+        <canvas ref={canvasRef} style={{ width: "100%", display: "block" }} />
       </div>
     </div>
   );

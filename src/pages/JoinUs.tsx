@@ -1,4 +1,4 @@
-import { useState, type ChangeEvent, type FormEvent } from "react";
+import { useId, useState, type ChangeEvent, type FormEvent } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,6 +15,7 @@ const initialFormData = {
   email: "",
   phone: "",
   occupation: "",
+  collegeName: "",
   companyName: "",
   linkedinProfile: "",
   website: "",
@@ -22,6 +23,18 @@ const initialFormData = {
   whyJoin: "",
   referralSource: "",
 };
+
+const occupationOptions = [
+  { value: "", label: "Select your occupation" },
+  { value: "Student", label: "Student" },
+  { value: "Founder", label: "Founder" },
+  { value: "Investor", label: "Investor" },
+  { value: "Designer", label: "Designer" },
+  { value: "Developer", label: "Developer" },
+  { value: "Marketer", label: "Marketer" },
+  { value: "Product Manager", label: "Product Manager" },
+  { value: "Other", label: "Other" },
+];
 
 const benefits = [
   {
@@ -46,6 +59,62 @@ const benefits = [
   },
 ];
 
+const Grid = ({ pattern, size }: { pattern?: number[][]; size?: number }) => {
+  const p =
+    pattern ??
+    [
+      [Math.floor(Math.random() * 4) + 7, Math.floor(Math.random() * 6) + 1],
+      [Math.floor(Math.random() * 4) + 7, Math.floor(Math.random() * 6) + 1],
+      [Math.floor(Math.random() * 4) + 7, Math.floor(Math.random() * 6) + 1],
+      [Math.floor(Math.random() * 4) + 7, Math.floor(Math.random() * 6) + 1],
+      [Math.floor(Math.random() * 4) + 7, Math.floor(Math.random() * 6) + 1],
+    ];
+
+  return (
+    <div className="pointer-events-none absolute left-1/2 top-0 -ml-20 -mt-2 h-full w-full [mask-image:linear-gradient(white,transparent)]">
+      <div className="absolute inset-0 bg-gradient-to-r [mask-image:radial-gradient(farthest-side_at_top,white,transparent)] from-zinc-100/30 to-zinc-300/30 opacity-100 dark:from-zinc-900/30 dark:to-zinc-900/30">
+        <GridPattern
+          width={size ?? 20}
+          height={size ?? 20}
+          x="-12"
+          y="4"
+          squares={p}
+          className="absolute inset-0 h-full w-full fill-black/10 stroke-black/10 mix-blend-overlay dark:fill-white/10 dark:stroke-white/10"
+        />
+      </div>
+    </div>
+  );
+};
+
+function GridPattern({ width, height, x, y, squares, ...props }: any) {
+  const patternId = useId();
+
+  return (
+    <svg aria-hidden="true" {...props}>
+      <defs>
+        <pattern id={patternId} width={width} height={height} patternUnits="userSpaceOnUse" x={x} y={y}>
+          <path d={`M.5 ${height}V.5H${width}`} fill="none" />
+        </pattern>
+      </defs>
+      <rect width="100%" height="100%" strokeWidth={0} fill={`url(#${patternId})`} />
+      {squares && (
+        <svg x={x} y={y} className="overflow-visible">
+          {squares.map(([gridX, gridY]: any) => (
+            <rect
+              strokeWidth="0"
+              key={`${gridX}-${gridY}`}
+              width={width + 1}
+              height={height + 1}
+              x={gridX * width}
+              y={gridY * height}
+            />
+          ))}
+        </svg>
+      )}
+    </svg>
+  );
+}
+
 const JoinUs = () => {
   // SEO Hook
   useSEO({
@@ -61,15 +130,24 @@ const JoinUs = () => {
   const [emailVerificationToken, setEmailVerificationToken] = useState("");
   const [submitSuccess, setSubmitSuccess] = useState(false);
 
-  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     if (e.target.name === "email") {
       setEmailVerificationToken("");
     }
 
-    setFormData((prev) => ({
-      ...prev,
-      [e.target.name]: e.target.value,
-    }));
+    // If switching from Student to another occupation, clear collegeName
+    if (e.target.name === "occupation" && e.target.value !== "Student") {
+      setFormData((prev) => ({
+        ...prev,
+        occupation: e.target.value,
+        collegeName: "",
+      }));
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        [e.target.name]: e.target.value,
+      }));
+    }
   };
 
   const handleCopyLink = async () => {
@@ -123,34 +201,33 @@ const JoinUs = () => {
           <div className="mx-auto mb-12 max-w-4xl text-center">
             <p className="mb-3 text-sm font-semibold uppercase tracking-[0.2em] text-primary">Join Our Community</p>
             <h1 className="font-heading text-4xl font-extrabold leading-tight md:text-6xl">Become Part of Founders Connect</h1>
-            <p className="mt-5 text-lg text-muted-foreground">
-              Join India's most vibrant founder community where entrepreneurs, builders, and innovators connect with purpose and drive meaningful impact.
-            </p>
-          </div>
+            <p className="mt-5 text-lg text-muted-foreground"></p>
+              </div>
 
           <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
             <Button type="button" variant="outline" onClick={handleCopyLink} className="gap-2">
               <Copy size={16} />
               Copy Form Link
             </Button>
-            <Button type="button" variant="outline" onClick={() => window.open(WHATSAPP_GROUP_URL, "_blank", "noopener,noreferrer")} className="gap-2">
-              <LinkIcon size={16} />
-              WhatsApp Group Link
-            </Button>
           </div>
 
           {copyMessage && <p className="mt-3 text-center text-sm text-muted-foreground">{copyMessage}</p>}
 
-          <div className="my-16 grid gap-6 md:grid-cols-2">
+          <div className="mx-auto my-16 grid max-w-7xl grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
             {benefits.map(({ icon: Icon, title, description }) => (
-              <Card key={title} className="card-gradient border-dashed border-border shadow-lg transition-shadow hover:shadow-xl">
-                <CardHeader>
-                  <div className="mb-3 inline-flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-primary text-primary-foreground">
+              <Card key={title} className="group relative aspect-square w-full overflow-hidden rounded-2xl border border-border/60 bg-gradient-to-b from-neutral-100 to-white px-5 py-4 shadow-lg transition-all duration-300 hover:-translate-y-2 hover:scale-[1.02] hover:border-primary/40 hover:shadow-2xl dark:from-neutral-900 dark:to-neutral-950">
+                <Grid size={14} />
+                <CardHeader className="relative z-10 flex-row items-start gap-4 p-0 pt-4">
+                  <div className="mt-1 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-primary text-primary-foreground shadow-md transition-transform duration-300 group-hover:scale-110">
                     <Icon size={20} />
                   </div>
-                  <CardTitle className="text-lg">{title}</CardTitle>
+                  <div className="space-y-1">
+                    <CardTitle className="text-base leading-snug transition-colors duration-300 group-hover:text-primary">{title}</CardTitle>
+                    <CardContent className="relative z-10 p-0 text-sm leading-relaxed text-muted-foreground transition-colors duration-300 group-hover:text-foreground/80">
+                      {description}
+                    </CardContent>
+                  </div>
                 </CardHeader>
-                <CardContent className="text-sm text-muted-foreground">{description}</CardContent>
               </Card>
             ))}
           </div>
@@ -189,8 +266,21 @@ const JoinUs = () => {
 
                   <div>
                     <label className="mb-2 block text-sm font-semibold text-foreground">Occupation *</label>
-                    <input required name="occupation" value={formData.occupation} onChange={handleChange} placeholder="Founder, Designer, Investor, etc." className="w-full rounded border border-border bg-background px-4 py-2 text-foreground placeholder:text-muted-foreground" />
+                    <select required name="occupation" value={formData.occupation} onChange={handleChange} className="w-full rounded border border-border bg-background px-4 py-2 text-foreground placeholder:text-muted-foreground">
+                      {occupationOptions.map((opt) => (
+                        <option key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </option>
+                      ))}
+                    </select>
                   </div>
+
+                  {formData.occupation === "Student" && (
+                    <div>
+                      <label className="mb-2 block text-sm font-semibold text-foreground">College / University Name *</label>
+                      <input required name="collegeName" value={formData.collegeName} onChange={handleChange} placeholder="Your college or university name" className="w-full rounded border border-border bg-background px-4 py-2 text-foreground placeholder:text-muted-foreground" />
+                    </div>
+                  )}
 
                   <div>
                     <label className="mb-2 block text-sm font-semibold text-foreground">Company / Startup Name *</label>
@@ -226,7 +316,7 @@ const JoinUs = () => {
                     <button type="submit" disabled={submitting} className="inline-flex items-center justify-center gap-2 rounded-md border border-border bg-primary px-5 py-3 text-sm font-semibold text-foreground transition-all hover:brightness-95 disabled:opacity-60">
                       {submitting ? "Submitting..." : "Submit Join Request"}
                     </button>
-                    <p className="text-sm text-muted-foreground">Your form data is saved in our database and visible in admin panel.</p>
+                   
                   </div>
                 </form>
               </CardContent>

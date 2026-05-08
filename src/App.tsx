@@ -17,6 +17,7 @@ import NotFound from "./pages/NotFound.tsx";
 import AIChatbot from "@/components/AIChatbot";
 import ProtectedRoute from "./components/ProtectedRoute.tsx";
 import AdminDashboard from "./pages/AdminDashboard.tsx";
+import AdminSpeakerInvestors from "./pages/AdminSpeakerInvestors.tsx";
 
 const About = lazy(() => import("./pages/About.tsx"));
 const Blog = lazy(() => import("./pages/Blog.tsx"));
@@ -27,7 +28,9 @@ const Membership = lazy(() => import("./pages/Membership.tsx"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy.tsx"));
 const TermsOfService = lazy(() => import("./pages/TermsOfService.tsx"));
 const JoinUs = lazy(() => import("./pages/JoinUs.tsx"));
+const GetFunding = lazy(() => import("./pages/GetFunding.tsx"));
 const PartnerWithUs = lazy(() => import("./pages/PartnerWithUs.tsx"));
+const PastSpeakersInvestors = lazy(() => import("./pages/PastSpeakersInvestors.tsx"));
 
 const queryClient = new QueryClient();
 
@@ -56,7 +59,9 @@ const App = () => (
             <Route path="/profile/:profileId" element={<Profile />} />
             <Route path="/about" element={<About />} />
             <Route path="/join-us" element={<JoinUs />} />
+            <Route path="/get-funding" element={<GetFunding />} />
             <Route path="/partner-with-us" element={<PartnerWithUs />} />
+            <Route path="/past-speakers-investors" element={<PastSpeakersInvestors />} />
             <Route path="/blog" element={<Blog />} />
             <Route path="/blog/:slug" element={<BlogDetails />} />
             <Route path="/membership" element={<Membership />} />
@@ -68,6 +73,14 @@ const App = () => (
               element={(
                 <ProtectedRoute allowedRole="admin">
                   <AdminDashboard />
+                </ProtectedRoute>
+              )}
+            />
+            <Route
+              path="/admin/speaker-investors"
+              element={(
+                <ProtectedRoute allowedRole="admin">
+                  <AdminSpeakerInvestors />
                 </ProtectedRoute>
               )}
             />

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import EmailVerificationBox from "@/components/EmailVerificationBox";
@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Copy, Handshake, Megaphone, Network, ShieldCheck, TrendingUp, Users } from "lucide-react";
 import partnerHero from "@/assets/hero-slide1.jpg";
-import { submitPartnerInquiryApi } from "@/lib/api";
+import { submitPartnerInquiryApi, getPublicPartnerTypesApi } from "@/lib/api";
 
 const emptyFormData = {
   companyName: "",
@@ -26,14 +26,23 @@ const emptyFormData = {
   message: "",
 };
 
-const partnershipTypes = [
-  "Media & Press",
-  "Event Sponsor",
-  "Co-hosting Partner",
-  "Technology Partner",
-  "Community Partner",
-  "Other",
-];
+const PartnerWithUs = () => {
+  const [formData, setFormData] = useState(emptyFormData);
+  const [partnershipTypes, setPartnershipTypes] = useState<string[]>([]);
+  const [submitting, setSubmitting] = useState(false);
+  const [copyMessage, setCopyMessage] = useState("");
+  const [emailVerificationToken, setEmailVerificationToken] = useState("");
+
+  useEffect(() => {
+    getPublicPartnerTypesApi()
+      .then((res) => {
+        if (res?.types) setPartnershipTypes(res.types.map((t) => t.name));
+      })
+      .catch(() => {
+        // fallback to a minimal static list
+        setPartnershipTypes(["Media & Press", "Event Sponsor", "Co-hosting Partner", "Technology Partner", "Community Partner", "College Partner", "Other"]);
+      });
+  }, []);
 
 const companyTypes = [
   "Startup",
@@ -80,11 +89,7 @@ const benefits = [
   },
 ];
 
-const PartnerWithUs = () => {
-  const [formData, setFormData] = useState(emptyFormData);
-  const [submitting, setSubmitting] = useState(false);
-  const [copyMessage, setCopyMessage] = useState("");
-  const [emailVerificationToken, setEmailVerificationToken] = useState("");
+  
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>,

@@ -1,139 +1,231 @@
-import { useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { CalendarCheck2, LayoutDashboard, LogOut, Menu, X } from "lucide-react";
+import { ArrowUpRight, LayoutDashboard, LogOut } from "lucide-react";
+import { gsap } from "gsap";
 import { Button } from "@/components/ui/button";
 import { clearSession, getAccount, isAuthenticated } from "@/lib/session";
 
+type NavCardLink = {
+  label: string;
+  href: string;
+  ariaLabel: string;
+};
+
+type NavCardItem = {
+  label: string;
+  bgColor: string;
+  textColor: string;
+  links: NavCardLink[];
+};
+
+const navCards: NavCardItem[] = [
+  {
+    label: "About",
+    bgColor: "#F8FAFC",
+    textColor: "#0F172A",
+    links: [
+      { label: "Company", href: "/about", ariaLabel: "About Company" },
+      { label: "Events", href: "/events", ariaLabel: "About Events" },
+    ],
+  },
+  {
+    label: "Explore",
+    bgColor: "#EEF2FF",
+    textColor: "#0F172A",
+    links: [
+      { label: "Speakers & Investors", href: "/past-speakers-investors", ariaLabel: "Past Speakers and Investors" },
+      { label: "Blog", href: "/blog", ariaLabel: "Blog" },
+    ],
+  },
+  {
+    label: "Connect",
+    bgColor: "#F1F5F9",
+    textColor: "#0F172A",
+    links: [
+      { label: "Partner With Us", href: "/partner-with-us", ariaLabel: "Partner With Us" },
+      { label: "Join Us", href: "/join-us", ariaLabel: "Join Us" },
+      { label: "Get Funding", href: "/get-funding", ariaLabel: "Get Funding" },
+      { label: "Membership", href: "/membership", ariaLabel: "Membership" },
+    ],
+  },
+];
+
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [isHamburgerOpen, setIsHamburgerOpen] = useState(false);
+  const navRef = useRef<HTMLElement | null>(null);
+  const contentRef = useRef<HTMLDivElement | null>(null);
+  const cardsRef = useRef<Array<HTMLDivElement | null>>([]);
+  const tlRef = useRef<gsap.core.Timeline | null>(null);
   const location = useLocation();
   const navigate = useNavigate();
   const authed = isAuthenticated();
   const account = getAccount();
-
-  const navLinks = [
-    { to: "/about", label: "About" },
-    { to: "/events", label: "Events" },
-    { to: "/blog", label: "Blog" },
-    
-    { to: "/partner-with-us", label: "Partner With Us" },
-    { to: "/membership", label: "Membership" },
-  ];
   const isAdmin = account?.role === "admin";
+
+  const createTimeline = () => {
+    const navEl = navRef.current;
+    if (!navEl) return null;
+
+    gsap.set(navEl, { height: 72, overflow: "visible" });
+    gsap.set(contentRef.current, { opacity: 0, y: -8, pointerEvents: "none" });
+    gsap.set(cardsRef.current, { y: 20, opacity: 0 });
+
+    const tl = gsap.timeline({ paused: true });
+
+    tl.to(
+      contentRef.current,
+      { opacity: 1, y: 0, pointerEvents: "auto", duration: 0.25, ease: "power2.out" },
+      0,
+    );
+    tl.to(cardsRef.current, { y: 0, opacity: 1, duration: 0.35, ease: "power3.out", stagger: 0.08 }, "-=0.2");
+
+    return tl;
+  };
+
+  useLayoutEffect(() => {
+    const tl = createTimeline();
+    tlRef.current = tl;
+
+    return () => {
+      tl?.kill();
+      tlRef.current = null;
+    };
+  }, []);
+
+  useEffect(() => {
+    setIsOpen(false);
+    setIsHamburgerOpen(false);
+    tlRef.current?.reverse(0);
+  }, [location.pathname]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    // Re-create timeline on open to ensure animations work
+    tlRef.current?.kill();
+    tlRef.current = createTimeline();
+    tlRef.current?.play(0);
+
+    const handleResize = () => {
+      // Just maintain the overlay position
+      if (contentRef.current) {
+        gsap.set(contentRef.current, { opacity: 1, y: 0 });
+      }
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [isOpen]);
 
   const handleLogout = () => {
     clearSession();
     navigate("/login", { replace: true });
   };
 
+  const toggleMenu = () => {
+    const tl = tlRef.current;
+    if (!tl) return;
+
+    if (!isOpen) {
+      setIsOpen(true);
+      setIsHamburgerOpen(true);
+      tl.play(0);
+    } else {
+      setIsHamburgerOpen(false);
+      tl.eventCallback("onReverseComplete", () => setIsOpen(false));
+      tl.reverse();
+    }
+  };
+
+  const setCardRef = (index: number) => (el: HTMLDivElement | null) => {
+    cardsRef.current[index] = el;
+  };
+
+  const topButtonLabel = authed ? (isAdmin ? "Admin Panel" : "Dashboard") : "Login";
+  const topButtonTo = authed ? (isAdmin ? "/admin" : "/dashboard") : "/login";
+
   return (
-    <nav className="fixed left-0 right-0 top-0 z-50 border-b border-border bg-background/80 backdrop-blur-xl shadow-sm">
-      <div className="container mx-auto flex h-16 items-center justify-between px-4">
-        <Link to={authed ? "/dashboard" : "/"} className="flex items-center gap-2">
-          <span className="font-heading text-lg font-bold text-foreground">Founders Connect</span>
-        </Link>
+    <div className="fixed left-0 right-0 top-0 z-50 px-3 pt-4 sm:px-4 sm:pt-8">
+      <nav
+        ref={navRef}
+        className="mx-auto w-full max-w-[800px] rounded-[14px] sm:rounded-[18px] border border-white/20 bg-white/90 shadow-[0_14px_40px_rgba(15,23,42,0.14)] backdrop-blur-xl"
+      >
+        <div className="relative flex h-16 sm:h-[72px] items-center justify-between px-3 sm:px-4 md:px-5 gap-2">
+          <button
+            type="button"
+            className="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-full text-slate-800 transition-colors hover:bg-slate-100 flex-shrink-0"
+            onClick={toggleMenu}
+            aria-label={isOpen ? "Close menu" : "Open menu"}
+          >
+            <div className="flex flex-col items-center justify-center gap-1.5">
+              <span className={`h-0.5 w-5 sm:w-6 rounded-full bg-current transition-transform duration-300 ${isHamburgerOpen ? "translate-y-1.5 rotate-45" : ""}`} />
+              <span className={`h-0.5 w-5 sm:w-6 rounded-full bg-current transition-transform duration-300 ${isHamburgerOpen ? "-translate-y-1.5 -rotate-45" : ""}`} />
+            </div>
+          </button>
 
-        <div className="hidden items-center gap-6 text-sm text-muted-foreground md:flex">
-          {navLinks.map((link) => (
-            <Link
-              key={link.label}
-              to={link.to}
-              className={`transition-colors hover:text-foreground ${
-                location.pathname === link.to ? "text-foreground" : ""
-              }`}
-            >
-              {link.label}
-            </Link>
-          ))}
+          <Link
+            to={authed ? "/dashboard" : "/"}
+            className="absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 items-center gap-2 hidden sm:flex"
+          >
+            <span className="rounded-full bg-purple-700 px-3 py-1 text-xs sm:text-sm font-semibold tracking-wide text-white whitespace-nowrap">
+              Founders Connect
+            </span>
+          </Link>
+
+          <Button asChild className="h-9 sm:h-10 rounded-lg sm:rounded-xl bg-purple-600 px-3 sm:px-4 text-xs sm:text-sm font-semibold text-white hover:bg-purple-700 transition-colors flex-shrink-0">
+            <Link to={topButtonTo}>{topButtonLabel}</Link>
+          </Button>
         </div>
 
-        <div className="hidden items-center gap-3 md:flex">
-          {authed ? (
-            <>
-              <div className="rounded-full border border-border bg-background px-3 py-1 text-xs font-medium text-muted-foreground">
-                Signed in as {account?.fullName || account?.email || "Member"}
-              </div>
-              <Button asChild size="sm" variant="outline" className="gap-2">
-                <Link to="/events">
-                  <CalendarCheck2 size={15} />
-                  Events
-                </Link>
-              </Button>
-              {isAdmin && (
-                <Button asChild size="sm" variant="outline" className="gap-2">
-                  <Link to="/admin">Admin</Link>
-                </Button>
-              )}
-              <Button asChild size="sm" className="gap-2 bg-gradient-primary text-primary-foreground">
-                <Link to={isAdmin ? "/admin" : "/dashboard"}>
-                  <LayoutDashboard size={15} />
-                  {isAdmin ? "Admin Panel" : "Dashboard"}
-                </Link>
-              </Button>
-              <Button type="button" size="sm" variant="ghost" className="gap-2" onClick={handleLogout}>
-                <LogOut size={15} />
-                Logout
-              </Button>
-            </>
-          ) : (
-            <Button asChild size="sm" className="bg-gradient-primary font-semibold text-primary-foreground hover:opacity-90">
-              <Link to="/login">Member Login</Link>
-            </Button>
-          )}
-        </div>
-
-        <button
-          type="button"
-          className="text-foreground md:hidden"
-          onClick={() => setIsOpen((value) => !value)}
+        <div
+          ref={contentRef}
+          className="pointer-events-none absolute left-0 right-0 top-full z-40 grid gap-2 px-2 py-2 sm:gap-3 sm:px-3 sm:py-3 grid-cols-1 md:grid-cols-3 md:items-start md:gap-3 md:px-3 md:py-3"
+          style={{ background: "transparent" }}
+          aria-hidden={!isOpen}
         >
-          {isOpen ? <X size={22} /> : <Menu size={22} />}
-        </button>
-      </div>
-
-      {isOpen && (
-        <div className="flex flex-col gap-3 border-t border-border bg-background/95 px-4 py-4 text-sm text-muted-foreground md:hidden">
-          {navLinks.map((link) => (
-            <Link
-              key={link.label}
-              to={link.to}
-              className="transition-colors hover:text-foreground"
-              onClick={() => setIsOpen(false)}
+          {navCards.map((item, index) => (
+            <div
+              key={item.label}
+              ref={setCardRef(index)}
+              className="relative min-h-[120px] sm:min-h-[140px] rounded-[14px] sm:rounded-[18px] p-3 sm:p-4 shadow-lg transition-transform duration-300 hover:-translate-y-1"
+              style={{ backgroundColor: item.bgColor, color: item.textColor }}
             >
-              {link.label}
-            </Link>
+              <div className="text-lg sm:text-[22px] font-medium tracking-[-0.04em]">{item.label}</div>
+              <div className="mt-3 sm:mt-4 flex flex-col gap-1.5 sm:gap-2">
+                {item.links.map((link) => (
+                  <Link
+                    key={link.label}
+                    to={link.href}
+                    aria-label={link.ariaLabel}
+                    onClick={() => {
+                      setIsHamburgerOpen(false);
+                      setIsOpen(false);
+                    }}
+                    className="inline-flex items-center gap-1.5 sm:gap-2 text-sm sm:text-[15px] transition-opacity hover:opacity-75"
+                  >
+                    <ArrowUpRight className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                    {link.label}
+                  </Link>
+                ))}
+              </div>
+            </div>
           ))}
-
-          {authed ? (
-            <>
-              <Link
-                to={isAdmin ? "/admin" : "/dashboard"}
-                className="transition-colors hover:text-foreground"
-                onClick={() => setIsOpen(false)}
-              >
-                {isAdmin ? "Admin Panel" : "Dashboard"}
-              </Link>
-              <button
-                type="button"
-                className="text-left transition-colors hover:text-foreground"
-                onClick={() => {
-                  setIsOpen(false);
-                  handleLogout();
-                }}
-              >
-                Logout
-              </button>
-            </>
-          ) : (
-            <Button asChild size="sm" className="mt-1 bg-gradient-primary font-semibold text-primary-foreground hover:opacity-90">
-              <Link to="/login" onClick={() => setIsOpen(false)}>
-                Member Login
-              </Link>
-            </Button>
-          )}
         </div>
-      )}
-    </nav>
+
+        {authed && isOpen && (
+          <div className="absolute left-0 right-0 top-full mt-2 flex items-center justify-between border-t border-slate-200 px-3 py-2 sm:px-4 sm:py-3 text-xs text-slate-500 md:hidden bg-white/90 rounded-b-[14px] sm:rounded-b-[18px]">
+            <span className="truncate mr-2">Signed in as {account?.fullName || account?.email || "Member"}</span>
+            <button type="button" className="inline-flex items-center gap-1 text-slate-700 flex-shrink-0 hover:text-purple-600 transition-colors" onClick={handleLogout}>
+              <LogOut size={14} />
+              Logout
+            </button>
+          </div>
+        )}
+      </nav>
+
+      {isOpen && <button type="button" className="fixed inset-0 -z-10 cursor-default bg-black/5" aria-label="Close menu overlay" onClick={toggleMenu} />}
+    </div>
   );
 };
 

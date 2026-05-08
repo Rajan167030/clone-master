@@ -28,7 +28,7 @@ const buildSignature = (params, apiSecret) => {
   return crypto.createHash("sha1").update(`${serialized}${apiSecret}`).digest("hex");
 };
 
-export const createCloudinaryUploadSignature = ({ folder = "founders-connect", publicId = "" } = {}) => {
+export const createCloudinaryUploadSignature = ({ folder = "founders-connect", publicId = "", resourceType = "image" } = {}) => {
   const { cloudName, apiKey, apiSecret } = getCloudinaryEnv();
   const timestamp = Math.floor(Date.now() / 1000);
   const paramsToSign = {
@@ -44,6 +44,6 @@ export const createCloudinaryUploadSignature = ({ folder = "founders-connect", p
     timestamp,
     signature: buildSignature(paramsToSign, apiSecret),
     publicId: publicId || undefined,
-    uploadUrl: `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
+    uploadUrl: `https://api.cloudinary.com/v1_1/${cloudName}/${resourceType}/upload`,
   };
 };

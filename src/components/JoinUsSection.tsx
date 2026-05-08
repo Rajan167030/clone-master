@@ -1,12 +1,7 @@
 import { Link } from "react-router-dom";
+import Globe3DDemo from "@/components/Globe3DDemo";
 
-const GOOGLE_MAPS_EMBED_URL = "https://www.google.com/maps?q=India&z=4&output=embed";
-
-type JoinUsSectionProps = {
-  showSocial?: boolean;
-};
-
-const JoinUsSection = ({ showSocial = true }: JoinUsSectionProps) => {
+const JoinUsSection = ({ showSocial = true }) => {
   if (!showSocial) return null;
 
   return (
@@ -14,7 +9,7 @@ const JoinUsSection = ({ showSocial = true }: JoinUsSectionProps) => {
       <div className="container mx-auto px-4">
         <div className="mx-auto max-w-4xl">
           <div className="rounded-2xl border-2 border-dashed border-muted-foreground/30 bg-muted/5 p-6 md:p-8">
-            <div className="grid grid-cols-1 items-center gap-6 md:grid-cols-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 items-center gap-6">
               <div className="text-center md:text-left">
                 <p className="text-sm font-semibold uppercase tracking-[0.28em] text-muted-foreground">
                   Join Our Community
@@ -36,16 +31,8 @@ const JoinUsSection = ({ showSocial = true }: JoinUsSectionProps) => {
                 </div>
               </div>
 
-              <div className="overflow-hidden rounded-2xl border border-border bg-background shadow-lg">
-                <div className="aspect-[4/3] w-full">
-                  <iframe
-                    title="India map"
-                    src={GOOGLE_MAPS_EMBED_URL}
-                    className="h-full w-full"
-                    loading="lazy"
-                    referrerPolicy="no-referrer-when-downgrade"
-                  />
-                </div>
+              <div className="flex items-center justify-center">
+                <Globe3DDemo />
               </div>
             </div>
           </div>

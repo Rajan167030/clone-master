@@ -8,17 +8,21 @@ import {
   createAdminPartnerLogo,
   createAdminBlog,
   createAdminEvent,
+  createAdminSpeakerInvestorProfile,
   deleteAdminPartnerLogo,
   deleteAdminBlog,
   deleteAdminEvent,
+  deleteAdminSpeakerInvestorProfile,
   getAdminSiteNotice,
   listAdminPartnerLogos,
   listAdminBlogs,
   listAdminEvents,
+  listAdminSpeakerInvestorProfiles,
   updateAdminPartnerLogo,
   updateAdminSiteNotice,
   updateAdminBlog,
   updateAdminEvent,
+  updateAdminSpeakerInvestorProfile,
 } from "../controllers/content.controller.js";
 import { listSubscribersAdmin } from "../controllers/newsletter.controller.js";
 import { sendBulkEmail } from "../controllers/email-automation.controller.js";
@@ -34,8 +38,15 @@ import {
   getCampaignLogs,
 } from "../controllers/campaigns.controller.js";
 import { listAdminPartnerInquiries } from "../controllers/partner-inquiry.controller.js";
+import {
+  listAdminPartnerTypes,
+  createAdminPartnerType,
+  updateAdminPartnerType,
+  deleteAdminPartnerType,
+} from "../controllers/partner-type.controller.js";
 import { requireAdmin } from "../middlewares/admin.middleware.js";
 import { listAdminJoinRequests } from "../controllers/join.controller.js";
+import { listAdminFundingApplications } from "../controllers/funding.controller.js";
 import { requireAuth } from "../middlewares/auth.middleware.js";
 
 const adminRouter = Router();
@@ -51,6 +62,11 @@ adminRouter.post("/events", createAdminEvent);
 adminRouter.patch("/events/:slug", updateAdminEvent);
 adminRouter.delete("/events/:slug", deleteAdminEvent);
 
+adminRouter.get("/speaker-investors", listAdminSpeakerInvestorProfiles);
+adminRouter.post("/speaker-investors", createAdminSpeakerInvestorProfile);
+adminRouter.patch("/speaker-investors/:slug", updateAdminSpeakerInvestorProfile);
+adminRouter.delete("/speaker-investors/:slug", deleteAdminSpeakerInvestorProfile);
+
 adminRouter.get("/blogs", listAdminBlogs);
 adminRouter.post("/blogs", createAdminBlog);
 adminRouter.patch("/blogs/:slug", updateAdminBlog);
@@ -64,6 +80,10 @@ adminRouter.post("/partners", createAdminPartnerLogo);
 adminRouter.patch("/partners/:id", updateAdminPartnerLogo);
 adminRouter.delete("/partners/:id", deleteAdminPartnerLogo);
 adminRouter.get("/partner-inquiries", listAdminPartnerInquiries);
+adminRouter.get("/partner-types", listAdminPartnerTypes);
+adminRouter.post("/partner-types", createAdminPartnerType);
+adminRouter.patch("/partner-types/:slug", updateAdminPartnerType);
+adminRouter.delete("/partner-types/:slug", deleteAdminPartnerType);
 
 adminRouter.get("/newsletter/subscribers", listSubscribersAdmin);
 adminRouter.post("/email-automation/send", sendBulkEmail);
@@ -80,5 +100,6 @@ adminRouter.get('/campaigns', listCampaigns);
 adminRouter.get('/campaigns/:id', getCampaign);
 adminRouter.get('/campaigns/:id/logs', getCampaignLogs);
 adminRouter.get("/join-requests", listAdminJoinRequests);
+adminRouter.get("/funding-applications", listAdminFundingApplications);
 
 export default adminRouter;

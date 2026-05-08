@@ -8,6 +8,7 @@ const JoinRequestSchema = new Schema(
     email: { type: String, required: true, trim: true, lowercase: true },
     phone: { type: String, required: true, trim: true },
     occupation: { type: String, required: true, trim: true },
+    collegeName: { type: String, trim: true },
     companyName: { type: String, required: true, trim: true },
     linkedinProfile: { type: String, required: true, trim: true },
     website: { type: String, required: true, trim: true },
