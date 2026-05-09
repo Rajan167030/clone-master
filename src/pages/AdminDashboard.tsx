@@ -20,6 +20,7 @@ import {
   getAdminNewsletterSubscribersApi,
   getAdminTemplatesApi,
   getAdminJoinRequestsApi,
+  updateJoinRequestStatusApi,
   getAdminPartnerInquiriesApi,
   getAdminFundingApplicationsApi,
   getAdminPartnersApi,
@@ -1732,6 +1733,41 @@ const AdminDashboard = () => {
                             <a className="text-primary hover:underline" href={request.website} target="_blank" rel="noreferrer">Website</a>
                           )}
                         </div>
+                        {(!request.status || request.status === "pending") && (
+                          <div className="mt-3 flex gap-2">
+                            <Button
+                              size="sm"
+                              onClick={async () => {
+                                try {
+                                  await updateJoinRequestStatusApi(token, request._id, "approved");
+                                  // Refresh the join requests
+                                  const response = await getAdminJoinRequestsApi(token);
+                                  setJoinRequests(response.requests);
+                                } catch (error) {
+                                  console.error("Failed to approve join request:", error);
+                                }
+                              }}
+                            >
+                              Approve
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              onClick={async () => {
+                                try {
+                                  await updateJoinRequestStatusApi(token, request._id, "rejected");
+                                  // Refresh the join requests
+                                  const response = await getAdminJoinRequestsApi(token);
+                                  setJoinRequests(response.requests);
+                                } catch (error) {
+                                  console.error("Failed to reject join request:", error);
+                                }
+                              }}
+                            >
+                              Reject
+                            </Button>
+                          </div>
+                        )}
                       </div>
                     ))
                   )}

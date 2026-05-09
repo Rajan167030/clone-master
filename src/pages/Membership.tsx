@@ -1,113 +1,73 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import {
-  CheckCircle2,
-  ArrowRight,
-  Users,
-  TrendingUp,
-  Briefcase,
-  ChevronDown,
-  HelpCircle,
-} from "lucide-react";
+import { CheckCircle2, ArrowRight, ChevronDown, HelpCircle } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useSEO } from "@/hooks/useSEO";
 
-type PricingPeriod = "monthly" | "yearly";
-
 interface MembershipTier {
   name: string;
-  icon: React.ReactNode;
   description: string;
-  monthlyPrice: number;
-  yearlyPrice: number;
-  savings?: string;
+  price: number;
+  period: string;
   benefits: string[];
   registerLink: string;
   highlighted?: boolean;
+  badge?: string;
 }
 
 const membershipTiers: MembershipTier[] = [
   {
-    name: "Regular User",
-    icon: <Users size={32} className="text-blue-500" />,
-    description: "Perfect for professionals exploring opportunities",
-    monthlyPrice: 499,
-    yearlyPrice: 4990,
-    savings: "Save ₹1990 (33%)",
+    name: "Silver",
+    description: "Dynamic membership for active founders",
+    price: 14999,
+    period: "one-time",
     benefits: [
-      "Access to members-only job board",
-      "Monthly founder meetup invitations",
-      "Curated startup insights & resources",
-      "Members' directory access",
-      "Monthly newsletter with opportunities",
-      "Event attendee networking badge",
-      "Basic profile analytics",
-      "Email support (48-hour response)",
+      "Access to FC member-only resources",
+      "Monthly advisor roundtables",
+      "Basic event priority registration",
     ],
     registerLink: "/register/user",
   },
   {
-    name: "Investor",
-    icon: <TrendingUp size={32} className="text-green-500" />,
-    description: "For investors looking to discover promising startups",
-    monthlyPrice: 0,
-    yearlyPrice: 0,
-    savings: undefined,
+    name: "Gold",
+    description: "Payment gateway ready for fast growth",
+    price: 29999,
+    period: "one-time",
     benefits: [
-      "Founders' directory with detailed profiles",
-      "Advanced search & filtering by sector",
-      "Monthly founder briefing sessions",
-      "Exclusive pitch event access (priority seating)",
-      "Deal flow updates & startup analytics",
-      "Direct messaging with verified founders",
-      "Investment portfolio tracking tools",
-      "Co-investor network directory",
-      "Custom reports & market intelligence",
-      "Dedicated investor support",
-      "Speaking opportunity invitations",
-      "Private founder introductions (20/month)",
+      "Premium access to all FC workshops",
+      "Dedicated onboarding support",
+      "Higher referral earnings and credits",
     ],
-    registerLink: "/register/investor",
+    registerLink: "/register/user",
     highlighted: true,
+    badge: "Recommended",
   },
   {
-    name: "Founder",
-    icon: <Briefcase size={32} className="text-purple-500" />,
-    description: "For founders building the next big thing",
-    monthlyPrice: 2999,
-    yearlyPrice: 29990,
-    savings: "Save ₹11970 (33%)",
+    name: "Diamond",
+    description: "Full VIP access for founders who want scale",
+    price: 59999,
+    period: "one-time",
     benefits: [
-      "Premium founder profile with QR card",
-      "Weekly closed-door founder sessions",
-      "Investor matchmaking (10 intros/month)",
-      "Pitch feedback from experts",
-      "Startup playbooks & templates",
-      "Co-founder matching service",
-      "Early access to all events",
-      "Monthly 1-on-1 mentor calls",
-      "Capital raising resources & guides",
-      "Team building resources",
-      "Market research tools access",
-      "Exclusive founder community (Slack/WhatsApp)",
+      "Exclusive founder investor sessions",
+      "Personal mentorship and strategy reviews",
+      "Priority product launch support",
     ],
-    registerLink: "/register/founder",
+    registerLink: "/register/user",
   },
 ];
 
 const Membership = () => {
-  const [billingPeriod, setBillingPeriod] = useState<PricingPeriod>("yearly");
   const [openFaqId, setOpenFaqId] = useState<number | null>(0);
 
   // SEO Hook
   useSEO({
     title: "Membership Plans | Founders Connect",
-    description: "Join Founders Connect membership to access exclusive founder and investor networks. Choose from investor, founder, or community tiers with premium benefits.",
-    keywords: "founders connect membership, founder membership, investor membership, membership pricing",
+    description: "Explore Silver, Gold, and Diamond user memberships at Founders Connect. Unlock premium founder support, investor access, and referral rewards for FC members.",
+    keywords: "founders connect membership, silver membership, gold membership, diamond membership, fc referral commission",
     ogType: "website",
     canonicalUrl: "https://founders.connect/membership",
   });
@@ -117,107 +77,108 @@ const Membership = () => {
       <Navbar />
 
       {/* Hero Section */}
-      <section className="relative overflow-hidden pt-24 pb-16">
+      <section className="relative overflow-hidden pt-16 pb-8 md:pt-24 md:pb-16">
         <div className="pointer-events-none absolute -left-16 top-10 h-72 w-72 rounded-full bg-blob" />
         <div className="pointer-events-none absolute right-0 top-24 h-80 w-80 rounded-full bg-blob" />
 
+        <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[320px] md:h-[520px] overflow-hidden">
+          <div className="absolute inset-x-0 top-0 h-[220px] md:h-[420px] bg-gradient-to-b from-purple-700/20 to-transparent" />
+          <svg
+            viewBox="0 0 1440 320"
+            className="absolute bottom-0 left-0 right-0 h-[160px] md:h-[260px] w-full text-purple-500/20"
+            preserveAspectRatio="none"
+          >
+            <path
+              fill="currentColor"
+              d="M0,224L60,202.7C120,181,240,139,360,138.7C480,139,600,181,720,202.7C840,224,960,224,1080,224C1200,224,1320,224,1380,224L1440,224L1440,320L1380,320C1320,320,1200,320,1080,320C960,320,840,320,720,320C600,320,480,320,360,320C240,320,120,320,60,320L0,320Z"
+            />
+          </svg>
+        </div>
+
         <div className="container mx-auto px-4">
           <div className="mx-auto max-w-4xl text-center">
-            <p className="mb-3 text-sm font-semibold uppercase tracking-[0.2em] text-primary">
-              Founders Connect Membership
-            </p>
-            <h1 className="font-heading text-4xl font-extrabold leading-tight md:text-6xl">
-              Accelerate your journey with the right network
+            <h1 className="font-heading text-3xl font-extrabold leading-tight md:text-4xl lg:text-6xl">
+              Join FC with the right membership tier
             </h1>
-            <p className="mt-5 text-lg text-muted-foreground">
-              Choose your membership tier and unlock exclusive access to founders, investors,
-              and opportunities that matter. Cancel anytime.
+            <p className="mt-4 text-base md:text-lg text-muted-foreground">
+              Choose a user-only membership plan and unlock founder-focused support.
             </p>
           </div>
-
-          {/* Billing Toggle */}
-          {/* Removed - Yearly only */}
         </div>
       </section>
 
       {/* Pricing Cards */}
-      <section className="relative py-16 px-4">
-        <div className="container mx-auto">
-          <div className="grid gap-8 md:grid-cols-1 lg:grid-cols-3 max-w-6xl mx-auto">
-            {membershipTiers.map((tier) => (
-              <Card
-                key={tier.name}
-                className={`relative flex flex-col overflow-hidden transition-all duration-300 hover:shadow-2xl ${
-                  tier.highlighted
-                    ? "lg:scale-105 border-2 border-purple-500 shadow-xl"
-                    : "border"
-                }`}
-              >
-                <CardHeader>
-                  <div className="flex items-start justify-between">
+      <section className="relative py-8 px-4 md:py-16">
+        <div className="container mx-auto max-w-6xl">
+          <div className="rounded-[24px] md:rounded-[32px] border border-slate-200 bg-white p-4 md:p-8 shadow-xl shadow-slate-200/30">
+            <div className="grid gap-6 md:gap-10 grid-cols-1 md:grid-cols-3">
+              {membershipTiers.map((tier) => (
+                <Card
+                  key={tier.name}
+                  className={`rounded-[20px] md:rounded-[28px] border px-4 md:px-6 pb-6 md:pb-10 pt-6 md:pt-8 text-center transition-all duration-300 ${
+                    tier.highlighted
+                      ? "border-purple-200 bg-purple-50 shadow-2xl"
+                      : "border-slate-200 bg-white shadow-sm"
+                  }`}
+                >
+                  <CardContent className="flex h-full flex-col justify-between gap-4 md:gap-7">
                     <div>
-                      <div className="mb-3">{tier.icon}</div>
-                      <CardTitle className="text-2xl">{tier.name}</CardTitle>
-                    </div>
-                  </div>
-                  <p className="text-sm text-muted-foreground mt-2">
-                    {tier.description}
-                  </p>
-                </CardHeader>
-
-                <CardContent className="flex-1 flex flex-col">
-                  {/* Pricing */}
-                  <div className="mb-6">
-                    <div className="flex items-baseline gap-1">
-                      <span className="text-4xl font-bold">
-                        ₹{tier.yearlyPrice}
-                      </span>
-                      <span className="text-muted-foreground">
-                        /year
-                      </span>
-                    </div>
-                    {tier.savings && (
-                      <p className="text-sm text-green-600 font-semibold mt-2">
-                        {tier.savings}
-                      </p>
-                    )}
-                  </div>
-
-                  {/* CTA Button */}
-                  <Button
-                    asChild
-                    className={`w-full mb-6 gap-2 ${
-                      tier.highlighted
-                        ? "bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800"
-                        : ""
-                    }`}
-                  >
-                    <Link to={tier.registerLink}>
-                      Join Now <ArrowRight size={16} />
-                    </Link>
-                  </Button>
-
-                  {/* Benefits List */}
-                  <div className="space-y-3">
-                    <p className="text-xs font-semibold uppercase text-muted-foreground">
-                      Includes
-                    </p>
-                    {tier.benefits.map((benefit) => (
-                      <div
-                        key={benefit}
-                        className="flex items-start gap-3 text-sm"
-                      >
-                        <CheckCircle2
-                          size={16}
-                          className="mt-0.5 flex-shrink-0 text-green-600"
-                        />
-                        <span className="text-muted-foreground">{benefit}</span>
+                      <div className="flex items-center justify-center gap-2">
+                        <h3 className="text-xl md:text-2xl font-semibold text-slate-950">{tier.name}</h3>
+                        {tier.badge && (
+                          <Badge className="rounded-full bg-purple-100 px-2 md:px-3 py-1 text-xs font-semibold text-purple-700">
+                            {tier.badge}
+                          </Badge>
+                        )}
                       </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                      <p className="mt-3 md:mt-4 text-sm text-slate-600">{tier.description}</p>
+                    </div>
+
+                    <div className="rounded-[20px] md:rounded-[28px] border border-slate-200 bg-slate-50 p-6 md:p-8">
+                      <div className="text-3xl md:text-5xl font-bold tracking-tight text-slate-950">₹{tier.price.toLocaleString()}</div>
+                      <p className="mt-2 text-sm text-slate-500">{tier.period}</p>
+                    </div>
+
+                    <div className="space-y-2 md:space-y-3 text-left">
+                      {tier.benefits.map((benefit) => (
+                        <div key={benefit} className="flex items-start gap-2 md:gap-3 text-sm text-slate-600">
+                          <CheckCircle2 size={16} className="mt-1 text-purple-600" />
+                          <span>{benefit}</span>
+                        </div>
+                      ))}
+                    </div>
+
+                    <Button
+                      asChild
+                      className={`w-full rounded-full px-4 md:px-6 py-2 md:py-3 text-sm md:text-base font-semibold transition ${
+                        tier.highlighted
+                          ? "bg-purple-600 text-white hover:bg-purple-700"
+                          : "border border-slate-300 bg-white text-slate-900 hover:bg-slate-100"
+                      }`}
+                    >
+                      <Link to={tier.registerLink}>Choose {tier.name}</Link>
+                    </Button>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+
+          <div className="mt-8 md:mt-12 grid gap-4 md:gap-6 grid-cols-1 sm:grid-cols-2">
+            <div className="rounded-[20px] md:rounded-[28px] border border-slate-200 bg-gradient-to-r from-purple-50 to-white p-6 md:p-8 shadow-sm">
+              <p className="text-xs md:text-sm uppercase tracking-[0.25em] text-purple-600">Referral reward</p>
+              <h2 className="mt-3 md:mt-4 text-xl md:text-3xl font-semibold text-slate-950">Earn 10% commission</h2>
+              <p className="mt-3 md:mt-4 text-sm md:text-base text-slate-600">
+                FC members can refer other founders and earn a 10% commission on their membership payment. This is valid for Founders Connect membership only.
+              </p>
+            </div>
+            <div className="rounded-[20px] md:rounded-[28px] border border-slate-200 bg-gradient-to-r from-slate-50 to-white p-6 md:p-8 shadow-sm">
+              <p className="text-xs md:text-sm uppercase tracking-[0.25em] text-purple-600">Membership benefits</p>
+              <h2 className="mt-3 md:mt-4 text-xl md:text-3xl font-semibold text-slate-950">Structured plan access</h2>
+              <p className="mt-3 md:mt-4 text-sm md:text-base text-slate-600">
+                Choose Silver for a lean start, Gold for fast growth with payment gateway support, or Diamond for VIP founder-level access and hands-on mentorship.
+              </p>
+            </div>
           </div>
         </div>
       </section>
@@ -225,14 +186,14 @@ const Membership = () => {
 
 
       {/* FAQ Section */}
-      <section className="relative py-20 px-4 bg-gradient-to-b from-background via-purple-50/5 to-background">
+      <section className="relative py-12 md:py-20 px-4 bg-gradient-to-b from-background via-purple-50/5 to-background">
         <div className="container mx-auto max-w-3xl">
-          <div className="text-center mb-16">
-            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-purple-100 mb-4">
-              <HelpCircle size={24} className="text-purple-600" />
+          <div className="text-center mb-8 md:mb-16">
+            <div className="inline-flex items-center justify-center w-10 h-10 md:w-12 md:h-12 rounded-full bg-purple-100 mb-4">
+              <HelpCircle size={20} className="text-purple-600" />
             </div>
-            <h2 className="text-4xl font-bold mb-3 text-gradient">Frequently Asked Questions</h2>
-            <p className="text-muted-foreground text-lg">
+            <h2 className="text-2xl md:text-4xl font-bold mb-3 text-gradient">Frequently Asked Questions</h2>
+            <p className="text-muted-foreground text-base md:text-lg">
               Find answers to common questions about our membership plans
             </p>
           </div>
@@ -266,17 +227,17 @@ const Membership = () => {
             ].map((faq, idx) => (
               <div
                 key={idx}
-                className="group border border-border rounded-xl overflow-hidden bg-background transition-all duration-300 hover:border-purple-300 hover:shadow-lg"
+                className="group border border-border rounded-lg md:rounded-xl overflow-hidden bg-background transition-all duration-300 hover:border-purple-300 hover:shadow-lg"
               >
                 <button
                   onClick={() => setOpenFaqId(openFaqId === idx ? null : idx)}
-                  className="w-full px-6 py-4 flex items-center justify-between hover:bg-purple-50/5 transition-colors duration-200"
+                  className="w-full px-4 md:px-6 py-3 md:py-4 flex items-center justify-between hover:bg-purple-50/5 transition-colors duration-200"
                 >
-                  <span className="text-left font-semibold text-foreground text-base">
+                  <span className="text-left font-semibold text-foreground text-sm md:text-base">
                     {faq.q}
                   </span>
                   <ChevronDown
-                    size={20}
+                    size={18}
                     className={`text-purple-600 flex-shrink-0 transition-transform duration-300 ${
                       openFaqId === idx ? "rotate-180" : ""
                     }`}
@@ -284,8 +245,8 @@ const Membership = () => {
                 </button>
                 
                 {openFaqId === idx && (
-                  <div className="border-t border-border bg-gradient-to-r from-purple-50/5 to-transparent px-6 py-4 animate-in fade-in-50 slide-in-from-top-2 duration-200">
-                    <p className="text-muted-foreground leading-relaxed">
+                  <div className="border-t border-border bg-gradient-to-r from-purple-50/5 to-transparent px-4 md:px-6 py-3 md:py-4 animate-in fade-in-50 slide-in-from-top-2 duration-200">
+                    <p className="text-muted-foreground leading-relaxed text-sm md:text-base">
                       {faq.a}
                     </p>
                   </div>
@@ -295,13 +256,13 @@ const Membership = () => {
           </div>
 
           {/* Additional Help */}
-          <div className="mt-12 p-6 rounded-xl border border-purple-200 bg-gradient-to-r from-purple-50 to-blue-50 text-center">
-            <p className="text-muted-foreground mb-4">
+          <div className="mt-8 md:mt-12 p-4 md:p-6 rounded-lg md:rounded-xl border border-purple-200 bg-gradient-to-r from-purple-50 to-blue-50 text-center">
+            <p className="text-muted-foreground mb-3 md:mb-4 text-sm md:text-base">
               Didn't find your answer?
             </p>
-            <Button asChild className="gap-2">
+            <Button asChild className="gap-2 text-sm md:text-base">
               <Link to="/contact">
-                Contact Our Support Team <ArrowRight size={16} />
+                Contact Our Support Team <ArrowRight size={14} />
               </Link>
             </Button>
           </div>
@@ -309,25 +270,25 @@ const Membership = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="relative py-16 px-4 bg-gradient-to-r from-purple-600 to-purple-800 text-white">
+      <section className="relative py-12 md:py-16 px-4 bg-gradient-to-r from-purple-600 to-purple-800 text-white">
         <div className="container mx-auto max-w-3xl text-center">
-          <h2 className="text-3xl font-bold mb-4">Ready to join Founders Connect?</h2>
-          <p className="text-purple-100 mb-8">
+          <h2 className="text-xl md:text-3xl font-bold mb-3 md:mb-4">Ready to join Founders Connect?</h2>
+          <p className="text-purple-100 mb-6 md:mb-8 text-sm md:text-base">
             Choose your membership tier and start connecting with the right people today.
           </p>
-          <div className="flex flex-wrap gap-4 justify-center">
+          <div className="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center">
             <Button
               asChild
-              className="bg-white text-purple-700 hover:bg-gray-100 gap-2"
+              className="bg-white text-purple-700 hover:bg-gray-100 gap-2 text-sm md:text-base"
             >
               <Link to="/register">
-                Join Now <ArrowRight size={16} />
+                Join Now <ArrowRight size={14} />
               </Link>
             </Button>
             <Button
               asChild
               variant="outline"
-              className="border-white text-white hover:bg-purple-700"
+              className="border-white text-white hover:bg-purple-700 text-sm md:text-base"
             >
               <Link to="/contact">Contact Sales</Link>
             </Button>

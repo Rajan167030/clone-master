@@ -781,6 +781,29 @@ export const getAdminJoinRequestsApi = (token: string) =>
     headers: { Authorization: `Bearer ${token}` },
   });
 
+export const updateJoinRequestStatusApi = (
+  token: string,
+  id: string,
+  status: "approved" | "rejected"
+) =>
+  request<{ ok: boolean; request: AdminJoinRequest }>(`/admin/join-requests/${id}/status`, {
+    method: "PATCH",
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ status }),
+  });
+
+export const checkJoinRequestStatusApi = (email: string) =>
+  request<{
+    ok: boolean;
+    approved: boolean;
+    status: string | null;
+    data?: AdminJoinRequest;
+    message?: string;
+  }>("/join-us/check-status", {
+    method: "GET",
+    queries: { email },
+  });
+
 export const createAdminPartnerApi = (
   token: string,
   payload: Pick<PartnerLogo, "name" | "category" | "logoUrl" | "websiteUrl" | "logoWidth" | "logoHeight" | "order" | "isActive">,

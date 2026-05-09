@@ -26,6 +26,7 @@ const BlogDetails = lazy(() => import("./pages/BlogDetails.tsx"));
 const Events = lazy(() => import("./pages/Events.tsx"));
 const EventDetails = lazy(() => import("./pages/EventDetails.tsx"));
 const Membership = lazy(() => import("./pages/Membership.tsx"));
+const Welcome = lazy(() => import("./pages/Welcome.tsx"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy.tsx"));
 const TermsOfService = lazy(() => import("./pages/TermsOfService.tsx"));
 const JoinUs = lazy(() => import("./pages/JoinUs.tsx"));
@@ -64,6 +65,7 @@ const App = () => (
             <Route path="/profile/:profileId" element={<Profile />} />
             <Route path="/about" element={<About />} />
             <Route path="/join-us" element={<JoinUs />} />
+            <Route path="/welcome" element={<Welcome />} />
             <Route path="/gallery" element={<Gallery />} />
             <Route path="/get-funding" element={<GetFunding />} />
             <Route path="/funding-application" element={<FundingApplication />} />

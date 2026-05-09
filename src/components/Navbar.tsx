@@ -26,6 +26,7 @@ const navCards: NavCardItem[] = [
     links: [
       { label: "Company", href: "/about", ariaLabel: "About Company" },
       { label: "Events", href: "/events", ariaLabel: "About Events" },
+        { label: "Blog", href: "/blog", ariaLabel: "Blog" },
     ],
   },
   {
@@ -34,7 +35,7 @@ const navCards: NavCardItem[] = [
     textColor: "#0F172A",
     links: [
       { label: "Speakers & Investors", href: "/past-speakers-investors", ariaLabel: "Past Speakers and Investors" },
-      { label: "Blog", href: "/blog", ariaLabel: "Blog" },
+      { label: "Membership", href: "/membership", ariaLabel: "Membership" },
       { label: "College Partners", href: "/college-partners", ariaLabel: "College Partners" },
     ],
   },
@@ -46,7 +47,7 @@ const navCards: NavCardItem[] = [
       { label: "Partner With Us", href: "/partner-with-us", ariaLabel: "Partner With Us" },
       { label: "Join Us", href: "/join-us", ariaLabel: "Join Us" },
       { label: "Get Funding", href: "/get-funding", ariaLabel: "Get Funding" },
-      { label: "Membership", href: "/membership", ariaLabel: "Membership" },
+     
     ],
   },
 ];

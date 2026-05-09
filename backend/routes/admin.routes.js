@@ -64,7 +64,7 @@ import {
   createAdmin,
   deleteAdminAccount,
 } from "../controllers/task.controller.js";
-import { listAdminJoinRequests } from "../controllers/join.controller.js";
+import { listAdminJoinRequests, updateJoinRequestStatus } from "../controllers/join.controller.js";
 import { listAdminFundingApplications } from "../controllers/funding.controller.js";
 import { requireAuth } from "../middlewares/auth.middleware.js";
 import { listAdminEventInterests } from "../controllers/admin.controller.js";
@@ -128,6 +128,7 @@ adminRouter.get('/campaigns', listCampaigns);
 adminRouter.get('/campaigns/:id', getCampaign);
 adminRouter.get('/campaigns/:id/logs', getCampaignLogs);
 adminRouter.get("/join-requests", listAdminJoinRequests);
+adminRouter.patch("/join-requests/:id/status", updateJoinRequestStatus);
 adminRouter.get("/funding-applications", listAdminFundingApplications);
 
 // Super-admin routes: manage admins and tasks

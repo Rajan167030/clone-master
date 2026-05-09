@@ -13,7 +13,7 @@ import {
 } from "../controllers/content.controller.js";
 import { listPublicPartnerTypes } from "../controllers/partner-type.controller.js";
 import { subscribeNewsletter, unsubscribeNewsletter } from "../controllers/newsletter.controller.js";
-import { submitJoinRequest } from "../controllers/join.controller.js";
+import { submitJoinRequest, checkJoinRequestStatus } from "../controllers/join.controller.js";
 import { submitPartnerInquiry } from "../controllers/partner-inquiry.controller.js";
 import { submitFundingApplication } from "../controllers/funding.controller.js";
 
@@ -33,6 +33,7 @@ contentRouter.post("/cloudinary/sign-upload", getPublicCloudinaryUploadSignature
 contentRouter.post("/newsletter/subscribe", subscribeNewsletter);
 contentRouter.get("/newsletter/unsubscribe", unsubscribeNewsletter);
 contentRouter.post("/join-us", submitJoinRequest);
+contentRouter.get("/join-us/check-status", checkJoinRequestStatus);
 contentRouter.post("/partner-inquiry", submitPartnerInquiry);
 contentRouter.post("/get-funding", submitFundingApplication);
 
