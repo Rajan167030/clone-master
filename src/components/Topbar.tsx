@@ -1,23 +1,39 @@
-import { Bell, CalendarDays, Menu, Ticket } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Bell, CalendarDays, LogOut, Menu, Ticket, User } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { clearSession } from "@/lib/session";
 
 interface TopbarProps {
   userRole?: string;
   userName?: string;
   referralCode?: string;
-  participationCount?: number;
   isMobile?: boolean;
   onMenuClick?: () => void;
+  onProfileClick?: () => void;
 }
 
 const Topbar = ({
   userRole = "Member",
   userName = "Guest",
   referralCode = "N/A",
-  participationCount = 0,
   isMobile = false,
   onMenuClick,
+  onProfileClick,
 }: TopbarProps) => {
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    clearSession();
+    navigate("/login", { replace: true });
+  };
+
   return (
     <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/95 backdrop-blur">
       <div className="flex min-h-16 items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
@@ -46,11 +62,6 @@ const Topbar = ({
             <p className="text-sm font-semibold text-slate-900">{referralCode}</p>
           </div>
 
-          <div className="hidden rounded-2xl border border-violet-100 bg-violet-50 px-4 py-2 xl:block">
-            <p className="text-[11px] uppercase tracking-[0.18em] text-violet-700">Event Participation</p>
-            <p className="text-sm font-semibold text-slate-900">{participationCount} registered events</p>
-          </div>
-
           <Link
             to="/events"
             className="hidden items-center gap-2 rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-700 transition-colors hover:bg-slate-50 sm:inline-flex"
@@ -71,6 +82,29 @@ const Topbar = ({
             <Bell size={18} />
             <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-red-500" />
           </button>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                type="button"
+                className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full bg-slate-100 text-slate-700 transition-colors hover:bg-slate-200"
+              >
+                <div className="text-xs font-bold">{userName.charAt(0).toUpperCase()}</div>
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuLabel>My Account</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={onProfileClick} className="cursor-pointer">
+                <User className="mr-2 h-4 w-4" />
+                <span>Edit Profile</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-red-600 focus:bg-red-50 focus:text-red-600">
+                <LogOut className="mr-2 h-4 w-4" />
+                <span>Log out</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
     </header>

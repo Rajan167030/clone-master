@@ -18,7 +18,7 @@ const BlogContentSchema = new Schema(
     author: { type: String, default: "", trim: true },
     date: { type: String, default: "", trim: true },
     readTime: { type: String, default: "", trim: true },
-    coverImage: { type: String, default: "", trim: true },
+    coverImage: { type: String, required: true, trim: true },
     tags: { type: [String], default: [] },
     sections: { type: [BlogSectionSchema], default: [] },
     isPublished: { type: Boolean, default: true, index: true },

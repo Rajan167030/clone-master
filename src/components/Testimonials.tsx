@@ -1,5 +1,7 @@
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Quote, Star } from "lucide-react";
+import { getPublicTestimonialsApi, type Testimonial } from "@/lib/api";
 
 const testimonials = [
   {
@@ -22,10 +24,33 @@ const testimonials = [
   },
 ];
 
-const marqueeTestimonials = [...testimonials, ...testimonials];
+const Testimonials = () => {
+  const [items, setItems] = useState<Testimonial[]>([]);
 
-const Testimonials = () => (
-  <section id="stories" className="py-24 border-t border-border">
+  useEffect(() => {
+    let mounted = true;
+
+    getPublicTestimonialsApi()
+      .then((response) => {
+        if (mounted) {
+          setItems(response.testimonials || []);
+        }
+      })
+      .catch(() => {
+        if (mounted) {
+          setItems([]);
+        }
+      });
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const marqueeTestimonials = items.length ? [...items, ...items] : [...testimonials, ...testimonials];
+
+  return (
+    <section id="stories" className="py-24 border-t border-border">
     <div className="container mx-auto px-4">
       <div className="text-center max-w-2xl mx-auto mb-14">
         <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 mb-4">
@@ -48,11 +73,11 @@ const Testimonials = () => (
         <div className="testimonial-track flex w-max gap-6 px-4 py-2">
           {marqueeTestimonials.map((t, i) => (
             <motion.div
-              key={`${t.name}-${i}`}
+              key={`${t._id || t.name}-${i}`}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ delay: (i % testimonials.length) * 0.1 }}
+              transition={{ delay: (i % (items.length || testimonials.length)) * 0.1 }}
               className="card-gradient flex w-[320px] flex-col rounded-2xl border border-border p-7 transition-all hover:-translate-y-1 hover:border-primary/40 hover:shadow-xl"
             >
               <div className="mb-4 flex items-center justify-between">
@@ -65,9 +90,13 @@ const Testimonials = () => (
               </div>
               <p className="flex-1 leading-relaxed text-foreground/80">"{t.quote}"</p>
               <div className="mt-6 flex items-center gap-3 border-t border-border pt-5">
-                <div className="flex h-11 w-11 items-center justify-center rounded-full bg-gradient-primary text-sm font-bold font-heading text-primary-foreground">
-                  {t.initials}
-                </div>
+                {t.avatarUrl ? (
+                  <img src={t.avatarUrl} alt={t.name} className="h-11 w-11 rounded-full object-cover" />
+                ) : (
+                  <div className="flex h-11 w-11 items-center justify-center rounded-full bg-gradient-primary text-sm font-bold font-heading text-primary-foreground">
+                    {t.initials || t.name.slice(0, 2).toUpperCase()}
+                  </div>
+                )}
                 <div>
                   <div className="font-heading text-sm font-semibold text-foreground">{t.name}</div>
                   <div className="mt-0.5 text-xs text-muted-foreground">{t.role}</div>
@@ -79,6 +108,7 @@ const Testimonials = () => (
       </div>
     </div>
   </section>
-);
+  );
+};
 
 export default Testimonials;

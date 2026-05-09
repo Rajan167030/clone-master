@@ -3,31 +3,42 @@ import { Link } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import {
   createAdminPartnerApi,
+  createAdminGalleryApi,
   createAdminBlogApi,
   createAdminEventApi,
+  createAdminTestimonialApi,
   deleteAdminPartnerApi,
+  deleteAdminGalleryApi,
   deleteAdminBlogApi,
   deleteAdminEventApi,
+  deleteAdminTestimonialApi,
   getAdminBlogsApi,
   getAdminEventInterestsApi,
   getAdminEventsApi,
+  getAdminGalleryApi,
   getAdminMembersApi,
   getAdminNewsletterSubscribersApi,
   getAdminTemplatesApi,
   getAdminJoinRequestsApi,
   getAdminPartnerInquiriesApi,
+  getAdminFundingApplicationsApi,
   getAdminPartnersApi,
   getAdminSiteNoticeApi,
   getAdminPartnerTypesApi,
+  getAdminTestimonialsApi,
   updateAdminPartnerApi,
+  updateAdminGalleryApi,
   updateAdminBlogApi,
   updateAdminEventApi,
+  updateAdminTestimonialApi,
   updateAdminSiteNoticeApi,
   type AdminEventInterest,
   type AdminJoinRequest,
   type AdminMember,
+  type GalleryImage,
   type DynamicBlogPost,
   type DynamicEvent,
+  type FundingApplication,
   type NewsletterAudience,
   type NewsletterSubscriber,
   type EmailTemplate,
@@ -41,6 +52,7 @@ import {
   type PartnerInquiry,
   type PartnerLogo,
   type SiteNotice,
+  type Testimonial,
   type Campaign,
 } from "@/lib/api";
 import { getToken, getAccount } from "@/lib/session";
@@ -49,6 +61,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import AdminAnalyticsOverview from "@/components/AdminAnalyticsOverview";
 import {
   BarChart3,
   Calendar,
@@ -67,6 +80,7 @@ import {
   Handshake,
   Mic2,
   Upload,
+  Rocket,
 } from "lucide-react";
 
 const emptyEventForm = {
@@ -139,8 +153,31 @@ type NewsletterSendSummary = {
 
 const emptyPartnerForm = {
   name: "",
+  category: "general",
   logoUrl: "",
   websiteUrl: "",
+  logoWidth: "auto",
+  logoHeight: "auto",
+  order: "0",
+  isActive: true,
+};
+
+const emptyGalleryForm = {
+  title: "",
+  imageUrl: "",
+  altText: "",
+  caption: "",
+  linkUrl: "",
+  order: "0",
+  isActive: true,
+};
+
+const emptyTestimonialForm = {
+  name: "",
+  role: "",
+  initials: "",
+  quote: "",
+  avatarUrl: "",
   order: "0",
   isActive: true,
 };
@@ -185,7 +222,10 @@ const AdminDashboard = () => {
   const [joinRequests, setJoinRequests] = useState<AdminJoinRequest[]>([]);
   const [subscribers, setSubscribers] = useState<NewsletterSubscriber[]>([]);
   const [partners, setPartners] = useState<PartnerLogo[]>([]);
+  const [galleryImages, setGalleryImages] = useState<GalleryImage[]>([]);
+  const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [partnerInquiries, setPartnerInquiries] = useState<PartnerInquiry[]>([]);
+  const [fundingApplications, setFundingApplications] = useState<FundingApplication[]>([]);
   const [partnerTypes, setPartnerTypes] = useState<Array<{ slug: string; name: string }>>([]);
   const [partnerTypeFilter, setPartnerTypeFilter] = useState<string>("");
   const [templates, setTemplates] = useState<EmailTemplate[]>([]);
@@ -204,17 +244,26 @@ const AdminDashboard = () => {
   const [newsletterSending, setNewsletterSending] = useState(false);
   const [newsletterResult, setNewsletterResult] = useState<NewsletterSendSummary | null>(null);
   const [partnerForm, setPartnerForm] = useState(emptyPartnerForm);
+  const [galleryForm, setGalleryForm] = useState(emptyGalleryForm);
+  const [testimonialForm, setTestimonialForm] = useState(emptyTestimonialForm);
   const [savingPartner, setSavingPartner] = useState(false);
+  const [savingGallery, setSavingGallery] = useState(false);
+  const [savingTestimonial, setSavingTestimonial] = useState(false);
   const [showMobileNav, setShowMobileNav] = useState(false);
   const [selectedEventSlug, setSelectedEventSlug] = useState("");
   const [selectedBlogSlug, setSelectedBlogSlug] = useState("");
   const [selectedPartnerId, setSelectedPartnerId] = useState("");
-  const [activeTab, setActiveTab] = useState<"dashboard" | "events" | "blogs" | "members" | "partners" | "newsletter" | "automation">("dashboard");
+  const [selectedGalleryId, setSelectedGalleryId] = useState("");
+  const [selectedTestimonialId, setSelectedTestimonialId] = useState("");
+  const [activeTab, setActiveTab] = useState<"dashboard" | "analytics" | "events" | "blogs" | "members" | "partners" | "newsletter" | "automation" | "funding">("dashboard");
   const [showEventForm, setShowEventForm] = useState(false);
   const [showBlogForm, setShowBlogForm] = useState(false);
   const [showPartnerForm, setShowPartnerForm] = useState(false);
+  const [showGalleryForm, setShowGalleryForm] = useState(false);
+  const [showTestimonialForm, setShowTestimonialForm] = useState(false);
   const [uploadingEventBanner, setUploadingEventBanner] = useState(false);
   const [uploadingBlogCover, setUploadingBlogCover] = useState(false);
+  const [uploadingGalleryImage, setUploadingGalleryImage] = useState(false);
   const [eventImageMode, setEventImageMode] = useState<ImageInputMode>("url");
   const [blogImageMode, setBlogImageMode] = useState<ImageInputMode>("url");
 
@@ -284,7 +333,10 @@ const AdminDashboard = () => {
       getAdminTemplatesApi(token),
       getAdminCampaignsApi(token),
       getAdminPartnersApi(token),
+      getAdminGalleryApi(token),
+      getAdminTestimonialsApi(token),
       getAdminPartnerInquiriesApi(token),
+      getAdminFundingApplicationsApi(token),
       getAdminPartnerTypesApi(token),
       getAdminSiteNoticeApi(token),
     ])
@@ -298,7 +350,10 @@ const AdminDashboard = () => {
         templatesResponse,
         campaignsResponse,
         partnersResponse,
+        galleryResponse,
+        testimonialsResponse,
         partnerInquiriesResponse,
+        fundingResponse,
         partnerTypesResponse,
         noticeResponse,
       ]) => {
@@ -310,6 +365,7 @@ const AdminDashboard = () => {
         setSubscribers(subscribersResponse.subscribers);
         setPartners(partnersResponse.partners);
         setPartnerInquiries(partnerInquiriesResponse.inquiries);
+        setFundingApplications(fundingResponse.applications);
         setPartnerTypes(partnerTypesResponse.types || []);
         setTemplates(templatesResponse.templates || []);
         setCampaigns(campaignsResponse.campaigns || []);
@@ -324,6 +380,8 @@ const AdminDashboard = () => {
               }
             : emptySiteNoticeForm,
         );
+        setGalleryImages(galleryResponse.images || []);
+        setTestimonials(testimonialsResponse.testimonials || []);
       })
       .catch((error) => {
         window.alert(error instanceof Error ? error.message : "Unable to load admin data.");
@@ -340,6 +398,15 @@ const AdminDashboard = () => {
   }, []);
 
   const handleSaveEvent = () => {
+    const missing = [];
+    if (!eventForm.title.trim()) missing.push("Title");
+    if (!eventForm.bannerImage.trim()) missing.push("Banner Image");
+
+    if (missing.length > 0) {
+      window.alert(`Please provide ${missing.join(" and ")} before saving.`);
+      return;
+    }
+
     const payload = {
       ...eventForm,
       about: splitLines(eventForm.about),
@@ -370,6 +437,15 @@ const AdminDashboard = () => {
   };
 
   const handleSaveBlog = () => {
+    const missing = [];
+    if (!blogForm.title.trim()) missing.push("Title");
+    if (!blogForm.coverImage.trim()) missing.push("Cover Image");
+
+    if (missing.length > 0) {
+      window.alert(`Please provide ${missing.join(" and ")} before saving.`);
+      return;
+    }
+
     const payload = {
       ...blogForm,
       tags: splitLines(blogForm.tags),
@@ -580,24 +656,77 @@ const AdminDashboard = () => {
     }
   };
 
-  const handleSavePartner = () => {
-    // More robust validation
-    const nameValue = partnerForm?.name;
-    const trimmedName = String(nameValue ?? "").trim();
-    
-    console.log("Partner form debug:", { nameValue, trimmedName, formState: partnerForm });
-    
-    if (!trimmedName) {
-      window.alert("Partner name is required. Please enter a name.");
+  const handleGalleryImageUpload = async (file?: File | null) => {
+    if (!file) return;
+    if (!token) {
+      window.alert("Please log in again before uploading images.");
       return;
     }
 
-    const payload = {
-      name: trimmedName,
-      logoUrl: String(partnerForm?.logoUrl ?? "").trim(),
-      websiteUrl: String(partnerForm?.websiteUrl ?? "").trim(),
-      order: Number(partnerForm?.order ?? 0),
-      isActive: Boolean(partnerForm?.isActive ?? true),
+    setUploadingGalleryImage(true);
+    try {
+      const signaturePayload = await getCloudinaryUploadSignatureApi(token, {
+        folder: "founders-connect/gallery",
+      });
+
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("api_key", signaturePayload.apiKey);
+      formData.append("timestamp", String(signaturePayload.timestamp));
+      formData.append("signature", signaturePayload.signature);
+      formData.append("folder", signaturePayload.folder);
+
+      if (signaturePayload.publicId) {
+        formData.append("public_id", signaturePayload.publicId);
+      }
+
+      const uploadResponse = await fetch(signaturePayload.uploadUrl, {
+        method: "POST",
+        body: formData,
+      });
+
+      const uploadData = (await uploadResponse.json().catch(() => ({}))) as CloudinaryUploadResponse & {
+        error?: { message?: string };
+      };
+
+      if (!uploadResponse.ok || !uploadData.secure_url) {
+        throw new Error(uploadData.error?.message || "Cloudinary upload failed.");
+      }
+
+      setGalleryForm((current) => ({
+        ...current,
+        imageUrl: uploadData.secure_url || "",
+        altText: current.altText || file.name.replace(/\.[^.]+$/, ""),
+      }));
+
+      window.alert("Image uploaded successfully.");
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Unable to upload image.";
+      window.alert(message);
+    } finally {
+      setUploadingGalleryImage(false);
+    }
+  };
+
+  const handleSavePartner = () => {
+    const missing = [];
+    if (!partnerForm.name.trim()) missing.push("Name");
+    if (!partnerForm.logoUrl.trim()) missing.push("Logo");
+
+    if (missing.length > 0) {
+      window.alert(`Please provide ${missing.join(" and ")} before saving.`);
+      return;
+    }
+
+    const payload: Pick<PartnerLogo, "name" | "category" | "logoUrl" | "websiteUrl" | "logoWidth" | "logoHeight" | "order" | "isActive"> = {
+      name: partnerForm.name.trim(),
+      category: (partnerForm.category.trim().toLowerCase() as "general" | "college" | "ecell"),
+      logoUrl: partnerForm.logoUrl.trim(),
+      websiteUrl: partnerForm.websiteUrl.trim(),
+      logoWidth: partnerForm.logoWidth.trim() || "auto",
+      logoHeight: partnerForm.logoHeight.trim() || "auto",
+      order: Number(partnerForm.order || 0),
+      isActive: Boolean(partnerForm.isActive),
     };
 
     setSavingPartner(true);
@@ -617,6 +746,85 @@ const AdminDashboard = () => {
         window.alert(error instanceof Error ? error.message : "Unable to save partner.");
       })
       .finally(() => setSavingPartner(false));
+  };
+
+  const handleSaveGalleryImage = () => {
+    const missing = [];
+    if (!galleryForm.title.trim()) missing.push("Title");
+    if (!galleryForm.imageUrl.trim()) missing.push("Image");
+
+    if (missing.length > 0) {
+      window.alert(`Please provide ${missing.join(" and ")} before saving.`);
+      return;
+    }
+
+    const payload = {
+      title: galleryForm.title.trim(),
+      imageUrl: galleryForm.imageUrl.trim(),
+      altText: galleryForm.altText.trim(),
+      caption: galleryForm.caption.trim(),
+      linkUrl: galleryForm.linkUrl.trim(),
+      order: Number(galleryForm.order || 0),
+      isActive: Boolean(galleryForm.isActive),
+    };
+
+    setSavingGallery(true);
+    const request = selectedGalleryId
+      ? updateAdminGalleryApi(token, selectedGalleryId, payload)
+      : createAdminGalleryApi(token, payload);
+
+    request
+      .then((response) => {
+        window.alert(response.message);
+        setGalleryForm(emptyGalleryForm);
+        setSelectedGalleryId("");
+        setShowGalleryForm(false);
+        loadAdminData();
+      })
+      .catch((error) => {
+        window.alert(error instanceof Error ? error.message : "Unable to save gallery image.");
+      })
+      .finally(() => setSavingGallery(false));
+  };
+
+  const handleSaveTestimonial = () => {
+    const missing = [];
+    if (!testimonialForm.name.trim()) missing.push("Name");
+    if (!testimonialForm.role.trim()) missing.push("Role");
+    if (!testimonialForm.quote.trim()) missing.push("Quote");
+
+    if (missing.length > 0) {
+      window.alert(`Please provide ${missing.join(" and ")} before saving.`);
+      return;
+    }
+
+    const payload = {
+      name: testimonialForm.name.trim(),
+      role: testimonialForm.role.trim(),
+      initials: testimonialForm.initials.trim(),
+      quote: testimonialForm.quote.trim(),
+      avatarUrl: testimonialForm.avatarUrl.trim(),
+      order: Number(testimonialForm.order || 0),
+      isActive: Boolean(testimonialForm.isActive),
+    };
+
+    setSavingTestimonial(true);
+    const request = selectedTestimonialId
+      ? updateAdminTestimonialApi(token, selectedTestimonialId, payload)
+      : createAdminTestimonialApi(token, payload);
+
+    request
+      .then((response) => {
+        window.alert(response.message);
+        setTestimonialForm(emptyTestimonialForm);
+        setSelectedTestimonialId("");
+        setShowTestimonialForm(false);
+        loadAdminData();
+      })
+      .catch((error) => {
+        window.alert(error instanceof Error ? error.message : "Unable to save testimonial.");
+      })
+      .finally(() => setSavingTestimonial(false));
   };
 
   const StatCard = ({ icon: Icon, label, value, trend }: any) => (
@@ -643,12 +851,14 @@ const AdminDashboard = () => {
 
   const adminMenuItems = [
     { label: "Dashboard", id: "dashboard", icon: BarChart3 },
+    { label: "Analytics", id: "analytics", icon: TrendingUp },
     { label: "Events", id: "events", icon: Calendar },
     { label: "Blogs", id: "blogs", icon: FileText },
     { label: "Members", id: "members", icon: Users },
     { label: "Partners", id: "partners", icon: Handshake },
     { label: "Newsletter", id: "newsletter", icon: Mail },
     { label: "Email Automation", id: "automation", icon: Send },
+    { label: "Funding", id: "funding", icon: Rocket },
   ];
 
   return (
@@ -757,26 +967,30 @@ const AdminDashboard = () => {
             <p className="text-sm font-medium uppercase tracking-[0.2em] text-violet-700">Admin Dashboard</p>
             <h1 className="mt-2 text-3xl font-bold text-slate-900 sm:text-4xl">
               {activeTab === "dashboard" && "Control Center"}
+              {activeTab === "analytics" && "Analytics"}
               {activeTab === "events" && "Events Management"}
               {activeTab === "blogs" && "Blog Management"}
               {activeTab === "members" && "Members & Requests"}
               {activeTab === "partners" && "Partners Management"}
               {activeTab === "newsletter" && "Newsletter Management"}
               {activeTab === "automation" && "Email Automation"}
+              {activeTab === "funding" && "Funding Applications"}
             </h1>
             <p className="mt-3 max-w-3xl text-slate-600">
               {activeTab === "dashboard" && "Welcome back! Here's your admin overview."}
+              {activeTab === "analytics" && "Analyze form activity, content growth, and campaign performance in one place."}
               {activeTab === "events" && "Create, edit, or manage event content"}
               {activeTab === "blogs" && "Create, edit, or manage blog posts"}
               {activeTab === "members" && "Manage members and guest event requests"}
               {activeTab === "partners" && "Add and manage partner logos shown on the landing page."}
               {activeTab === "newsletter" && "View subscribers and manage newsletter signups."}
               {activeTab === "automation" && "Send bulk campaigns to subscribers, members, or everyone."}
+              {activeTab === "funding" && "Review and manage startup funding applications."}
             </p>
           </div>
 
           {/* Dashboard Tab */}
-          {activeTab === "dashboard" && (
+          {(activeTab === "dashboard" || activeTab === "analytics") && (
             <div className="space-y-6">
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                 <StatCard icon={Calendar} label="Active Events" value={events.length} trend={`${events.filter(e => e.isPublished).length} published`} />
@@ -817,6 +1031,10 @@ const AdminDashboard = () => {
                     <Mail className="h-4 w-4" />
                     Newsletter
                   </Button>
+                  <Button variant="outline" onClick={() => setActiveTab("analytics")} className="gap-2">
+                    <TrendingUp className="h-4 w-4" />
+                    Analytics
+                  </Button>
                   <Button variant="outline" onClick={() => setActiveTab("partners")} className="gap-2">
                     <Handshake className="h-4 w-4" />
                     Partners
@@ -827,6 +1045,21 @@ const AdminDashboard = () => {
                   </Link>
                 </CardContent>
               </Card>
+
+              <AdminAnalyticsOverview
+                events={events}
+                posts={posts}
+                members={members}
+                interests={interests}
+                joinRequests={joinRequests}
+                subscribers={subscribers}
+                partners={partners}
+                galleryImages={galleryImages}
+                testimonials={testimonials}
+                partnerInquiries={partnerInquiries}
+                fundingApplications={fundingApplications}
+                campaigns={campaigns}
+              />
 
               <Card className="border-violet-200 bg-violet-50/70">
                 <CardHeader>
@@ -964,6 +1197,15 @@ const AdminDashboard = () => {
                     <div className="grid gap-4 sm:grid-cols-2">
                       <Input placeholder="Date Label" value={eventForm.dateLabel} onChange={(e) => setEventForm((c) => ({ ...c, dateLabel: e.target.value }))} />
                       <Input placeholder="Location Label" value={eventForm.locationLabel} onChange={(e) => setEventForm((c) => ({ ...c, locationLabel: e.target.value }))} />
+                    </div>
+                    <div className="grid gap-4 sm:grid-cols-3">
+                      <Input placeholder="Map URL" value={eventForm.mapUrl} onChange={(e) => setEventForm((c) => ({ ...c, mapUrl: e.target.value }))} />
+                      <Input placeholder="Calendar URL" value={eventForm.calendarUrl} onChange={(e) => setEventForm((c) => ({ ...c, calendarUrl: e.target.value }))} />
+                      <Input placeholder="External Registration URL (Link to Luma/Eventbrite)" value={eventForm.registrationUrl} onChange={(e) => setEventForm((c) => ({ ...c, registrationUrl: e.target.value }))} />
+                    </div>
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <Input placeholder="Ticket Label (e.g. Free RSVP / Member Only)" value={eventForm.ticketLabel} onChange={(e) => setEventForm((c) => ({ ...c, ticketLabel: e.target.value }))} />
+                      <Input placeholder="Refund Policy" value={eventForm.refundPolicy} onChange={(e) => setEventForm((c) => ({ ...c, refundPolicy: e.target.value }))} />
                     </div>
                     <div className="space-y-2">
                       <div className="flex items-center gap-2">
@@ -1173,8 +1415,8 @@ const AdminDashboard = () => {
                   </CardHeader>
                   <CardContent className="space-y-4 bg-white rounded-b-lg p-4">
                     <div className="grid gap-4 sm:grid-cols-2">
-                      <Input placeholder="Slug" value={blogForm.slug} onChange={(e) => setBlogForm((c) => ({ ...c, slug: e.target.value }))} />
-                      <Input placeholder="Title" value={blogForm.title} onChange={(e) => setBlogForm((c) => ({ ...c, title: e.target.value }))} />
+                      <Input placeholder="Slug (optional)" value={blogForm.slug} onChange={(e) => setBlogForm((c) => ({ ...c, slug: e.target.value }))} />
+                      <Input placeholder="Title *" value={blogForm.title} onChange={(e) => setBlogForm((c) => ({ ...c, title: e.target.value }))} />
                     </div>
                     <Textarea placeholder="Excerpt" value={blogForm.excerpt} onChange={(e) => setBlogForm((c) => ({ ...c, excerpt: e.target.value }))} />
                     <div className="grid gap-4 sm:grid-cols-3">
@@ -1184,7 +1426,7 @@ const AdminDashboard = () => {
                     </div>
                     <div className="space-y-2">
                       <div className="flex items-center gap-2">
-                        <label className="text-sm font-medium text-slate-700">Cover Image</label>
+                        <label className="text-sm font-medium text-slate-700">Cover Image *</label>
                         <div className="flex gap-2 rounded-lg border border-slate-200 bg-slate-50 p-1">
                           <button
                             type="button"
@@ -1602,7 +1844,7 @@ const AdminDashboard = () => {
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
                     <div>
                       <CardTitle>{selectedPartnerId ? "Edit Partner" : "Add Partner"}</CardTitle>
-                      <CardDescription>Name is required. Logo URL and Website URL are optional.</CardDescription>
+                      <CardDescription>Name and Logo are required.</CardDescription>
                     </div>
                     <Button
                       variant="ghost"
@@ -1620,7 +1862,7 @@ const AdminDashboard = () => {
                     <div className="grid gap-4 sm:grid-cols-2">
                       <Input
                         type="text"
-                        placeholder="Partner Name"
+                        placeholder="Partner Name *"
                         value={partnerForm.name || ""}
                         onChange={(e) => {
                           const value = e.currentTarget.value;
@@ -1628,6 +1870,17 @@ const AdminDashboard = () => {
                         }}
                         required
                       />
+                      <select
+                        className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                        value={partnerForm.category || "general"}
+                        onChange={(e) => setPartnerForm((c) => ({ ...c, category: e.target.value as any }))}
+                      >
+                        <option value="general">General Partner</option>
+                        <option value="college">College Partner</option>
+                        <option value="ecell">E-Cell Partner</option>
+                      </select>
+                    </div>
+                    <div className="grid gap-4 sm:grid-cols-1">
                       <Input
                         placeholder="Display Order"
                         type="number"
@@ -1640,7 +1893,7 @@ const AdminDashboard = () => {
                     </div>
                     <Input
                       type="text"
-                      placeholder="Logo URL (optional)"
+                      placeholder="Logo URL *"
                       value={partnerForm.logoUrl || ""}
                       onChange={(e) => {
                         const value = e.currentTarget.value;
@@ -1656,6 +1909,26 @@ const AdminDashboard = () => {
                         setPartnerForm((current) => ({ ...current, websiteUrl: value }));
                       }}
                     />
+                    <div className="grid grid-cols-2 gap-3">
+                      <Input
+                        type="text"
+                        placeholder="Logo Width (e.g. 120px, 100%, auto)"
+                        value={partnerForm.logoWidth || "auto"}
+                        onChange={(e) => {
+                          const value = e.currentTarget.value;
+                          setPartnerForm((current) => ({ ...current, logoWidth: value }));
+                        }}
+                      />
+                      <Input
+                        type="text"
+                        placeholder="Logo Height (e.g. 80px, 100%, auto)"
+                        value={partnerForm.logoHeight || "auto"}
+                        onChange={(e) => {
+                          const value = e.currentTarget.value;
+                          setPartnerForm((current) => ({ ...current, logoHeight: value }));
+                        }}
+                      />
+                    </div>
 
                     <div className="flex items-center gap-3">
                       <input
@@ -1668,7 +1941,11 @@ const AdminDashboard = () => {
                     </div>
 
                     <div className="flex flex-wrap gap-3 pt-2">
-                      <Button onClick={handleSavePartner} className="gap-2" disabled={savingPartner}>
+                      <Button 
+                        onClick={handleSavePartner} 
+                        className="gap-2" 
+                        disabled={savingPartner}
+                      >
                         <CheckCircle2 className="h-4 w-4" />
                         {savingPartner ? 'Saving...' : selectedPartnerId ? 'Update Partner' : 'Create Partner'}
                       </Button>
@@ -1702,9 +1979,9 @@ const AdminDashboard = () => {
                         <div className="flex items-start justify-between gap-4">
                           <div className="flex items-start gap-4 flex-1">
                             {partner.logoUrl ? (
-                              <img src={partner.logoUrl} alt={partner.name} className="h-12 w-24 rounded border border-slate-200 object-contain bg-white p-1" />
+                              <img src={partner.logoUrl} alt={partner.name} className="h-20 w-40 rounded border border-slate-200 object-contain bg-white p-1" />
                             ) : (
-                              <div className="h-12 w-24 rounded border border-slate-200 bg-slate-50 text-xs text-slate-500 flex items-center justify-center">No logo</div>
+                              <div className="h-20 w-40 rounded border border-slate-200 bg-slate-50 text-xs text-slate-500 flex items-center justify-center">No logo</div>
                             )}
                             <div>
                               <div className="flex items-center gap-2 mb-1">
@@ -1725,8 +2002,11 @@ const AdminDashboard = () => {
                                 setSelectedPartnerId(partner._id);
                                 setPartnerForm({
                                   name: partner.name || "",
+                                  category: partner.category || "general",
                                   logoUrl: partner.logoUrl || "",
                                   websiteUrl: partner.websiteUrl || "",
+                                  logoWidth: partner.logoWidth || "auto",
+                                  logoHeight: partner.logoHeight || "auto",
                                   order: String(partner.order ?? 0),
                                   isActive: Boolean(partner.isActive),
                                 });
@@ -1761,6 +2041,351 @@ const AdminDashboard = () => {
                     </Card>
                   ))
                 )}
+              </div>
+
+              <div className="grid gap-6 xl:grid-cols-2">
+                <Card>
+                  <CardHeader>
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <CardTitle>Gallery Management</CardTitle>
+                        <CardDescription>Upload images that appear on the gallery page and landing section.</CardDescription>
+                      </div>
+                      <Button
+                        onClick={() => {
+                          setShowGalleryForm(true);
+                          setSelectedGalleryId("");
+                          setGalleryForm(emptyGalleryForm);
+                        }}
+                        className="gap-2"
+                        size="sm"
+                      >
+                        <Plus className="h-4 w-4" />
+                        Add Image
+                      </Button>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {showGalleryForm && (
+                      <div className="space-y-4 rounded-xl border border-violet-200 bg-violet-50 p-4">
+                        <div className="flex items-center justify-between gap-3">
+                          <div>
+                            <p className="font-semibold text-slate-900">{selectedGalleryId ? "Edit Gallery Image" : "Add Gallery Image"}</p>
+                            <p className="text-xs text-slate-500">Title and Image are required.</p>
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              setShowGalleryForm(false);
+                              setSelectedGalleryId("");
+                              setGalleryForm(emptyGalleryForm);
+                            }}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                        <div className="grid gap-3 sm:grid-cols-2">
+                          <Input
+                            placeholder="Title *"
+                            value={galleryForm.title}
+                            onChange={(e) => setGalleryForm((current) => ({ ...current, title: e.target.value }))}
+                          />
+                          <Input
+                            placeholder="Order"
+                            type="number"
+                            value={galleryForm.order}
+                            onChange={(e) => setGalleryForm((current) => ({ ...current, order: e.target.value }))}
+                          />
+                        </div>
+                        <Input
+                          placeholder="Image URL *"
+                          value={galleryForm.imageUrl}
+                          onChange={(e) => setGalleryForm((current) => ({ ...current, imageUrl: e.target.value }))}
+                        />
+                        <div className="flex flex-wrap items-center gap-3">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            disabled={uploadingGalleryImage}
+                            onClick={() => document.getElementById("gallery-image-upload")?.click()}
+                          >
+                            {uploadingGalleryImage ? "Uploading..." : "Upload Image"}
+                          </Button>
+                          <input
+                            id="gallery-image-upload"
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              void handleGalleryImageUpload(file);
+                              e.target.value = "";
+                            }}
+                          />
+                          <span className="text-xs text-slate-500">Uploads to Cloudinary and fills the URL automatically.</span>
+                        </div>
+                        {galleryForm.imageUrl && (
+                          <img src={galleryForm.imageUrl} alt={galleryForm.altText || galleryForm.title || "Gallery preview"} className="h-40 w-full rounded-lg border border-slate-200 object-cover" />
+                        )}
+                        <Input
+                          placeholder="Alt text"
+                          value={galleryForm.altText}
+                          onChange={(e) => setGalleryForm((current) => ({ ...current, altText: e.target.value }))}
+                        />
+                        <Input
+                          placeholder="Caption"
+                          value={galleryForm.caption}
+                          onChange={(e) => setGalleryForm((current) => ({ ...current, caption: e.target.value }))}
+                        />
+                        <Input
+                          placeholder="Link URL (optional)"
+                          value={galleryForm.linkUrl}
+                          onChange={(e) => setGalleryForm((current) => ({ ...current, linkUrl: e.target.value }))}
+                        />
+                        <div className="flex items-center gap-3">
+                          <input
+                            id="gallery-active"
+                            type="checkbox"
+                            checked={galleryForm.isActive}
+                            onChange={(e) => setGalleryForm((current) => ({ ...current, isActive: e.target.checked }))}
+                          />
+                          <label htmlFor="gallery-active" className="text-sm text-slate-700">Show on gallery page</label>
+                        </div>
+                        <div className="flex flex-wrap gap-3">
+                          <Button onClick={handleSaveGalleryImage} disabled={savingGallery} className="gap-2">
+                            <CheckCircle2 className="h-4 w-4" />
+                            {savingGallery ? "Saving..." : selectedGalleryId ? "Update Image" : "Create Image"}
+                          </Button>
+                          <Button
+                            variant="outline"
+                            onClick={() => {
+                              setShowGalleryForm(false);
+                              setSelectedGalleryId("");
+                              setGalleryForm(emptyGalleryForm);
+                            }}
+                          >
+                            Cancel
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="space-y-3">
+                      {galleryImages.length === 0 ? (
+                        <p className="py-8 text-center text-slate-500">No gallery images yet.</p>
+                      ) : (
+                        galleryImages.map((image) => (
+                          <div key={image._id} className="flex items-start gap-4 rounded-xl border border-slate-200 p-4">
+                            <img src={image.imageUrl} alt={image.altText || image.title} className="h-20 w-28 rounded-lg border border-slate-200 object-cover" />
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2">
+                                <h4 className="font-semibold text-slate-900">{image.title}</h4>
+                                <Badge variant={image.isActive ? "default" : "secondary"}>{image.isActive ? "Active" : "Hidden"}</Badge>
+                              </div>
+                              <p className="text-xs text-slate-500">Order: {image.order ?? 0}</p>
+                              <p className="text-sm text-slate-600 mt-1 line-clamp-2">{image.caption || image.altText || image.imageUrl}</p>
+                            </div>
+                            <div className="flex gap-2">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => {
+                                  setSelectedGalleryId(image._id);
+                                  setGalleryForm({
+                                    title: image.title || "",
+                                    imageUrl: image.imageUrl || "",
+                                    altText: image.altText || "",
+                                    caption: image.caption || "",
+                                    linkUrl: image.linkUrl || "",
+                                    order: String(image.order ?? 0),
+                                    isActive: Boolean(image.isActive),
+                                  });
+                                  setShowGalleryForm(true);
+                                }}
+                                className="gap-2"
+                              >
+                                <Edit className="h-4 w-4" />
+                                Edit
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="destructive"
+                                onClick={() => {
+                                  if (window.confirm(`Delete gallery image "${image.title}"?`)) {
+                                    deleteAdminGalleryApi(token, image._id)
+                                      .then((response) => {
+                                        window.alert(response.message);
+                                        loadAdminData();
+                                      })
+                                      .catch((error) => window.alert(error instanceof Error ? error.message : "Unable to delete gallery image."));
+                                  }
+                                }}
+                                className="gap-2"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                                Delete
+                              </Button>
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <CardTitle>Testimonials Management</CardTitle>
+                        <CardDescription>Add testimonials that appear on the landing page.</CardDescription>
+                      </div>
+                      <Button
+                        onClick={() => {
+                          setShowTestimonialForm(true);
+                          setSelectedTestimonialId("");
+                          setTestimonialForm(emptyTestimonialForm);
+                        }}
+                        className="gap-2"
+                        size="sm"
+                      >
+                        <Plus className="h-4 w-4" />
+                        Add Testimonial
+                      </Button>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {showTestimonialForm && (
+                      <div className="space-y-4 rounded-xl border border-violet-200 bg-violet-50 p-4">
+                        <div className="flex items-center justify-between gap-3">
+                          <div>
+                            <p className="font-semibold text-slate-900">{selectedTestimonialId ? "Edit Testimonial" : "Add Testimonial"}</p>
+                            <p className="text-xs text-slate-500">Name, Role, and Quote are required.</p>
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              setShowTestimonialForm(false);
+                              setSelectedTestimonialId("");
+                              setTestimonialForm(emptyTestimonialForm);
+                            }}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                        <div className="grid gap-3 sm:grid-cols-2">
+                          <Input placeholder="Name *" value={testimonialForm.name} onChange={(e) => setTestimonialForm((current) => ({ ...current, name: e.target.value }))} />
+                          <Input placeholder="Role *" value={testimonialForm.role} onChange={(e) => setTestimonialForm((current) => ({ ...current, role: e.target.value }))} />
+                        </div>
+                        <div className="grid gap-3 sm:grid-cols-2">
+                          <Input placeholder="Initials" value={testimonialForm.initials} onChange={(e) => setTestimonialForm((current) => ({ ...current, initials: e.target.value }))} />
+                          <Input placeholder="Order" type="number" value={testimonialForm.order} onChange={(e) => setTestimonialForm((current) => ({ ...current, order: e.target.value }))} />
+                        </div>
+                        <Textarea placeholder="Quote *" value={testimonialForm.quote} onChange={(e) => setTestimonialForm((current) => ({ ...current, quote: e.target.value }))} />
+                        <Input placeholder="Avatar URL (optional)" value={testimonialForm.avatarUrl} onChange={(e) => setTestimonialForm((current) => ({ ...current, avatarUrl: e.target.value }))} />
+                        <div className="flex items-center gap-3">
+                          <input
+                            id="testimonial-active"
+                            type="checkbox"
+                            checked={testimonialForm.isActive}
+                            onChange={(e) => setTestimonialForm((current) => ({ ...current, isActive: e.target.checked }))}
+                          />
+                          <label htmlFor="testimonial-active" className="text-sm text-slate-700">Show on landing page</label>
+                        </div>
+                        <div className="flex flex-wrap gap-3">
+                          <Button onClick={handleSaveTestimonial} disabled={savingTestimonial} className="gap-2">
+                            <CheckCircle2 className="h-4 w-4" />
+                            {savingTestimonial ? "Saving..." : selectedTestimonialId ? "Update Testimonial" : "Create Testimonial"}
+                          </Button>
+                          <Button
+                            variant="outline"
+                            onClick={() => {
+                              setShowTestimonialForm(false);
+                              setSelectedTestimonialId("");
+                              setTestimonialForm(emptyTestimonialForm);
+                            }}
+                          >
+                            Cancel
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="space-y-3">
+                      {testimonials.length === 0 ? (
+                        <p className="py-8 text-center text-slate-500">No testimonials yet.</p>
+                      ) : (
+                        testimonials.map((testimonial) => (
+                          <div key={testimonial._id} className="rounded-xl border border-slate-200 p-4">
+                            <div className="flex items-start justify-between gap-4">
+                              <div className="flex items-start gap-3">
+                                {testimonial.avatarUrl ? (
+                                  <img src={testimonial.avatarUrl} alt={testimonial.name} className="h-12 w-12 rounded-full object-cover" />
+                                ) : (
+                                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-violet-100 text-xs font-bold text-violet-700">
+                                    {(testimonial.initials || testimonial.name.slice(0, 2)).toUpperCase()}
+                                  </div>
+                                )}
+                                <div>
+                                  <div className="flex items-center gap-2">
+                                    <h4 className="font-semibold text-slate-900">{testimonial.name}</h4>
+                                    <Badge variant={testimonial.isActive ? "default" : "secondary"}>{testimonial.isActive ? "Active" : "Hidden"}</Badge>
+                                  </div>
+                                  <p className="text-xs text-slate-500">{testimonial.role}</p>
+                                  <p className="mt-2 text-sm text-slate-700 line-clamp-3">“{testimonial.quote}”</p>
+                                </div>
+                              </div>
+                              <div className="flex gap-2">
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => {
+                                    setSelectedTestimonialId(testimonial._id);
+                                    setTestimonialForm({
+                                      name: testimonial.name || "",
+                                      role: testimonial.role || "",
+                                      initials: testimonial.initials || "",
+                                      quote: testimonial.quote || "",
+                                      avatarUrl: testimonial.avatarUrl || "",
+                                      order: String(testimonial.order ?? 0),
+                                      isActive: Boolean(testimonial.isActive),
+                                    });
+                                    setShowTestimonialForm(true);
+                                  }}
+                                  className="gap-2"
+                                >
+                                  <Edit className="h-4 w-4" />
+                                  Edit
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="destructive"
+                                  onClick={() => {
+                                    if (window.confirm(`Delete testimonial "${testimonial.name}"?`)) {
+                                      deleteAdminTestimonialApi(token, testimonial._id)
+                                        .then((response) => {
+                                          window.alert(response.message);
+                                          loadAdminData();
+                                        })
+                                        .catch((error) => window.alert(error instanceof Error ? error.message : "Unable to delete testimonial."));
+                                    }
+                                  }}
+                                  className="gap-2"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                  Delete
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
             </div>
           )}
@@ -2034,6 +2659,109 @@ const AdminDashboard = () => {
                     )}
                   </CardContent>
                 </Card>
+              </div>
+            </div>
+          )}
+
+          {/* Funding Tab */}
+          {activeTab === "funding" && (
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-2xl font-bold text-slate-900">Funding Applications</h2>
+                  <p className="text-slate-600 mt-1">Founders seeking investment through our platform.</p>
+                </div>
+                <Button variant="outline" onClick={() => exportToCSV(fundingApplications, "funding-applications")} className="gap-2">
+                  <Upload className="h-4 w-4" />
+                  Export CSV
+                </Button>
+              </div>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Recent Applications ({fundingApplications.length})</CardTitle>
+                </CardHeader>
+                <CardContent className="p-0">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-sm">
+                      <thead>
+                        <tr className="border-b bg-slate-50/50">
+                          <th className="px-4 py-3 font-semibold text-slate-700">Startup</th>
+                          <th className="px-4 py-3 font-semibold text-slate-700">Founder</th>
+                          <th className="px-4 py-3 font-semibold text-slate-700">Sector</th>
+                          <th className="px-4 py-3 font-semibold text-slate-700">MRR</th>
+                          <th className="px-4 py-3 font-semibold text-slate-700">Status</th>
+                          <th className="px-4 py-3 font-semibold text-slate-700">Date</th>
+                          <th className="px-4 py-3 font-semibold text-slate-700 text-right">Pitch Deck</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y">
+                        {fundingApplications.length === 0 ? (
+                          <tr><td colSpan={7} className="px-4 py-12 text-center text-slate-500">No applications found.</td></tr>
+                        ) : (
+                          fundingApplications.map((app) => (
+                            <tr key={app._id} className="hover:bg-slate-50/80 transition-colors group">
+                              <td className="px-4 py-4">
+                                <p className="font-bold text-slate-900">{app.startupName}</p>
+                                <p className="text-xs text-slate-500 truncate max-w-[150px]">{app.brief}</p>
+                              </td>
+                              <td className="px-4 py-4">
+                                <p className="font-medium">{app.name}</p>
+                                <p className="text-xs text-slate-500">{app.mobile}</p>
+                                <p className="text-xs text-slate-500">{app.email}</p>
+                              </td>
+                              <td className="px-4 py-4">
+                                <Badge variant="outline">{app.sector === "Other" ? app.sectorOther : app.sector}</Badge>
+                              </td>
+                              <td className="px-4 py-4 font-medium text-violet-700">
+                                {app.mrr === "Other" ? app.mrrOther : app.mrr}
+                              </td>
+                              <td className="px-4 py-4">
+                                <Badge variant={
+                                  app.status === "approved" ? "default" : 
+                                  app.status === "rejected" ? "destructive" : 
+                                  "secondary"
+                                }>
+                                  {app.status.toUpperCase()}
+                                </Badge>
+                              </td>
+                              <td className="px-4 py-4 text-xs text-slate-500">
+                                {new Date(app.createdAt).toLocaleDateString()}
+                              </td>
+                              <td className="px-4 py-4 text-right">
+                                {app.pitchDeckUrl ? (
+                                  <a href={app.pitchDeckUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 rounded-lg bg-primary/10 px-3 py-1.5 text-xs font-bold text-primary hover:bg-primary/20 transition-colors">
+                                    <FileText size={14} /> VIEW DECK
+                                  </a>
+                                ) : (
+                                  <span className="text-xs text-slate-400 italic">No Deck</span>
+                                )}
+                              </td>
+                            </tr>
+                          ))
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <div className="grid gap-6 md:grid-cols-2">
+                 <Card className="bg-slate-900 text-white border-none">
+                   <CardHeader>
+                     <CardTitle className="flex items-center gap-2">
+                       <TrendingUp className="text-primary" size={20} />
+                       Investment Insight
+                     </CardTitle>
+                   </CardHeader>
+                   <CardContent className="space-y-4">
+                     <p className="text-slate-400 text-sm">Review applications carefully. Funding matching is based on the sector and growth Stage.</p>
+                     <div className="h-2 w-full bg-slate-800 rounded-full overflow-hidden">
+                       <div className="h-full bg-primary w-[75%] shadow-[0_0_10px_rgba(255,255,255,0.1)]" />
+                     </div>
+                     <p className="text-xs text-slate-500 uppercase tracking-widest font-black italic">Platform Interest Index: HIGH</p>
+                   </CardContent>
+                 </Card>
               </div>
             </div>
           )}

@@ -1,8 +1,10 @@
+import { useEffect, useState } from "react";
 import HeroParallax from "@/components/ui/hero-parallax";
 import slide1 from "@/assets/hero-slide1.jpg";
 import slide2 from "@/assets/hero-slide2.jpg";
 import slide3 from "@/assets/hero-slide3.jpg";
 import slide4 from "@/assets/hero-slide4.jpg";
+import { getPublicGalleryApi, type GalleryImage } from "@/lib/api";
 
 const products = [
   {
@@ -82,6 +84,38 @@ const products = [
   },
 ];
 
-const GallerySection = () => <HeroParallax products={products} />;
+const GallerySection = () => {
+  const [images, setImages] = useState<GalleryImage[]>([]);
+
+  useEffect(() => {
+    let mounted = true;
+
+    getPublicGalleryApi()
+      .then((response) => {
+        if (mounted) {
+          setImages(response.images || []);
+        }
+      })
+      .catch(() => {
+        if (mounted) {
+          setImages([]);
+        }
+      });
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const dynamicProducts = images.length
+    ? images.map((image) => ({
+        title: image.title,
+        link: image.linkUrl || "#gallery",
+        thumbnail: image.imageUrl,
+      }))
+    : products;
+
+  return <HeroParallax products={dynamicProducts} />;
+};
 
 export default GallerySection;

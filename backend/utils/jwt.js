@@ -10,6 +10,7 @@ const resolveRole = (account) =>
 
 export const signAuthToken = (account) => {
   const payload = {
+    id: String(account._id),
     sub: String(account._id),
     role: resolveRole(account),
     email: account.email,

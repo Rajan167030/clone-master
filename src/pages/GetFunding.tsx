@@ -1,372 +1,184 @@
-import { useState, type ChangeEvent, type FormEvent } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
 import { useSEO } from "@/hooks/useSEO";
-import {
-  getPublicCloudinaryUploadSignatureApi,
-  submitFundingApplicationApi,
-  type FundingApplicationPayload,
-} from "@/lib/api";
-
-const initialState = {
-  name: "",
-  mobile: "",
-  email: "",
-  address: "",
-  startupName: "",
-  startupLink: "",
-  sector: "",
-  sectorOther: "",
-  mrr: "",
-  mrrOther: "",
-  brief: "",
-  problem: "",
-  solution: "",
-  targetCustomers: "",
-  revenue6Months: "",
-  growthRate: "",
-  payingCustomers: "",
-  raisedBefore: "",
-  raisedDetails: "",
-  raiseAmountRange: "",
-  stage: "",
-  agreeAccurate: false,
-  agreePromo: false,
-  file: null as File | null,
-};
+import { 
+  Users, 
+  ShieldCheck, 
+  Zap, 
+  ArrowRight,
+  TrendingUp,
+  Target,
+  BarChart3,
+  CheckCircle2
+} from "lucide-react";
+import { Link } from "react-router-dom";
 
 export default function GetFunding() {
   useSEO({
     title: "Get Funding | Founders Connect",
-    description: "Apply for curated funding access for revenue-generating startups.",
+    description: "Scale your startup vision with strategic funding from our exclusive VC network.",
   });
-
-  const [form, setForm] = useState(initialState);
-  const [submitting, setSubmitting] = useState(false);
-  const [success, setSuccess] = useState(false);
-  const [deckUploadStatus, setDeckUploadStatus] = useState("");
-
-  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value, type } = e.target as HTMLInputElement;
-    if (type === "checkbox") {
-      setForm((s) => ({ ...s, [name]: (e.target as HTMLInputElement).checked }));
-      return;
-    }
-    setForm((s) => ({ ...s, [name]: value }));
-  };
-
-  const handleFile = (e: ChangeEvent<HTMLInputElement>) => {
-    const f = e.target.files && e.target.files[0];
-    setForm((s) => ({ ...s, file: f || null }));
-    setDeckUploadStatus(f ? `Selected: ${f.name}` : "");
-  };
-
-  const validate = () => {
-    const required = [
-      "name",
-      "mobile",
-      "email",
-      "address",
-      "startupName",
-      "brief",
-      "problem",
-      "solution",
-      "targetCustomers",
-    ];
-    for (const k of required) {
-      // @ts-ignore
-      if (!String(form[k] || "").trim()) return `${k} is required`;
-    }
-    if (!form.agreeAccurate) return "Please confirm the information is accurate.";
-    return null;
-  };
-
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    const err = validate();
-    if (err) {
-      window.alert(err);
-      return;
-    }
-    setSubmitting(true);
-    try {
-      let pitchDeckUrl = "";
-      let pitchDeckName = "";
-
-      if (form.file) {
-        const signature = await getPublicCloudinaryUploadSignatureApi({
-          folder: "founders-connect/funding-decks",
-          resourceType: "auto",
-        });
-
-        const uploadFormData = new FormData();
-        uploadFormData.append("file", form.file);
-        uploadFormData.append("api_key", signature.apiKey);
-        uploadFormData.append("timestamp", String(signature.timestamp));
-        uploadFormData.append("signature", signature.signature);
-        uploadFormData.append("folder", signature.folder);
-        uploadFormData.append("resource_type", "auto");
-        if (signature.publicId) {
-          uploadFormData.append("public_id", signature.publicId);
-        }
-
-        const uploadResponse = await fetch(signature.uploadUrl, {
-          method: "POST",
-          body: uploadFormData,
-        });
-
-        const uploadData = (await uploadResponse.json().catch(() => ({}))) as { secure_url?: string; error?: { message?: string } };
-        if (!uploadResponse.ok || !uploadData.secure_url) {
-          throw new Error(uploadData.error?.message || "Pitch deck upload failed.");
-        }
-
-        pitchDeckUrl = uploadData.secure_url;
-        pitchDeckName = form.file.name;
-      }
-
-      const payload: FundingApplicationPayload = {
-        name: form.name.trim(),
-        mobile: form.mobile.trim(),
-        email: form.email.trim(),
-        address: form.address.trim(),
-        startupName: form.startupName.trim(),
-        startupLink: form.startupLink.trim(),
-        sector: form.sector.trim(),
-        sectorOther: form.sectorOther.trim(),
-        mrr: form.mrr.trim(),
-        mrrOther: form.mrrOther.trim(),
-        brief: form.brief.trim(),
-        pitchDeckUrl,
-        pitchDeckName,
-        problem: form.problem.trim(),
-        solution: form.solution.trim(),
-        targetCustomers: form.targetCustomers.trim(),
-        revenue6Months: form.revenue6Months.trim(),
-        growthRate: form.growthRate.trim(),
-        payingCustomers: form.payingCustomers.trim(),
-        raisedBefore: form.raisedBefore.trim(),
-        raisedDetails: form.raisedDetails.trim(),
-        raiseAmountRange: form.raiseAmountRange.trim(),
-        stage: form.stage.trim(),
-        agreeAccurate: form.agreeAccurate,
-        agreePromo: form.agreePromo,
-      };
-
-      await submitFundingApplicationApi(payload);
-      setSuccess(true);
-      setForm(initialState);
-      setDeckUploadStatus("");
-      window.alert("Application submitted — we will review and get back to you.");
-    } catch (err) {
-      window.alert(err instanceof Error ? err.message : "Submission failed");
-    } finally {
-      setSubmitting(false);
-    }
-  };
 
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
 
-      <section className="py-20">
-        <div className="container mx-auto px-4">
-          <div className="mx-auto mb-8 max-w-3xl text-center">
-            <h1 className="font-heading text-3xl font-extrabold">🚀 Funding Access for Revenue-Generating Startups</h1>
-            <p className="mt-4 text-muted-foreground">
-              We’re curating a select group of serious startup founders who are already generating revenue and are
-              looking to raise funds. This form is strictly for committed founders building scalable businesses.
-            </p>
-
-            <ul className="mt-4 mx-auto inline-block text-left text-sm">
-              <li>✅ Access to investor network</li>
-              <li>✅ Founder’s Connect VIP ecosystem</li>
-              <li>✅ Funding & growth opportunities</li>
-              <li className="text-sm text-rose-600 mt-2">⚠️ Only revenue-stage startups will be considered.</li>
-            </ul>
+      {/* Hero Section */}
+      <section className="relative h-[80vh] min-h-[600px] w-full overflow-hidden">
+        <img 
+          src="/funding_hero_1778315464133.png" 
+          alt="Funding Hero" 
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-background via-background/80 to-transparent" />
+        <div className="container relative mx-auto flex h-full flex-col justify-center px-4">
+          <Badge className="mb-4 w-fit bg-primary/10 text-primary hover:bg-primary/20 backdrop-blur-sm">
+            For Growth-Stage Startups
+          </Badge>
+          <h1 className="max-w-2xl font-heading text-5xl font-extrabold leading-tight tracking-tight md:text-7xl">
+            Scale Your <span className="text-primary italic">Vision</span> With Strategic Funding
+          </h1>
+          <p className="mt-8 max-w-xl text-lg text-muted-foreground md:text-2xl leading-relaxed">
+            We bridge the gap between high-growth startups and top-tier investors. Get the capital you need to dominate your market.
+          </p>
+          <div className="mt-10 flex flex-wrap gap-4">
+            <Button asChild size="lg" className="h-14 px-8 text-lg font-bold gap-2 shadow-xl shadow-primary/25">
+              <Link to="/funding-application">
+                Apply Now <ArrowRight size={20} />
+              </Link>
+            </Button>
+            <Button variant="outline" size="lg" className="h-14 px-8 text-lg font-bold backdrop-blur-sm">
+              View Portfolio
+            </Button>
           </div>
+        </div>
+      </section>
 
-          <Card className="mx-auto max-w-4xl">
-            <CardHeader>
-              <CardTitle className="text-xl">Apply for Funding Access</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleSubmit} className="grid gap-4 md:grid-cols-2">
-                <div>
-                  <label className="block text-sm font-medium mb-1">Name *</label>
-                  <Input name="name" value={form.name} onChange={handleChange} required />
-                </div>
+      {/* Stats / Proof Section */}
+      <section className="py-12 border-y bg-secondary/10">
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
+            {[
+              { label: "Partner VCs", value: "100+", icon: Target },
+              { label: "Capital Raised", value: "₹50Cr+", icon: TrendingUp },
+              { label: "Approved Sectors", value: "15+", icon: BarChart3 },
+              { label: "Founder Satisfaction", value: "99%", icon: CheckCircle2 },
+            ].map((stat, i) => (
+              <div key={i} className="flex flex-col items-center text-center space-y-2">
+                <stat.icon className="text-primary mb-2" size={24} />
+                <p className="text-3xl md:text-4xl font-bold font-heading">{stat.value}</p>
+                <p className="text-sm text-muted-foreground uppercase tracking-wider">{stat.label}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
-                <div>
-                  <label className="block text-sm font-medium mb-1">Mobile Number (WhatsApp Preferred) *</label>
-                  <Input name="mobile" value={form.mobile} onChange={handleChange} required />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-1">Email Address *</label>
-                  <Input type="email" name="email" value={form.email} onChange={handleChange} required />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-1">Address *</label>
-                  <Input name="address" value={form.address} onChange={handleChange} required />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-1">Startup Name *</label>
-                  <Input name="startupName" value={form.startupName} onChange={handleChange} required />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-1">Startup Website/App Link</label>
-                  <Input name="startupLink" value={form.startupLink} onChange={handleChange} />
-                </div>
-
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium mb-1">Startup Sector / Industry</label>
-                  <select name="sector" value={form.sector} onChange={handleChange} className="w-full rounded border px-3 py-2">
-                    <option value="">Select sector</option>
-                    <option>FinTech</option>
-                    <option>HealthTech</option>
-                    <option>EdTech</option>
-                    <option>AgriTech</option>
-                    <option>SaaS</option>
-                    <option>AI / ML</option>
-                    <option>E-commerce</option>
-                    <option>Climate / CleanTech</option>
-                    <option>D2C / E-commerce</option>
-                    <option>Other</option>
-                  </select>
-                </div>
-
-                {form.sector === "Other" && (
-                  <div className="md:col-span-2">
-                    <label className="block text-sm font-medium mb-1">Other sector</label>
-                    <Input name="sectorOther" value={form.sectorOther} onChange={handleChange} />
+      {/* Why Us Section */}
+      <section className="py-24 bg-background">
+        <div className="container mx-auto px-4">
+          <div className="mb-16 text-center max-w-3xl mx-auto">
+            <h2 className="text-3xl font-bold md:text-5xl font-heading mb-6">Why Raise with <span className="text-primary">Founders Connect?</span></h2>
+            <p className="text-lg text-muted-foreground">We are more than just a bridge; we are your strategic partners in the fundraising journey.</p>
+          </div>
+          
+          <div className="grid gap-8 md:grid-cols-3">
+            {[
+              {
+                icon: Users,
+                title: "Tier-1 Investor Network",
+                desc: "Direct access to the same VCs and Angels who backed India's biggest unicorns."
+              },
+              {
+                icon: ShieldCheck,
+                title: "Confidentiality First",
+                desc: "Your data is strictly shared with selected investors who match your industry and stage."
+              },
+              {
+                icon: Zap,
+                title: "Express Review",
+                desc: "Selected startups get introduced to investors within 120 hours of application approval."
+              }
+            ].map((benefit, i) => (
+              <Card key={i} className="border-slate-100 bg-white shadow-lg shadow-slate-100/50 transition-all hover:shadow-2xl hover:-translate-y-2 group">
+                <CardContent className="pt-10 pb-8 px-8">
+                  <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary group-hover:bg-primary group-hover:text-white transition-colors">
+                    <benefit.icon size={28} />
                   </div>
-                )}
+                  <h3 className="mb-4 text-2xl font-bold font-heading">{benefit.title}</h3>
+                  <p className="text-muted-foreground text-lg leading-relaxed">{benefit.desc}</p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
 
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium mb-1">What is your current monthly revenue (MRR)? *</label>
-                  <select name="mrr" value={form.mrr} onChange={handleChange} required className="w-full rounded border px-3 py-2">
-                    <option value="">Select</option>
-                    <option>Pre-revenue</option>
-                    <option>₹1L – ₹5L</option>
-                    <option>₹5L – ₹20L</option>
-                    <option>₹20L+</option>
-                    <option>Other</option>
-                  </select>
-                </div>
+      {/* Image Showcase Section */}
+      <section className="py-20 relative overflow-hidden">
+        <div className="container mx-auto px-4">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            <div className="space-y-8">
+              <h2 className="text-3xl md:text-5xl font-bold font-heading">Empowering Founders, One <span className="text-primary">Deal</span> at a Time.</h2>
+              <p className="text-lg text-muted-foreground leading-relaxed">
+                Founders Connect fundraising module is designed for the modern entrepreneur. No more cold pitches or unanswered emails. We curate the interest so you can focus on building your product.
+              </p>
+              <div className="flex flex-col gap-4">
+                 {[
+                   "Access to Institutional VCs & Family Offices",
+                   "Pitch Deck Design & Refinement Support",
+                   "Compliance & Term Sheet Advisory",
+                   "Post-Funding Ecosystem Support"
+                 ].map((item, i) => (
+                   <div key={i} className="flex items-center gap-3">
+                     <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/20 text-primary">
+                       <CheckCircle2 size={14} />
+                     </div>
+                     <span className="font-semibold text-slate-700">{item}</span>
+                   </div>
+                 ))}
+              </div>
+              <Button asChild size="lg" className="h-14 px-10 text-lg font-bold group">
+                <Link to="/funding-application">
+                   Start Your Application <ArrowRight className="ml-2 transition-transform group-hover:translate-x-2" size={20} />
+                </Link>
+              </Button>
+            </div>
+            
+            <div className="relative">
+              <div className="absolute -top-10 -right-10 w-64 h-64 bg-primary/5 rounded-full blur-3xl" />
+              <div className="absolute -bottom-10 -left-10 w-64 h-64 bg-primary/5 rounded-full blur-3xl" />
+              <Card className="overflow-hidden border-8 border-white shadow-2xl relative z-10 rounded-3xl">
+                <img 
+                  src="/investor_handshake_1778315491253.png" 
+                  alt="Investments" 
+                  className="w-full h-auto object-cover"
+                />
+              </Card>
+            </div>
+          </div>
+        </div>
+      </section>
 
-                {form.mrr === "Other" && (
-                  <div>
-                    <label className="block text-sm font-medium mb-1">MRR (other)</label>
-                    <Input name="mrrOther" value={form.mrrOther} onChange={handleChange} />
-                  </div>
-                )}
-
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium mb-1">Brief Startup Description *</label>
-                  <Textarea name="brief" value={form.brief} onChange={handleChange} required rows={4} />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-1">Pitch deck (upload)</label>
-                  <Input type="file" accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,image/*,video/*" onChange={handleFile} />
-                  {deckUploadStatus && <p className="mt-2 text-xs text-muted-foreground">{deckUploadStatus}</p>}
-                </div>
-
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium mb-1">Problem You Are Solving *</label>
-                  <Textarea name="problem" value={form.problem} onChange={handleChange} required rows={3} />
-                </div>
-
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium mb-1">Your Solution / Product Overview *</label>
-                  <Textarea name="solution" value={form.solution} onChange={handleChange} required rows={3} />
-                </div>
-
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium mb-1">Target Customers / Market *</label>
-                  <Textarea name="targetCustomers" value={form.targetCustomers} onChange={handleChange} required rows={2} />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-1">Revenue in last 6 months (approx)</label>
-                  <Input name="revenue6Months" value={form.revenue6Months} onChange={handleChange} />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-1">Growth rate monthly %</label>
-                  <Input name="growthRate" value={form.growthRate} onChange={handleChange} />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-1">Number of paying customers</label>
-                  <Input name="payingCustomers" value={form.payingCustomers} onChange={handleChange} />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-1">Have you raised funding before?</label>
-                  <select name="raisedBefore" value={form.raisedBefore} onChange={handleChange} className="w-full rounded border px-3 py-2">
-                    <option value="">Select</option>
-                    <option>No</option>
-                    <option>Yes</option>
-                    <option>Other</option>
-                  </select>
-                </div>
-
-                {form.raisedBefore === "Yes" && (
-                  <div className="md:col-span-2">
-                    <label className="block text-sm font-medium mb-1">If yes → How much & from whom?</label>
-                    <Input name="raisedDetails" value={form.raisedDetails} onChange={handleChange} />
-                  </div>
-                )}
-
-                <div>
-                  <label className="block text-sm font-medium mb-1">How much funding are you looking to raise?</label>
-                  <select name="raiseAmountRange" value={form.raiseAmountRange} onChange={handleChange} className="w-full rounded border px-3 py-2">
-                    <option value="">Select</option>
-                    <option>₹0L – ₹10L</option>
-                    <option>₹10L – ₹20L</option>
-                    <option>₹20L – ₹50L</option>
-                    <option>₹50L – ₹1cr</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-1">Current stage</label>
-                  <select name="stage" value={form.stage} onChange={handleChange} className="w-full rounded border px-3 py-2">
-                    <option value="">Select</option>
-                    <option>Bootstrapped</option>
-                    <option>Angel Round</option>
-                    <option>Pre-Seed</option>
-                    <option>Seed</option>
-                  </select>
-                </div>
-
-                <div className="md:col-span-2 flex flex-col gap-2 mt-2">
-                  <label className="inline-flex items-center gap-2">
-                    <input type="checkbox" name="agreeAccurate" checked={Boolean(form.agreeAccurate)} onChange={handleChange} />
-                    <span className="text-sm">I confirm that all the information provided above is accurate.</span>
-                  </label>
-                  <label className="inline-flex items-center gap-2">
-                    <input type="checkbox" name="agreePromo" checked={Boolean(form.agreePromo)} onChange={handleChange} />
-                    <span className="text-sm">I agree to allow the organizers to use my startup details for event-related communication and promotion.</span>
-                  </label>
-                </div>
-
-                <div className="md:col-span-2 mt-4 flex items-center justify-between">
-                  <div />
-                  <Button type="submit" disabled={submitting} className="bg-primary text-primary-foreground">
-                    {submitting ? "Submitting..." : "Submit Application"}
-                  </Button>
-                </div>
-              </form>
-            </CardContent>
+      {/* CTA Section */}
+      <section className="py-24">
+        <div className="container mx-auto px-4 text-center">
+          <Card className="bg-slate-900 text-white border-none py-16 px-6 overflow-hidden relative">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-primary/20 rounded-full blur-3xl -mr-32 -mt-32" />
+            <div className="absolute bottom-0 left-0 w-64 h-64 bg-violet-600/20 rounded-full blur-3xl -ml-32 -mb-32" />
+            
+            <div className="relative z-10 max-w-3xl mx-auto">
+              <h2 className="text-4xl md:text-6xl font-bold font-heading mb-8 uppercase tracking-tight">Ready to fuel your growth?</h2>
+              <p className="text-xl text-slate-300 mb-12">Applications for the Summer 2026 Funding Cohort are now open. Don't miss out on strategic capital.</p>
+              <Button asChild size="lg" className="h-16 px-12 text-xl font-black rounded-2xl bg-white text-slate-900 hover:bg-slate-100 transition-transform active:scale-95 shadow-2xl shadow-white/10">
+                <Link to="/funding-application">
+                  SUBMIT YOUR PITCH NOW
+                </Link>
+              </Button>
+            </div>
           </Card>
         </div>
       </section>

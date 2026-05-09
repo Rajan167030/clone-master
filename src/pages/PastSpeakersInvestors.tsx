@@ -4,8 +4,7 @@ import Footer from "@/components/Footer";
 import { useSEO } from "@/hooks/useSEO";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { ArrowRight, Mic2, Sparkles, TrendingUp, UsersRound } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { getPublicSpeakerInvestorProfilesApi, type SpeakerInvestorProfile } from "@/lib/api";
 
 const stats = [
@@ -14,18 +13,54 @@ const stats = [
   { label: "Cities reached", value: "8" },
 ];
 
-const emptyPhoto =
-  "data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='600' viewBox='0 0 600 600'%3E%3Crect width='600' height='600' rx='40' fill='%230f172a'/%3E%3Ccircle cx='300' cy='240' r='92' fill='%231e293b'/%3E%3Cpath d='M168 492c26-78 84-118 132-118s106 40 132 118' fill='%231e293b'/%3E%3C/svg%3E";
+const RANDOM_AVATARS = [
+  "https://i.pravatar.cc/300?img=1",
+  "https://i.pravatar.cc/300?img=2",
+  "https://i.pravatar.cc/300?img=3",
+  "https://i.pravatar.cc/300?img=5",
+  "https://i.pravatar.cc/300?img=6",
+  "https://i.pravatar.cc/300?img=7",
+  "https://i.pravatar.cc/300?img=8",
+  "https://i.pravatar.cc/300?img=10",
+  "https://i.pravatar.cc/300?img=11",
+  "https://i.pravatar.cc/300?img=12",
+  "https://i.pravatar.cc/300?img=14",
+  "https://i.pravatar.cc/300?img=15",
+];
 
+const getRandomAvatar = (index: number) => RANDOM_AVATARS[index % RANDOM_AVATARS.length];
+
+const DEMO_SPEAKERS: Array<Omit<SpeakerInvestorProfile, "_id" | "isActive" | "createdAt" | "updatedAt">> = [
+  { slug: "harpreet-singh", category: "speaker", name: "Mr. Harpreet Singh",  designation: "Founder & CEO",     company: "F2 Fintech",      order: 1 },
+  { slug: "abhinav-awal",   category: "speaker", name: "Mr. Abhinav Awal",    designation: "Co-Founder & MD",   company: "F2 Fintech",      order: 2 },
+  { slug: "piyush-kumar",   category: "speaker", name: "Mr. Piyush Kumar",    designation: "Founder & CEO",     company: "Insanex Media",   order: 3 },
+  { slug: "shaily-goel",    category: "speaker", name: "Ms. Shaily Goel",     designation: "Lead UX Designer",  company: "",                order: 4 },
+  { slug: "rahul-sharma",   category: "speaker", name: "Mr. Rahul Sharma",    designation: "CTO",               company: "TechVentures",    order: 5 },
+  { slug: "priya-mehta",    category: "speaker", name: "Ms. Priya Mehta",     designation: "VP Product",        company: "GrowthLab",       order: 6 },
+  { slug: "arjun-kapoor",   category: "speaker", name: "Mr. Arjun Kapoor",    designation: "Managing Director", company: "StartupX",        order: 7 },
+  { slug: "neha-joshi",     category: "speaker", name: "Ms. Neha Joshi",      designation: "Angel Investor",    company: "NJ Ventures",     order: 8 },
+];
+
+const DEMO_INVESTORS: Array<Omit<SpeakerInvestorProfile, "_id" | "isActive" | "createdAt" | "updatedAt">> = [
+  { slug: "vikram-malhotra", category: "investor", name: "Mr. Vikram Malhotra", designation: "Managing Partner",    company: "Sequoia India",   order: 1 },
+  { slug: "sunita-rao",      category: "investor", name: "Ms. Sunita Rao",      designation: "Angel Investor",      company: "100X.VC",         order: 2 },
+  { slug: "rohit-bansal",    category: "investor", name: "Mr. Rohit Bansal",    designation: "Venture Partner",     company: "Kalaari Capital", order: 3 },
+  { slug: "ananya-singh",    category: "investor", name: "Ms. Ananya Singh",    designation: "Principal",           company: "Accel India",     order: 4 },
+  { slug: "deepak-verma",    category: "investor", name: "Mr. Deepak Verma",    designation: "Founder & GP",        company: "Blume Ventures",  order: 5 },
+  { slug: "kavitha-nair",    category: "investor", name: "Ms. Kavitha Nair",    designation: "Investment Director", company: "Nexus VP",        order: 6 },
+];
+
+/* ─────────────────────────────────────────────────────────────────────────
+   Main Page
+───────────────────────────────────────────────────────────────────────── */
 const PastSpeakersInvestors = () => {
-  const [profiles, setProfiles] = useState<SpeakerInvestorProfile[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
+  const [profiles, setProfiles]     = useState<SpeakerInvestorProfile[]>([]);
+  const [loading, setLoading]       = useState(true);
+  const [loadError, setLoadError]   = useState("");
 
   useSEO({
     title: "Past Speakers & Investors | Founders Connect",
-    description:
-      "Explore the past speakers and investors featured at Founders Connect events, panels, and community sessions.",
+    description: "Explore the past speakers and investors featured at Founders Connect events, panels, and community sessions.",
     keywords: "past speakers, past investors, founders connect speakers, founders connect investors",
     ogType: "website",
     canonicalUrl: "https://founders.connect/past-speakers-investors",
@@ -33,124 +68,116 @@ const PastSpeakersInvestors = () => {
 
   useEffect(() => {
     getPublicSpeakerInvestorProfilesApi()
-      .then((response) => {
-        setProfiles(response.profiles);
-      })
-      .catch((error) => {
-        setLoadError(error instanceof Error ? error.message : "Unable to load speaker and investor profiles.");
-      })
+      .then((res) => setProfiles(res.profiles))
+      .catch((err) => setLoadError(err instanceof Error ? err.message : "Unable to load profiles."))
       .finally(() => setLoading(false));
   }, []);
 
-  const speakerProfiles = useMemo(
-    () => profiles.filter((profile) => profile.category === "speaker").sort((a, b) => a.order - b.order),
-    [profiles],
-  );
+  const speakerProfiles  = useMemo(() => profiles.filter((p) => p.category === "speaker").sort((a, b) => a.order - b.order),  [profiles]);
+  const investorProfiles = useMemo(() => profiles.filter((p) => p.category === "investor").sort((a, b) => a.order - b.order), [profiles]);
 
-  const investorProfiles = useMemo(
-    () => profiles.filter((profile) => profile.category === "investor").sort((a, b) => a.order - b.order),
-    [profiles],
-  );
+  const displaySpeakers  = speakerProfiles.length  > 0 ? speakerProfiles  : (!loading ? DEMO_SPEAKERS  as SpeakerInvestorProfile[] : []);
+  const displayInvestors = investorProfiles.length > 0 ? investorProfiles : (!loading ? DEMO_INVESTORS as SpeakerInvestorProfile[] : []);
 
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
 
-      <section className="relative overflow-hidden pt-24">
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-[520px] bg-[radial-gradient(circle_at_top_left,_rgba(59,130,246,0.18),_transparent_32%),radial-gradient(circle_at_top_right,_rgba(14,165,233,0.15),_transparent_28%),linear-gradient(180deg,_rgba(2,6,23,0.06),_transparent_70%)]" />
-        <div className="container relative z-10 mx-auto px-4 py-12 md:py-16">
-          <div className="mx-auto max-w-4xl text-center">
-            <Badge variant="secondary" className="mb-4 gap-2 px-4 py-1.5 text-sm font-medium">
-              <Sparkles className="h-4 w-4" />
-              Community Highlights
-            </Badge>
-            <h1 className="font-heading text-4xl font-extrabold leading-tight text-foreground md:text-6xl">
-               Speakers & Investors
-            </h1>
-            
+      {/* ── Hero ── */}
+      <section className="relative overflow-hidden pt-20 sm:pt-24">
+        {/* Radial gradient background */}
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-[480px] bg-[radial-gradient(circle_at_top_left,_rgba(59,130,246,0.18),_transparent_32%),radial-gradient(circle_at_top_right,_rgba(14,165,233,0.15),_transparent_28%)]" />
 
-            <div className="mt-8 flex flex-wrap justify-center gap-3">
-              <Button asChild className="gap-2 bg-gradient-primary text-primary-foreground">
+        {/* ── Decorative corner triangles (matches reference design) ── */}
+        {/* Top-left triangle stack */}
+        <div className="pointer-events-none absolute left-0 top-0" aria-hidden>
+          <svg width="180" height="180" viewBox="0 0 180 180" fill="none" className="w-24 h-24 sm:w-36 sm:h-36 md:w-44 md:h-44">
+            {/* Back triangle (lighter) */}
+            <polygon points="0,0 180,0 0,180" fill="#3b82f6" opacity="0.15" />
+            {/* Front triangle (stronger) */}
+            <polygon points="0,0 110,0 0,110" fill="#2563eb" opacity="0.25" />
+            {/* Accent stripe */}
+            <polygon points="0,0 60,0 0,60"  fill="#1d4ed8" opacity="0.35" />
+          </svg>
+        </div>
+
+        {/* Top-right triangle stack */}
+        <div className="pointer-events-none absolute right-0 top-0" aria-hidden>
+          <svg width="180" height="180" viewBox="0 0 180 180" fill="none" className="w-24 h-24 sm:w-36 sm:h-36 md:w-44 md:h-44">
+            {/* Back triangle (lighter) */}
+            <polygon points="180,0 0,0 180,180" fill="#3b82f6" opacity="0.15" />
+            {/* Front triangle (stronger) */}
+            <polygon points="180,0 70,0 180,110"  fill="#2563eb" opacity="0.25" />
+            {/* Accent stripe */}
+            <polygon points="180,0 120,0 180,60"  fill="#1d4ed8" opacity="0.35" />
+          </svg>
+        </div>
+
+        <div className="container relative z-10 mx-auto px-4 py-8 sm:py-12 md:py-16">
+          <div className="mx-auto max-w-3xl text-center">
+            <h1 className="font-heading text-3xl font-extrabold leading-tight text-foreground sm:text-4xl md:text-5xl lg:text-6xl">
+              Speakers &amp; Investors
+            </h1>
+            <p className="mt-3 text-sm text-muted-foreground sm:mt-4 sm:text-base md:text-lg">
+              Celebrating the brilliant minds who shaped our community events.
+            </p>
+
+            <div className="mt-6 flex flex-wrap justify-center gap-2 sm:mt-8 sm:gap-3">
+              <Button asChild size="sm" className="gap-2 bg-gradient-primary text-primary-foreground sm:size-default">
                 <a href="#speakers">
-                  View Speakers
-                  <ArrowRight className="h-4 w-4" />
+                  View Speakers <ArrowRight className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                 </a>
               </Button>
-              <Button asChild variant="outline" className="gap-2">
+              <Button asChild variant="outline" size="sm" className="gap-2 sm:size-default">
                 <a href="#investors">
-                  View Investors
-                  <ArrowRight className="h-4 w-4" />
+                  View Investors <ArrowRight className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                 </a>
               </Button>
             </div>
           </div>
 
-          <div className="mt-12 grid gap-4 md:grid-cols-3">
+          {/* Stats — 3 columns even on mobile (small values) */}
+          <div className="mt-8 grid grid-cols-3 gap-2 sm:mt-12 sm:gap-4">
             {stats.map((stat) => (
               <Card key={stat.label} className="border-border/60 bg-background/90 shadow-sm backdrop-blur">
-                <CardContent className="p-6 text-center">
-                  <div className="text-3xl font-extrabold text-foreground">{stat.value}</div>
-                  <p className="mt-2 text-sm text-muted-foreground">{stat.label}</p>
+                <CardContent className="p-3 text-center sm:p-6">
+                  <div className="text-2xl font-extrabold text-foreground sm:text-3xl">{stat.value}</div>
+                  <p className="mt-1 text-xs text-muted-foreground sm:mt-2 sm:text-sm">{stat.label}</p>
                 </CardContent>
               </Card>
             ))}
           </div>
 
           {loadError && (
-            <div className="mx-auto mt-8 max-w-3xl rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-              {loadError}
+            <div className="mx-auto mt-6 max-w-3xl rounded-xl border border-amber-200 bg-amber-50 px-4 py-2 text-xs text-amber-700 sm:mt-8 sm:py-3 sm:text-sm">
+              ⚠️ {loadError} — Showing demo data below.
             </div>
           )}
         </div>
       </section>
 
-      <section id="speakers" className="py-16 md:py-20">
+      {/* ── Past Speakers ── */}
+      <section id="speakers" className="py-10 sm:py-14 md:py-20">
         <div className="container mx-auto px-4">
-          <div className="mx-auto max-w-2xl text-center">
-            <Badge variant="outline" className="gap-2 px-3 py-1">
-              <Mic2 className="h-4 w-4" />
-              Past Speakers
-            </Badge>
-            <h2 className="mt-4 font-heading text-3xl font-extrabold text-foreground md:text-4xl">
-              Voices that shaped the room.
-            </h2>
-            <p className="mt-4 text-muted-foreground">
-              Use this section to highlight the speakers who helped founders learn, build, and move faster.
-            </p>
-          </div>
+          <SectionBanner title="Our Past Speakers" accentColor="#0ea5e9" bgClass="bg-teal-600 border-teal-500 shadow-teal-500/20" />
 
-          <div className="mt-10">
-            {loading && !speakerProfiles.length ? (
-              <div className="rounded-2xl border border-dashed border-border p-10 text-center text-muted-foreground">Loading speaker profiles...</div>
-            ) : speakerProfiles.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-border p-10 text-center text-muted-foreground">No speaker profiles have been added yet.</div>
+          <div className="mt-4 sm:mt-6">
+            {loading ? (
+              <EmptyState message="Loading speaker profiles…" />
+            ) : displaySpeakers.length === 0 ? (
+              <EmptyState message="No speaker profiles have been added yet." />
             ) : (
-              <div className="grid gap-8 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 items-start">
-                {speakerProfiles.map((speaker) => (
-                  <div key={speaker.slug} className="text-center px-4">
-                    <div className="relative mx-auto w-52 h-52">
-                      <div className="absolute inset-0 rounded-full">
-                        <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden>
-                          <defs></defs>
-                          <circle cx="50" cy="50" r="46" fill="white" />
-                          <circle cx="50" cy="50" r="46" stroke="#dbeafe" strokeWidth="6" fill="none" />
-                          <circle cx="50" cy="50" r="46" stroke="#0369a1" strokeWidth="6" fill="none" strokeDasharray="120 400" transform="rotate(-40 50 50)" />
-                        </svg>
-                      </div>
-
-                      <div className="relative z-10 rounded-full overflow-hidden w-full h-full">
-                        <img
-                          src={speaker.photoUrl || emptyPhoto}
-                          alt={speaker.photoAlt || speaker.name}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                    </div>
-
-                    <h3 className="mt-6 font-heading text-xl font-bold text-foreground">{speaker.name}</h3>
-                    <p className="mt-2 text-sm font-semibold text-primary">{speaker.designation}</p>
-                    {speaker.company && <p className="mt-1 text-sm text-muted-foreground">{speaker.company}</p>}
-                  </div>
+              /* 2-col on tiny mobile → 3-col sm → 4-col md+ */
+              <div className="grid grid-cols-2 gap-x-3 gap-y-10 sm:grid-cols-3 sm:gap-x-6 sm:gap-y-12 md:grid-cols-4 lg:grid-cols-4 justify-items-center">
+                {displaySpeakers.map((speaker, i) => (
+                  <OvalCard
+                    key={speaker.slug}
+                    name={speaker.name}
+                    designation={speaker.designation}
+                    company={speaker.company}
+                    photoUrl={speaker.photoUrl || getRandomAvatar(i)}
+                    photoAlt={speaker.photoAlt || speaker.name}
+                  />
                 ))}
               </div>
             )}
@@ -158,80 +185,59 @@ const PastSpeakersInvestors = () => {
         </div>
       </section>
 
-      <section id="investors" className="border-y border-border/60 bg-muted/30 py-16 md:py-20">
+      {/* ── Past Investors ── */}
+      <section id="investors" className="border-y border-border/60 bg-muted/30 py-10 sm:py-14 md:py-20">
         <div className="container mx-auto px-4">
-          <div className="mx-auto max-w-2xl text-center">
-            <Badge variant="outline" className="gap-2 px-3 py-1">
-              <TrendingUp className="h-4 w-4" />
-              Past Investors
-            </Badge>
-            
-            <p className="mt-4 text-muted-foreground">
-              Showcase investors who attended, spoke, mentored, or supported founders across your events.
-            </p>
-          </div>
+          <SectionBanner
+            title="Our Past Investors"
+            accentColor="#6366f1"
+            bgClass="bg-indigo-600 border-indigo-500 shadow-indigo-500/20"
+          />
 
-          <div className="mt-10 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-            {loading && !investorProfiles.length ? (
-              <div className="md:col-span-2 xl:col-span-3 rounded-2xl border border-dashed border-border p-10 text-center text-muted-foreground">
-                Loading investor profiles...
-              </div>
-            ) : investorProfiles.length === 0 ? (
-              <div className="md:col-span-2 xl:col-span-3 rounded-2xl border border-dashed border-border p-10 text-center text-muted-foreground">
-                No investor profiles have been added yet.
-              </div>
+          <div className="mt-4 sm:mt-6">
+            {loading ? (
+              <EmptyState message="Loading investor profiles…" />
+            ) : displayInvestors.length === 0 ? (
+              <EmptyState message="No investor profiles have been added yet." />
             ) : (
-              investorProfiles.map((investor) => (
-                <Card key={investor.slug} className="h-full overflow-hidden border-border/60 bg-background shadow-sm transition-transform duration-200 hover:-translate-y-1 hover:shadow-lg">
-                  <div className="relative h-60 w-full bg-slate-100">
-                    <img
-                      src={investor.photoUrl || emptyPhoto}
-                      alt={investor.photoAlt || investor.name}
-                      className="h-full w-full object-cover"
-                    />
-                    <Badge className="absolute left-4 top-4 bg-slate-950/80 text-white hover:bg-slate-950/80">
-                      Investor
-                    </Badge>
-                  </div>
-                  <CardContent className="flex h-full flex-col p-6">
-                    <div className="flex items-start justify-between gap-4">
-                      <div>
-                        <h3 className="font-heading text-2xl font-bold text-foreground">{investor.name}</h3>
-                        <p className="mt-1 text-sm font-semibold text-primary">{investor.designation}</p>
-                        {investor.company && <p className="mt-1 text-sm text-muted-foreground">{investor.company}</p>}
-                      </div>
-                      <div className="rounded-full bg-primary/10 p-3 text-primary">
-                        <TrendingUp className="h-5 w-5" />
-                      </div>
-                    </div>
-
-                    {investor.summary && (
-                      <p className="mt-5 text-sm leading-6 text-muted-foreground">{investor.summary}</p>
-                    )}
-                  </CardContent>
-                </Card>
-              ))
+              <div className="grid grid-cols-2 gap-x-3 gap-y-10 sm:grid-cols-3 sm:gap-x-6 sm:gap-y-12 md:grid-cols-4 lg:grid-cols-4 justify-items-center">
+                {displayInvestors.map((investor, i) => (
+                  <OvalCard
+                    key={investor.slug}
+                    name={investor.name}
+                    designation={investor.designation}
+                    company={investor.company}
+                    photoUrl={investor.photoUrl || getRandomAvatar(i + 6)}
+                    photoAlt={investor.photoAlt || investor.name}
+                    ringColor="#6366f1"
+                    ringLightColor="#c7d2fe"
+                  />
+                ))}
+              </div>
             )}
           </div>
         </div>
       </section>
 
-      <section className="py-16 md:py-20">
+      {/* ── CTA ── */}
+      <section className="py-10 sm:py-14 md:py-20">
         <div className="container mx-auto px-4">
           <Card className="overflow-hidden border-border/60 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 text-white shadow-2xl">
-            <CardContent className="grid gap-8 p-8 md:grid-cols-[1.2fr_0.8fr] md:p-10">
+            <CardContent className="p-6 sm:p-8 md:grid md:grid-cols-[1.2fr_0.8fr] md:gap-8 md:p-10">
               <div>
-                <p className="text-sm font-semibold uppercase tracking-[0.2em] text-white/70">Want to add more names?</p>
-                <h2 className="mt-4 font-heading text-3xl font-extrabold md:text-4xl">
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/70 sm:text-sm">
+                  Want to add more names?
+                </p>
+                <h2 className="mt-3 font-heading text-2xl font-extrabold sm:mt-4 sm:text-3xl md:text-4xl">
                   Keep this page updated as your network grows.
                 </h2>
-                <p className="mt-4 max-w-2xl text-sm leading-7 text-white/80">
-                  Add real speaker and investor records from the admin dashboard, include photos and designations,
-                  and this page will update automatically.
+                <p className="mt-3 text-xs leading-6 text-white/80 sm:mt-4 sm:text-sm sm:leading-7">
+                  Add real speaker and investor records from the admin dashboard, include photos and
+                  designations, and this page will update automatically.
                 </p>
               </div>
 
-              <div className="flex flex-col justify-center gap-3 md:items-end">
+              <div className="mt-6 flex flex-col gap-3 md:mt-0 md:justify-center md:items-end">
                 <Button asChild className="w-full gap-2 bg-white text-slate-950 hover:bg-white/90 md:w-auto">
                   <a href="/partner-with-us">Partner With Us</a>
                 </Button>
@@ -248,5 +254,144 @@ const PastSpeakersInvestors = () => {
     </div>
   );
 };
+
+/* ─────────────────────────────────────────────────────────────────────────
+   Decorative section banner  (works on all screen sizes)
+───────────────────────────────────────────────────────────────────────── */
+const SectionBanner = ({
+  title,
+  accentColor,
+  bgClass,
+}: {
+  title: string;
+  accentColor: string;
+  bgClass: string;
+}) => (
+  <div className="relative flex items-center justify-center mb-8 sm:mb-12">
+    {/* Wing SVGs — hidden on tiny screens, visible sm+ */}
+    <div className="hidden sm:block absolute left-0 top-1/2 -translate-y-1/2">
+      <svg width="100" height="44" viewBox="0 0 120 48" fill="none" aria-hidden>
+        <path d="M0 24 Q30 4 60 24 Q90 44 120 24" stroke={accentColor} strokeWidth="2.5" fill="none" opacity="0.5" />
+        <circle cx="0"   cy="24" r="5" fill={accentColor} opacity="0.4" />
+        <circle cx="120" cy="24" r="5" fill={accentColor} opacity="0.4" />
+      </svg>
+    </div>
+
+    <div className={`relative z-10 inline-flex items-center rounded-2xl border-2 px-5 py-2.5 shadow-lg sm:px-8 sm:py-3 ${bgClass}`}>
+      <span className="text-lg font-extrabold tracking-wide text-white sm:text-2xl md:text-3xl">
+        {title}
+      </span>
+    </div>
+
+    <div className="hidden sm:block absolute right-0 top-1/2 -translate-y-1/2">
+      <svg width="100" height="44" viewBox="0 0 120 48" fill="none" aria-hidden>
+        <path d="M0 24 Q30 44 60 24 Q90 4 120 24" stroke={accentColor} strokeWidth="2.5" fill="none" opacity="0.5" />
+        <circle cx="0"   cy="24" r="5" fill={accentColor} opacity="0.4" />
+        <circle cx="120" cy="24" r="5" fill={accentColor} opacity="0.4" />
+      </svg>
+    </div>
+  </div>
+);
+
+/* ─────────────────────────────────────────────────────────────────────────
+   Empty / loading state
+───────────────────────────────────────────────────────────────────────── */
+const EmptyState = ({ message }: { message: string }) => (
+  <div className="rounded-2xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
+    {message}
+  </div>
+);
+
+/* ─────────────────────────────────────────────────────────────────────────
+   Oval photo card — fluid sizing via CSS clamp so it scales on mobile
+───────────────────────────────────────────────────────────────────────── */
+const OvalCard = ({
+  name,
+  designation,
+  company,
+  photoUrl,
+  photoAlt,
+  ringColor     = "#0ea5e9",
+  ringLightColor = "#bae6fd",
+}: {
+  name: string;
+  designation: string;
+  company?: string;
+  photoUrl: string;
+  photoAlt: string;
+  ringColor?: string;
+  ringLightColor?: string;
+}) => (
+  <div className="group flex w-full flex-col items-center text-center">
+    {/*
+      Fluid oval: on a tiny 320px screen each cell ≈ 140px wide,
+      on tablet it's ≈ 160-180px. clamp(120px, 38vw, 180px) keeps it proportional.
+    */}
+    <div
+      className="relative mx-auto"
+      style={{
+        width:  "clamp(110px, 36vw, 176px)",
+        height: "clamp(132px, 43vw, 210px)",
+      }}
+    >
+      {/* Outer light ring */}
+      <div
+        className="absolute inset-0"
+        style={{ borderRadius: "50% / 50%", border: `5px solid ${ringLightColor}` }}
+      />
+      {/* Dashed accent ring overlay */}
+      <svg
+        className="absolute inset-0 w-full h-full"
+        viewBox="0 0 176 210"
+        fill="none"
+        preserveAspectRatio="none"
+        aria-hidden
+      >
+        <ellipse
+          cx="88" cy="105" rx="82" ry="98"
+          stroke={ringColor}
+          strokeWidth="4"
+          strokeDasharray="80 260"
+          strokeLinecap="round"
+          transform="rotate(-30 88 105)"
+        />
+        <ellipse
+          cx="88" cy="105" rx="82" ry="98"
+          stroke={ringColor}
+          strokeWidth="2"
+          strokeDasharray="40 300"
+          strokeLinecap="round"
+          transform="rotate(160 88 105)"
+        />
+      </svg>
+
+      {/* Photo clipped to oval */}
+      <div
+        className="absolute inset-[8px] overflow-hidden bg-slate-100 transition-transform duration-300 group-hover:scale-105"
+        style={{ borderRadius: "50% / 50%" }}
+      >
+        <img
+          src={photoUrl}
+          alt={photoAlt}
+          className="w-full h-full object-cover object-top"
+          loading="lazy"
+        />
+      </div>
+    </div>
+
+    {/* Text below photo */}
+    <h3 className="mt-3 text-xs font-bold leading-tight text-foreground sm:mt-4 sm:text-sm md:text-base">
+      {name}
+    </h3>
+    <p className="mt-0.5 text-[10px] font-semibold text-primary sm:text-xs md:text-sm">
+      {designation}
+    </p>
+    {company && (
+      <p className="mt-0.5 text-[10px] text-muted-foreground sm:text-xs">
+        {company}
+      </p>
+    )}
+  </div>
+);
 
 export default PastSpeakersInvestors;

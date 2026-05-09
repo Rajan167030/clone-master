@@ -13,13 +13,15 @@ export {
 } from "./dashboard.model.js";
 
 export { AuditLog } from "./audit-log.model.js";
-export { EventInterest } from "./event-interest.model.js";
 export { EventContent } from "./event-content.model.js";
 export { BlogContent } from "./blog-content.model.js";
+export { GalleryImage } from "./gallery-image.model.js";
 export { QRScanAnalytics } from "./qr-scan-analytics.model.js";
 export { SiteNotice } from "./site-notice.model.js";
 export { NewsletterSubscriber } from "./newsletter-subscriber.model.js";
 export { PartnerLogo } from "./partner-logo.model.js";
+export { Testimonial } from "./testimonial.model.js";
+export { Task } from "./task.model.js";
 export { SpeakerInvestorProfile } from "./speaker-investor-profile.model.js";
 export { JoinRequest } from "./join-request.model.js";
 export { FundingApplication } from "./funding-application.model.js";

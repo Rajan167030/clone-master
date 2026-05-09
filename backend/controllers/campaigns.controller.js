@@ -4,6 +4,7 @@ import SendLog from '../models/send-log.model.js';
 import { renderTemplate } from '../utils/template.js';
 import { scheduleCampaign } from '../config/agenda.js';
 import { getRecipients } from './email-automation.controller.js';
+import { isEmailConfigured } from "../utils/email.js";
 
 export const listTemplates = async (req, res) => {
   const templates = await EmailTemplate.find({}).sort({ createdAt: -1 }).lean();
@@ -51,6 +52,10 @@ export const createCampaign = async (req, res) => {
   try {
     const { name, subject, html, templateId, audience, scheduledAt } = req.body || {};
     if (!subject || !(html || templateId)) return res.status(400).json({ message: 'Missing subject or HTML/template.' });
+
+    if (!isEmailConfigured()) {
+      return res.status(503).json({ message: "SMTP is not configured." });
+    }
 
     let finalHtml = html;
     if (templateId) {

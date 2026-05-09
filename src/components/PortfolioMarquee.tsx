@@ -27,8 +27,10 @@ const PortfolioMarquee = () => {
         name: partner.name,
         logoUrl: partner.logoUrl,
         websiteUrl: partner.websiteUrl,
+        logoWidth: partner.logoWidth,
+        logoHeight: partner.logoHeight,
       }))
-    : companies.map((name) => ({ key: name, name, logoUrl: "", websiteUrl: "" }));
+    : companies.map((name) => ({ key: name, name, logoUrl: "", websiteUrl: "", logoWidth: "auto", logoHeight: "auto" }));
 
   return (
     <section id="portfolio" className="py-24 border-t border-border relative">
@@ -55,9 +57,17 @@ const PortfolioMarquee = () => {
         <div className="animate-marquee flex whitespace-nowrap">
           {[...partnerItems, ...partnerItems].map((partner, i) => {
             const content = (
-              <div className="inline-flex items-center justify-center mx-3 px-7 py-4 rounded-xl border border-border card-gradient min-w-[180px] h-[72px] hover:border-primary/40 hover:shadow-lg transition-all cursor-pointer">
+              <div className="inline-flex items-center justify-center mx-3 px-7 py-4 rounded-xl border border-border card-gradient min-w-[180px] h-[90px] hover:border-primary/40 hover:shadow-lg transition-all cursor-pointer">
                 {partner.logoUrl ? (
-                  <img src={partner.logoUrl} alt={partner.name} className="max-h-10 w-auto object-contain" />
+                  <img 
+                    src={partner.logoUrl} 
+                    alt={partner.name} 
+                    style={{
+                      width: partner.logoWidth || "auto",
+                      height: partner.logoHeight || "auto",
+                    }}
+                    className="max-h-16 object-contain"
+                  />
                 ) : (
                   <span className="text-base md:text-xl font-semibold text-foreground">{partner.name}</span>
                 )}

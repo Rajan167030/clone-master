@@ -35,6 +35,7 @@ const navCards: NavCardItem[] = [
     links: [
       { label: "Speakers & Investors", href: "/past-speakers-investors", ariaLabel: "Past Speakers and Investors" },
       { label: "Blog", href: "/blog", ariaLabel: "Blog" },
+      { label: "College Partners", href: "/college-partners", ariaLabel: "College Partners" },
     ],
   },
   {

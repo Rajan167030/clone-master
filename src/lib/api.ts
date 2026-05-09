@@ -21,11 +21,11 @@ const request = async <T>(path: string, options: RequestInit = {}): Promise<T> =
   const normalizedPath = path.startsWith("/") ? path : `/${path}`;
 
   const response = await fetch(`${API_BASE_URL}${normalizedPath}`, {
+    ...options,
     headers: {
       "Content-Type": "application/json",
       ...(options.headers || {}),
     },
-    ...options,
   });
 
   const data = (await response.json().catch(() => ({}))) as T & ApiError;
@@ -135,69 +135,33 @@ export type DynamicBlogPost = {
   isPublished?: boolean;
 };
 
-export type EventRegistration = {
-  slug: string;
+export type GalleryImage = {
+  _id: string;
   title: string;
-  subtitle: string;
-  dateLabel: string;
-  locationLabel: string;
-  ticketLabel: string;
-  status: "registered" | "attended" | "cancelled";
-  note: string;
-  registeredAt: string;
-  updatedAt: string;
+  imageUrl: string;
+  altText?: string;
+  caption?: string;
+  linkUrl?: string;
+  order: number;
+  isActive: boolean;
+  createdAt?: string;
+  updatedAt?: string;
 };
 
-export type EventParticipationSummary = {
-  registeredCount: number;
-  attendedCount: number;
-  notedCount: number;
-  latestRegistration: EventRegistration | null;
+export type Testimonial = {
+  _id: string;
+  name: string;
+  role: string;
+  initials?: string;
+  quote: string;
+  avatarUrl?: string;
+  order: number;
+  isActive: boolean;
+  createdAt?: string;
+  updatedAt?: string;
 };
 
-export type MyEventRegistrationsResponse = {
-  registrations: EventRegistration[];
-  summary: EventParticipationSummary;
-};
 
-export type EventRegistrationPayload = {
-  slug: string;
-  title: string;
-  subtitle: string;
-  dateLabel: string;
-  locationLabel: string;
-  ticketLabel: string;
-};
-
-export type EventRegistrationMutationResponse = {
-  message: string;
-  registration: EventRegistration;
-  summary: EventParticipationSummary;
-};
-
-export type EventInterestPayload = {
-  slug: string;
-  title: string;
-  fullName: string;
-  email: string;
-  phone: string;
-  city: string;
-  occupation?: string;
-  startupName?: string;
-  note?: string;
-};
-
-export type EventInterestResponse = {
-  message: string;
-  interest: {
-    id: string;
-    slug: string;
-    title: string;
-    fullName: string;
-    email: string;
-    status: string;
-  };
-};
 
 export type AdminMember = {
   _id: string;
@@ -262,8 +226,11 @@ export type SiteNotice = {
 export type PartnerLogo = {
   _id: string;
   name: string;
+  category?: "general" | "college" | "ecell";
   logoUrl: string;
   websiteUrl: string;
+  logoWidth?: string;
+  logoHeight?: string;
   order: number;
   isActive: boolean;
   createdAt?: string;
@@ -381,6 +348,30 @@ export const loginApi = (payload: { email: string; password: string }) =>
     body: JSON.stringify(payload),
   });
 
+export const adminLoginApi = (payload: { email: string; password: string }) =>
+  request<AuthResponse>("/auth/admin-login", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+
+export const forgotPasswordApi = (payload: { email: string }) =>
+  request<{ message: string }>("/auth/forgot-password", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+
+export const verifyForgotPasswordOtpApi = (payload: { email: string; otp: string }) =>
+  request<{ message: string }>("/auth/verify-forgot-password-otp", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+
+export const resetPasswordApi = (payload: { email: string; otp: string; newPassword: string }) =>
+  request<{ message: string }>("/auth/reset-password", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+
 export const sendEmailVerificationCodeApi = (payload: { email: string; purpose: EmailVerificationPurpose }) =>
   request<{ message: string }>("/auth/email-verification/send", {
     method: "POST",
@@ -413,41 +404,7 @@ export const updateMyDashboardApi = (
     body: JSON.stringify(payload),
   });
 
-export const getMyEventRegistrationsApi = (token: string) =>
-  request<MyEventRegistrationsResponse>("/events/me", {
-    method: "GET",
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
 
-export const registerForEventApi = (token: string, payload: EventRegistrationPayload) =>
-  request<EventRegistrationMutationResponse>(`/events/${payload.slug}/register`, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify(payload),
-  });
-
-export const updateEventRegistrationApi = (
-  token: string,
-  slug: string,
-  payload: { note?: string; status?: "registered" | "attended" | "cancelled" },
-) =>
-  request<EventRegistrationMutationResponse>(`/events/${slug}/register`, {
-    method: "PATCH",
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify(payload),
-  });
-
-export const submitEventInterestApi = (payload: EventInterestPayload) =>
-  request<EventInterestResponse>(`/events/${payload.slug}/interest`, {
-    method: "POST",
-    body: JSON.stringify(payload),
-  });
 
 export const getPublicEventsApi = () =>
   request<{ events: DynamicEvent[] }>("/content/events", {
@@ -461,6 +418,16 @@ export const getPublicEventBySlugApi = (slug: string) =>
 
 export const getPublicBlogsApi = () =>
   request<{ posts: DynamicBlogPost[] }>("/content/blogs", {
+    method: "GET",
+  });
+
+export const getPublicGalleryApi = () =>
+  request<{ images: GalleryImage[] }>("/content/gallery", {
+    method: "GET",
+  });
+
+export const getPublicTestimonialsApi = () =>
+  request<{ testimonials: Testimonial[] }>("/content/testimonials", {
     method: "GET",
   });
 
@@ -523,6 +490,12 @@ export type FundingApplicationPayload = {
   stage?: string;
   agreeAccurate: boolean;
   agreePromo: boolean;
+};
+
+export type FundingApplication = FundingApplicationPayload & {
+  _id: string;
+  status: "pending" | "reviewed" | "approved" | "rejected";
+  createdAt: string;
 };
 
 export const submitFundingApplicationApi = (payload: FundingApplicationPayload) =>
@@ -724,6 +697,72 @@ export const getAdminPartnersApi = (token: string) =>
     headers: { Authorization: `Bearer ${token}` },
   });
 
+export const getAdminGalleryApi = (token: string) =>
+  request<{ images: GalleryImage[] }>("/admin/gallery", {
+    method: "GET",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const createAdminGalleryApi = (
+  token: string,
+  payload: Pick<GalleryImage, "title" | "imageUrl" | "altText" | "caption" | "linkUrl" | "order" | "isActive">,
+) =>
+  request<{ message: string; image: GalleryImage }>("/admin/gallery", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify(payload),
+  });
+
+export const updateAdminGalleryApi = (
+  token: string,
+  id: string,
+  payload: Pick<GalleryImage, "title" | "imageUrl" | "altText" | "caption" | "linkUrl" | "order" | "isActive">,
+) =>
+  request<{ message: string; image: GalleryImage }>(`/admin/gallery/${id}`, {
+    method: "PATCH",
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify(payload),
+  });
+
+export const deleteAdminGalleryApi = (token: string, id: string) =>
+  request<{ message: string }>(`/admin/gallery/${id}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const getAdminTestimonialsApi = (token: string) =>
+  request<{ testimonials: Testimonial[] }>("/admin/testimonials", {
+    method: "GET",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const createAdminTestimonialApi = (
+  token: string,
+  payload: Pick<Testimonial, "name" | "role" | "initials" | "quote" | "avatarUrl" | "order" | "isActive">,
+) =>
+  request<{ message: string; testimonial: Testimonial }>("/admin/testimonials", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify(payload),
+  });
+
+export const updateAdminTestimonialApi = (
+  token: string,
+  id: string,
+  payload: Pick<Testimonial, "name" | "role" | "initials" | "quote" | "avatarUrl" | "order" | "isActive">,
+) =>
+  request<{ message: string; testimonial: Testimonial }>(`/admin/testimonials/${id}`, {
+    method: "PATCH",
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify(payload),
+  });
+
+export const deleteAdminTestimonialApi = (token: string, id: string) =>
+  request<{ message: string }>(`/admin/testimonials/${id}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
 export const getAdminPartnerInquiriesApi = (token: string) =>
   request<{ inquiries: PartnerInquiry[] }>("/admin/partner-inquiries", {
     method: "GET",
@@ -744,7 +783,7 @@ export const getAdminJoinRequestsApi = (token: string) =>
 
 export const createAdminPartnerApi = (
   token: string,
-  payload: Pick<PartnerLogo, "name" | "logoUrl" | "websiteUrl" | "order" | "isActive">,
+  payload: Pick<PartnerLogo, "name" | "category" | "logoUrl" | "websiteUrl" | "logoWidth" | "logoHeight" | "order" | "isActive">,
 ) =>
   request<{ message: string; partner: PartnerLogo }>("/admin/partners", {
     method: "POST",
@@ -755,7 +794,7 @@ export const createAdminPartnerApi = (
 export const updateAdminPartnerApi = (
   token: string,
   id: string,
-  payload: Pick<PartnerLogo, "name" | "logoUrl" | "websiteUrl" | "order" | "isActive">,
+  payload: Pick<PartnerLogo, "name" | "category" | "logoUrl" | "websiteUrl" | "logoWidth" | "logoHeight" | "order" | "isActive">,
 ) =>
   request<{ message: string; partner: PartnerLogo }>(`/admin/partners/${id}`, {
     method: "PATCH",
@@ -814,6 +853,12 @@ export const getAdminEventInterestsApi = (token: string) =>
     headers: { Authorization: `Bearer ${token}` },
   });
 
+export const getAdminFundingApplicationsApi = (token: string) =>
+  request<{ applications: FundingApplication[] }>("/admin/funding-applications", {
+    method: "GET",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
 export const getCloudinaryUploadSignatureApi = (
   token: string,
   payload?: { folder?: string; publicId?: string },
@@ -832,6 +877,12 @@ export type ProfileResponse = {
 export type UpdateProfilePayload = {
   headline?: string;
   profilePhoto?: string;
+  cardColors?: {
+    primary?: string;
+    secondary?: string;
+    accent?: string;
+    backgroundColor?: string;
+  };
 };
 
 export type UpdateProfileResponse = {

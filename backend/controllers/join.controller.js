@@ -1,5 +1,6 @@
 import { JoinRequest } from "../models/join-request.model.js";
 import { consumeEmailVerification } from "./email-verification.controller.js";
+import { scheduleAdminCheck } from "../config/agenda.js";
 
 export const submitJoinRequest = async (req, res) => {
   try {
@@ -59,6 +60,8 @@ export const submitJoinRequest = async (req, res) => {
       referralSource,
     });
     await jr.save();
+
+    await scheduleAdminCheck({ id: jr._id, type: 'join-request' }, 'in 2 days');
 
     return res.json({ ok: true, id: jr._id });
   } catch (err) {

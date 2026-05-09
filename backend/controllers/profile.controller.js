@@ -82,7 +82,7 @@ const detectOS = (userAgent) => {
 export const updateMyProfile = async (req, res, next) => {
   try {
     const { headline, profilePhoto, cardColors, nfcId } = req.body || {};
-    const userId = req.user?.id;
+    const userId = req.user?.sub || req.user?.id;
 
     if (!userId) {
       return res.status(401).json({ message: "Unauthorized." });
@@ -139,7 +139,7 @@ export const updateMyProfile = async (req, res, next) => {
  */
 export const getMyProfile = async (req, res, next) => {
   try {
-    const userId = req.user?.id;
+    const userId = req.user?.sub || req.user?.id;
 
     if (!userId) {
       return res.status(401).json({ message: "Unauthorized." });
@@ -167,7 +167,7 @@ export const getMyProfile = async (req, res, next) => {
  */
 export const generateProfileUrl = async (req, res, next) => {
   try {
-    const userId = req.user?.id;
+    const userId = req.user?.sub || req.user?.id;
 
     if (!userId) {
       return res.status(401).json({ message: "Unauthorized." });
@@ -196,7 +196,7 @@ export const generateProfileUrl = async (req, res, next) => {
  */
 export const getProfileAnalytics = async (req, res, next) => {
   try {
-    const userId = req.user?.id;
+    const userId = req.user?.sub || req.user?.id;
     const { days = 30 } = req.query;
 
     if (!userId) {

@@ -2,11 +2,13 @@ import { Router } from "express";
 import {
   getPublicBlogBySlug,
   getPublicEventBySlug,
+  listPublicGalleryImages,
   listPublicPartnerLogos,
   listPublicSpeakerInvestorProfiles,
   getPublicSiteNotice,
   listPublicBlogs,
   listPublicEvents,
+  listPublicTestimonials,
   getPublicCloudinaryUploadSignature,
 } from "../controllers/content.controller.js";
 import { listPublicPartnerTypes } from "../controllers/partner-type.controller.js";
@@ -22,8 +24,10 @@ contentRouter.get("/events/:slug", getPublicEventBySlug);
 contentRouter.get("/blogs", listPublicBlogs);
 contentRouter.get("/blogs/:slug", getPublicBlogBySlug);
 contentRouter.get("/site-notice", getPublicSiteNotice);
+contentRouter.get("/gallery", listPublicGalleryImages);
 contentRouter.get("/partners", listPublicPartnerLogos);
 contentRouter.get("/speakers-investors", listPublicSpeakerInvestorProfiles);
+contentRouter.get("/testimonials", listPublicTestimonials);
 contentRouter.get("/partner-types", listPublicPartnerTypes);
 contentRouter.post("/cloudinary/sign-upload", getPublicCloudinaryUploadSignature);
 contentRouter.post("/newsletter/subscribe", subscribeNewsletter);

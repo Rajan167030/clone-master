@@ -126,8 +126,12 @@ const AdminSpeakerInvestors = () => {
       return;
     }
 
-    if (!form.name.trim() || !form.designation.trim()) {
-      window.alert("Name and designation are required.");
+    const missing = [];
+    if (!form.name.trim()) missing.push("Name");
+    if (!form.photoUrl.trim()) missing.push("Photo");
+
+    if (missing.length > 0) {
+      window.alert(`Please provide ${missing.join(" and ")} before saving.`);
       return;
     }
 
@@ -244,7 +248,7 @@ const AdminSpeakerInvestors = () => {
 
               <Input placeholder="Slug (optional)" value={form.slug} onChange={(e) => setForm((current) => ({ ...current, slug: e.target.value }))} />
               <Input placeholder="Name *" value={form.name} onChange={(e) => setForm((current) => ({ ...current, name: e.target.value }))} />
-              <Input placeholder="Designation *" value={form.designation} onChange={(e) => setForm((current) => ({ ...current, designation: e.target.value }))} />
+              <Input placeholder="Designation" value={form.designation} onChange={(e) => setForm((current) => ({ ...current, designation: e.target.value }))} />
               <Input placeholder="Company" value={form.company} onChange={(e) => setForm((current) => ({ ...current, company: e.target.value }))} />
 
               <div className="space-y-2 rounded-xl border border-dashed border-slate-200 p-4">
@@ -259,7 +263,7 @@ const AdminSpeakerInvestors = () => {
                   </Button>
                 </div>
                 <input id="speaker-photo-input" type="file" accept="image/*" className="hidden" onChange={(e) => void handlePhotoUpload(e.target.files?.[0])} />
-                <Input placeholder="Photo URL" value={form.photoUrl} onChange={(e) => setForm((current) => ({ ...current, photoUrl: e.target.value }))} />
+                <Input placeholder="Photo URL *" value={form.photoUrl} onChange={(e) => setForm((current) => ({ ...current, photoUrl: e.target.value }))} />
                 <Input placeholder="Photo alt text" value={form.photoAlt} onChange={(e) => setForm((current) => ({ ...current, photoAlt: e.target.value }))} />
                 <div className="overflow-hidden rounded-xl border border-slate-200 bg-slate-100">
                   <img src={form.photoUrl || emptyPhoto} alt={form.photoAlt || form.name || "Profile preview"} className="h-56 w-full object-cover" />

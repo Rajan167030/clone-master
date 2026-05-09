@@ -36,12 +36,14 @@ const BaseAccountSchema = new Schema(
       index: true,
     },
     passwordHash: { type: String, required: true },
+    resetPasswordOtp: { type: String, default: null },
+    resetPasswordOtpExpiry: { type: Date, default: null },
     phone: { type: String, required: true, trim: true },
     city: { type: String, required: true, trim: true },
     role: {
       type: String,
       required: true,
-      enum: ["user", "investor", "founder", "admin"],
+      enum: ["user", "investor", "founder", "admin", "superadmin"],
       index: true,
     },
     referralCode: { type: String, trim: true, index: true },
@@ -61,6 +63,7 @@ const BaseAccountSchema = new Schema(
     isActive: { type: Boolean, default: true, index: true },
     lastLoginAt: { type: Date, default: null },
     metadata: { type: Schema.Types.Mixed, default: {} },
+    assignedTasks: [{ type: Schema.Types.ObjectId, ref: "Task" }],
     // Profile Card Fields
     profileId: { type: String, unique: true, sparse: true, index: true },
     headline: { type: String, default: "", trim: true },

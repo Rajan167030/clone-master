@@ -1,5 +1,6 @@
 import { PartnerInquiry } from "../models/partner-inquiry.model.js";
 import { consumeEmailVerification } from "./email-verification.controller.js";
+import { scheduleAdminCheck } from "../config/agenda.js";
 
 export const submitPartnerInquiry = async (req, res) => {
   try {
@@ -58,6 +59,8 @@ export const submitPartnerInquiry = async (req, res) => {
       status: "pending"
     });
     await inquiry.save();
+
+    await scheduleAdminCheck({ id: inquiry._id, type: 'partner-inquiry' }, 'in 2 days');
 
     return res.json({ ok: true, id: inquiry._id });
   } catch (err) {

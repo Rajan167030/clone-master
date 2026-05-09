@@ -1,27 +1,34 @@
 import { Router } from "express";
 import {
   getCloudinaryUploadSignature,
-  listAdminEventInterests,
   listAdminMembers,
 } from "../controllers/admin.controller.js";
 import {
   createAdminPartnerLogo,
+  createAdminGalleryImage,
   createAdminBlog,
   createAdminEvent,
+  createAdminTestimonial,
   createAdminSpeakerInvestorProfile,
   deleteAdminPartnerLogo,
+  deleteAdminGalleryImage,
   deleteAdminBlog,
   deleteAdminEvent,
+  deleteAdminTestimonial,
   deleteAdminSpeakerInvestorProfile,
   getAdminSiteNotice,
+  listAdminGalleryImages,
   listAdminPartnerLogos,
   listAdminBlogs,
   listAdminEvents,
+  listAdminTestimonials,
   listAdminSpeakerInvestorProfiles,
+  updateAdminGalleryImage,
   updateAdminPartnerLogo,
   updateAdminSiteNotice,
   updateAdminBlog,
   updateAdminEvent,
+  updateAdminTestimonial,
   updateAdminSpeakerInvestorProfile,
 } from "../controllers/content.controller.js";
 import { listSubscribersAdmin } from "../controllers/newsletter.controller.js";
@@ -45,16 +52,28 @@ import {
   deleteAdminPartnerType,
 } from "../controllers/partner-type.controller.js";
 import { requireAdmin } from "../middlewares/admin.middleware.js";
+import { requireSuperAdmin } from "../middlewares/admin.middleware.js";
+import {
+  createTask,
+  listTasks,
+  assignTask,
+  updateTaskStatus,
+  deleteTask,
+  listAdmins,
+  updateAdminRole,
+  createAdmin,
+  deleteAdminAccount,
+} from "../controllers/task.controller.js";
 import { listAdminJoinRequests } from "../controllers/join.controller.js";
 import { listAdminFundingApplications } from "../controllers/funding.controller.js";
 import { requireAuth } from "../middlewares/auth.middleware.js";
+import { listAdminEventInterests } from "../controllers/admin.controller.js";
 
 const adminRouter = Router();
 
 adminRouter.use(requireAuth, requireAdmin);
 
 adminRouter.get("/members", listAdminMembers);
-adminRouter.get("/event-interests", listAdminEventInterests);
 adminRouter.post("/cloudinary/sign-upload", getCloudinaryUploadSignature);
 
 adminRouter.get("/events", listAdminEvents);
@@ -79,7 +98,16 @@ adminRouter.get("/partners", listAdminPartnerLogos);
 adminRouter.post("/partners", createAdminPartnerLogo);
 adminRouter.patch("/partners/:id", updateAdminPartnerLogo);
 adminRouter.delete("/partners/:id", deleteAdminPartnerLogo);
+adminRouter.get("/gallery", listAdminGalleryImages);
+adminRouter.post("/gallery", createAdminGalleryImage);
+adminRouter.patch("/gallery/:id", updateAdminGalleryImage);
+adminRouter.delete("/gallery/:id", deleteAdminGalleryImage);
+adminRouter.get("/testimonials", listAdminTestimonials);
+adminRouter.post("/testimonials", createAdminTestimonial);
+adminRouter.patch("/testimonials/:id", updateAdminTestimonial);
+adminRouter.delete("/testimonials/:id", deleteAdminTestimonial);
 adminRouter.get("/partner-inquiries", listAdminPartnerInquiries);
+adminRouter.get("/event-interests", listAdminEventInterests);
 adminRouter.get("/partner-types", listAdminPartnerTypes);
 adminRouter.post("/partner-types", createAdminPartnerType);
 adminRouter.patch("/partner-types/:slug", updateAdminPartnerType);
@@ -101,5 +129,17 @@ adminRouter.get('/campaigns/:id', getCampaign);
 adminRouter.get('/campaigns/:id/logs', getCampaignLogs);
 adminRouter.get("/join-requests", listAdminJoinRequests);
 adminRouter.get("/funding-applications", listAdminFundingApplications);
+
+// Super-admin routes: manage admins and tasks
+adminRouter.get("/super/admins", requireSuperAdmin, listAdmins);
+adminRouter.patch("/super/admins/:id/role", requireSuperAdmin, updateAdminRole);
+adminRouter.post("/super/admins", requireSuperAdmin, createAdmin);
+adminRouter.delete("/super/admins/:id", requireSuperAdmin, deleteAdminAccount);
+
+adminRouter.post("/super/tasks", requireSuperAdmin, createTask);
+adminRouter.get("/super/tasks", requireAdmin, listTasks); // admins can view tasks
+adminRouter.patch("/super/tasks/:id/assign", requireSuperAdmin, assignTask);
+adminRouter.patch("/super/tasks/:id/status", requireAdmin, updateTaskStatus);
+adminRouter.delete("/super/tasks/:id", requireSuperAdmin, deleteTask);
 
 export default adminRouter;

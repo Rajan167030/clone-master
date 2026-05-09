@@ -1,4 +1,4 @@
-import { CalendarDays, FileText, LayoutDashboard, LogOut, Newspaper, ShieldCheck, Users } from "lucide-react";
+import { CalendarDays, FileText, LayoutDashboard, LogOut, Newspaper, ShieldCheck, Users, Settings, User } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { clearSession, getAccount } from "@/lib/session";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
@@ -8,14 +8,16 @@ const menuItems = [
   { label: "My Events", to: "/events", icon: CalendarDays },
   { label: "Membership", to: "/membership", icon: ShieldCheck },
   { label: "Community", to: "/about", icon: Users },
+  { label: "Settings", to: "#profile", icon: Settings },
   { label: "Blog", to: "/blog", icon: Newspaper },
 ];
 
 type SidebarPanelProps = {
   onNavigate?: () => void;
+  onProfileClick?: () => void;
 };
 
-const SidebarPanel = ({ onNavigate }: SidebarPanelProps) => {
+const SidebarPanel = ({ onNavigate, onProfileClick }: SidebarPanelProps) => {
   const location = useLocation();
   const navigate = useNavigate();
   const account = getAccount();
@@ -47,6 +49,23 @@ const SidebarPanel = ({ onNavigate }: SidebarPanelProps) => {
       <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
         {menuItems.map(({ label, to, icon: Icon }) => {
           const active = location.pathname === to;
+
+          if (to === "#profile") {
+            return (
+              <button
+                key={label}
+                type="button"
+                onClick={() => {
+                  onProfileClick?.();
+                  onNavigate?.();
+                }}
+                className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm text-slate-300 transition-colors hover:bg-slate-900 hover:text-white"
+              >
+                <Icon size={18} />
+                <span>{label}</span>
+              </button>
+            );
+          }
 
           return (
             <Link
@@ -88,14 +107,15 @@ type SidebarProps = {
   mobileOpen?: boolean;
   onMobileOpenChange?: (open: boolean) => void;
   isMobile?: boolean;
+  onProfileClick?: () => void;
 };
 
-const Sidebar = ({ mobileOpen = false, onMobileOpenChange, isMobile = false }: SidebarProps) => {
+const Sidebar = ({ mobileOpen = false, onMobileOpenChange, isMobile = false, onProfileClick }: SidebarProps) => {
   if (isMobile) {
     return (
       <Sheet open={mobileOpen} onOpenChange={onMobileOpenChange}>
         <SheetContent side="left" className="w-[88vw] max-w-xs border-r border-slate-800 bg-slate-950 p-0 text-white">
-          <SidebarPanel onNavigate={() => onMobileOpenChange?.(false)} />
+          <SidebarPanel onNavigate={() => onMobileOpenChange?.(false)} onProfileClick={onProfileClick} />
         </SheetContent>
       </Sheet>
     );
@@ -104,7 +124,7 @@ const Sidebar = ({ mobileOpen = false, onMobileOpenChange, isMobile = false }: S
   return (
     <aside className="fixed left-0 top-0 z-40 hidden h-screen w-64 border-r border-slate-800 bg-slate-950 shadow-lg lg:flex">
       <div className="h-full w-full">
-        <SidebarPanel />
+        <SidebarPanel onProfileClick={onProfileClick} />
       </div>
     </aside>
   );

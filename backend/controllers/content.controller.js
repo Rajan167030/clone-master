@@ -1,4 +1,4 @@
-import { BlogContent, EventContent, PartnerLogo, SiteNotice, SpeakerInvestorProfile } from "../models/index.js";
+import { BlogContent, EventContent, GalleryImage, PartnerLogo, SiteNotice, SpeakerInvestorProfile, Testimonial } from "../models/index.js";
 import { deleteCache, deleteCacheByPrefix, getCache, setCache } from "../utils/cache.js";
 import { createCloudinaryUploadSignature } from "../utils/cloudinary.js";
 
@@ -36,45 +36,64 @@ const normalizeSections = (value) =>
         .filter((item) => item.heading && item.content)
     : [];
 
-const sanitizeEventPayload = (body = {}) => ({
-  slug: String(body.slug || "").trim(),
-  title: String(body.title || "").trim(),
-  subtitle: String(body.subtitle || "").trim(),
-  shortDescription: String(body.shortDescription || "").trim(),
-  bannerImage: String(body.bannerImage || "").trim(),
-  bannerAlt: String(body.bannerAlt || "").trim(),
-  hostName: String(body.hostName || "").trim(),
-  hostLogoText: String(body.hostLogoText || "FC").trim(),
-  dateLabel: String(body.dateLabel || "").trim(),
-  locationLabel: String(body.locationLabel || "").trim(),
-  mapUrl: String(body.mapUrl || "").trim(),
-  calendarUrl: String(body.calendarUrl || "").trim(),
-  registrationUrl: String(body.registrationUrl || "").trim(),
-  ticketLabel: String(body.ticketLabel || "").trim(),
-  refundPolicy: String(body.refundPolicy || "").trim(),
-  about: normalizeStringArray(body.about),
-  expectations: normalizeStringArray(body.expectations),
-  differentiators: normalizeStringArray(body.differentiators),
-  audience: normalizeStringArray(body.audience),
-  tags: normalizeStringArray(body.tags),
-  photos: normalizeStringArray(body.photos),
-  videos: normalizeStringArray(body.videos),
-  faqs: normalizeFaqs(body.faqs),
-  isPublished: typeof body.isPublished === "boolean" ? body.isPublished : true,
-});
+const sanitizeEventPayload = (body = {}) => {
+  const title = String(body.title || "").trim();
+  let slug = String(body.slug || "").trim();
 
-const sanitizeBlogPayload = (body = {}) => ({
-  slug: String(body.slug || "").trim(),
-  title: String(body.title || "").trim(),
-  excerpt: String(body.excerpt || "").trim(),
-  author: String(body.author || "").trim(),
-  date: String(body.date || "").trim(),
-  readTime: String(body.readTime || "").trim(),
-  coverImage: String(body.coverImage || "").trim(),
-  tags: normalizeStringArray(body.tags),
-  sections: normalizeSections(body.sections),
-  isPublished: typeof body.isPublished === "boolean" ? body.isPublished : true,
-});
+  // Auto-generate slug if title exists but slug is missing
+  if (!slug && title) {
+    slug = slugify(title);
+  }
+
+  return {
+    slug,
+    title,
+    subtitle: String(body.subtitle || "").trim(),
+    shortDescription: String(body.shortDescription || "").trim(),
+    bannerImage: String(body.bannerImage || "").trim(),
+    bannerAlt: String(body.bannerAlt || "").trim(),
+    hostName: String(body.hostName || "").trim(),
+    hostLogoText: String(body.hostLogoText || "FC").trim(),
+    dateLabel: String(body.dateLabel || "").trim(),
+    locationLabel: String(body.locationLabel || "").trim(),
+    mapUrl: String(body.mapUrl || "").trim(),
+    calendarUrl: String(body.calendarUrl || "").trim(),
+    registrationUrl: String(body.registrationUrl || "").trim(),
+    ticketLabel: String(body.ticketLabel || "").trim(),
+    refundPolicy: String(body.refundPolicy || "").trim(),
+    about: normalizeStringArray(body.about),
+    expectations: normalizeStringArray(body.expectations),
+    differentiators: normalizeStringArray(body.differentiators),
+    audience: normalizeStringArray(body.audience),
+    tags: normalizeStringArray(body.tags),
+    photos: normalizeStringArray(body.photos),
+    videos: normalizeStringArray(body.videos),
+    faqs: normalizeFaqs(body.faqs),
+    isPublished: typeof body.isPublished === "boolean" ? body.isPublished : true,
+  };
+};
+
+const sanitizeBlogPayload = (body = {}) => {
+  const title = String(body.title || "").trim();
+  let slug = String(body.slug || "").trim();
+
+  if (!slug && title) {
+    slug = slugify(title);
+  }
+
+  return {
+    slug,
+    title,
+    excerpt: String(body.excerpt || "").trim(),
+    author: String(body.author || "").trim(),
+    date: String(body.date || "").trim(),
+    readTime: String(body.readTime || "").trim(),
+    coverImage: String(body.coverImage || "").trim(),
+    tags: normalizeStringArray(body.tags),
+    sections: normalizeSections(body.sections),
+    isPublished: typeof body.isPublished === "boolean" ? body.isPublished : true,
+  };
+};
 
 const sanitizeSiteNoticePayload = (body = {}) => ({
   key: SITE_NOTICE_KEY,
@@ -87,8 +106,31 @@ const sanitizeSiteNoticePayload = (body = {}) => ({
 
 const sanitizePartnerPayload = (body = {}) => ({
   name: String(body.name || "").trim(),
+  category: String(body.category || "general").trim().toLowerCase(),
   logoUrl: String(body.logoUrl || "").trim(),
   websiteUrl: String(body.websiteUrl || "").trim(),
+  logoWidth: String(body.logoWidth || "auto").trim(),
+  logoHeight: String(body.logoHeight || "auto").trim(),
+  order: Number(body.order || 0),
+  isActive: typeof body.isActive === "boolean" ? body.isActive : true,
+});
+
+const sanitizeGalleryPayload = (body = {}) => ({
+  title: String(body.title || "").trim(),
+  imageUrl: String(body.imageUrl || "").trim(),
+  altText: String(body.altText || "").trim(),
+  caption: String(body.caption || "").trim(),
+  linkUrl: String(body.linkUrl || "").trim(),
+  order: Number(body.order || 0),
+  isActive: typeof body.isActive === "boolean" ? body.isActive : true,
+});
+
+const sanitizeTestimonialPayload = (body = {}) => ({
+  name: String(body.name || "").trim(),
+  role: String(body.role || "").trim(),
+  initials: String(body.initials || "").trim(),
+  quote: String(body.quote || "").trim(),
+  avatarUrl: String(body.avatarUrl || "").trim(),
   order: Number(body.order || 0),
   isActive: typeof body.isActive === "boolean" ? body.isActive : true,
 });
@@ -108,12 +150,18 @@ const sanitizeSpeakerInvestorPayload = (body = {}) => ({
   isActive: typeof body.isActive === "boolean" ? body.isActive : true,
 });
 
-const requireSlugAndTitle = (payload, res) => {
-  if (!payload.slug || !payload.title) {
-    res.status(400).json({ message: "slug and title are required." });
+const validateRequired = (payload, fields, res) => {
+  const missing = [];
+  fields.forEach(({ key, label }) => {
+    if (!payload[key]) missing.push(label);
+  });
+
+  if (missing.length > 0) {
+    res.status(400).json({ 
+      message: `${missing.join(" and ")} ${missing.length > 1 ? "are" : "is"} required.` 
+    });
     return false;
   }
-
   return true;
 };
 
@@ -245,6 +293,36 @@ export const listPublicSpeakerInvestorProfiles = async (req, res, next) => {
   }
 };
 
+export const listPublicGalleryImages = async (req, res, next) => {
+  try {
+    const cacheKey = "public:gallery";
+    const cached = await getCache(cacheKey);
+    if (cached) return res.status(200).json(cached);
+
+    const images = await GalleryImage.find({ isActive: true }).sort({ order: 1, createdAt: -1 }).lean();
+    const payload = { images };
+    await setCache(cacheKey, payload, 300);
+    return res.status(200).json(payload);
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const listPublicTestimonials = async (req, res, next) => {
+  try {
+    const cacheKey = "public:testimonials";
+    const cached = await getCache(cacheKey);
+    if (cached) return res.status(200).json(cached);
+
+    const testimonials = await Testimonial.find({ isActive: true }).sort({ order: 1, createdAt: -1 }).lean();
+    const payload = { testimonials };
+    await setCache(cacheKey, payload, 300);
+    return res.status(200).json(payload);
+  } catch (error) {
+    return next(error);
+  }
+};
+
 export const getPublicCloudinaryUploadSignature = async (req, res, next) => {
   try {
     const { folder, publicId, resourceType } = req.body || {};
@@ -277,8 +355,18 @@ export const listAdminEvents = async (req, res, next) => {
 
 export const createAdminEvent = async (req, res, next) => {
   try {
+    if (!req.body || Object.keys(req.body).length === 0) {
+      return res.status(400).json({ message: "Request body is empty." });
+    }
+
     const payload = sanitizeEventPayload(req.body);
-    if (!requireSlugAndTitle(payload, res)) return;
+    if (!validateRequired(payload, [{ key: "title", label: "Title" }, { key: "bannerImage", label: "Banner Image" }], res)) return;
+    
+    const existing = await EventContent.findOne({ slug: payload.slug }).lean();
+    if (existing) {
+      return res.status(409).json({ message: "An event with this slug already exists." });
+    }
+    
     const event = await EventContent.create(payload);
     await deleteCache("public:events", "admin:events");
     await deleteCacheByPrefix("public:event:");
@@ -339,7 +427,13 @@ export const listAdminBlogs = async (req, res, next) => {
 export const createAdminBlog = async (req, res, next) => {
   try {
     const payload = sanitizeBlogPayload(req.body);
-    if (!requireSlugAndTitle(payload, res)) return;
+    if (!validateRequired(payload, [{ key: "title", label: "Title" }, { key: "coverImage", label: "Cover Image" }], res)) return;
+    
+    const existing = await BlogContent.findOne({ slug: payload.slug }).lean();
+    if (existing) {
+      return res.status(409).json({ message: "A blog post with this slug already exists." });
+    }
+    
     const post = await BlogContent.create(payload);
     await deleteCache("public:blogs", "admin:blogs");
     await deleteCacheByPrefix("public:blog:");
@@ -427,6 +521,144 @@ export const listAdminSpeakerInvestorProfiles = async (req, res, next) => {
   }
 };
 
+export const listAdminGalleryImages = async (req, res, next) => {
+  try {
+    const cacheKey = "admin:gallery";
+    const cached = await getCache(cacheKey);
+    if (cached) return res.status(200).json(cached);
+
+    const images = await GalleryImage.find({}).sort({ order: 1, updatedAt: -1 }).lean();
+    const payload = { images };
+    await setCache(cacheKey, payload, 60);
+    return res.status(200).json(payload);
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const createAdminGalleryImage = async (req, res, next) => {
+  try {
+    const payload = sanitizeGalleryPayload(req.body);
+    if (!validateRequired(payload, [{ key: "title", label: "Title" }, { key: "imageUrl", label: "Image URL" }], res)) return;
+
+    const image = await GalleryImage.create({
+      ...payload,
+      metadata: {
+        createdBy: req.user?.sub || req.user?.id || null,
+        createdByEmail: req.user?.email || null,
+        createdAt: new Date(),
+      },
+    });
+
+    await deleteCache("public:gallery", "admin:gallery");
+    return res.status(201).json({ message: "Gallery image added successfully.", image });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const updateAdminGalleryImage = async (req, res, next) => {
+  try {
+    const id = String(req.params.id || "").trim();
+    const payload = sanitizeGalleryPayload(req.body);
+    const image = await GalleryImage.findByIdAndUpdate(id, payload, { new: true });
+
+    if (!image) {
+      return res.status(404).json({ message: "Gallery image not found." });
+    }
+
+    await deleteCache("public:gallery", "admin:gallery");
+    return res.status(200).json({ message: "Gallery image updated successfully.", image });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const deleteAdminGalleryImage = async (req, res, next) => {
+  try {
+    const id = String(req.params.id || "").trim();
+    const image = await GalleryImage.findByIdAndDelete(id);
+
+    if (!image) {
+      return res.status(404).json({ message: "Gallery image not found." });
+    }
+
+    await deleteCache("public:gallery", "admin:gallery");
+    return res.status(200).json({ message: "Gallery image deleted successfully." });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const listAdminTestimonials = async (req, res, next) => {
+  try {
+    const cacheKey = "admin:testimonials";
+    const cached = await getCache(cacheKey);
+    if (cached) return res.status(200).json(cached);
+
+    const testimonials = await Testimonial.find({}).sort({ order: 1, updatedAt: -1 }).lean();
+    const payload = { testimonials };
+    await setCache(cacheKey, payload, 60);
+    return res.status(200).json(payload);
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const createAdminTestimonial = async (req, res, next) => {
+  try {
+    const payload = sanitizeTestimonialPayload(req.body);
+    if (!validateRequired(payload, [{ key: "name", label: "Name" }, { key: "role", label: "Role" }, { key: "quote", label: "Quote" }], res)) return;
+
+    const testimonial = await Testimonial.create({
+      ...payload,
+      metadata: {
+        createdBy: req.user?.sub || req.user?.id || null,
+        createdByEmail: req.user?.email || null,
+        createdAt: new Date(),
+      },
+    });
+
+    await deleteCache("public:testimonials", "admin:testimonials");
+    return res.status(201).json({ message: "Testimonial added successfully.", testimonial });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const updateAdminTestimonial = async (req, res, next) => {
+  try {
+    const id = String(req.params.id || "").trim();
+    const payload = sanitizeTestimonialPayload(req.body);
+    const testimonial = await Testimonial.findByIdAndUpdate(id, payload, { new: true });
+
+    if (!testimonial) {
+      return res.status(404).json({ message: "Testimonial not found." });
+    }
+
+    await deleteCache("public:testimonials", "admin:testimonials");
+    return res.status(200).json({ message: "Testimonial updated successfully.", testimonial });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const deleteAdminTestimonial = async (req, res, next) => {
+  try {
+    const id = String(req.params.id || "").trim();
+    const testimonial = await Testimonial.findByIdAndDelete(id);
+
+    if (!testimonial) {
+      return res.status(404).json({ message: "Testimonial not found." });
+    }
+
+    await deleteCache("public:testimonials", "admin:testimonials");
+    return res.status(200).json({ message: "Testimonial deleted successfully." });
+  } catch (error) {
+    return next(error);
+  }
+};
+
 export const createAdminSpeakerInvestorProfile = async (req, res, next) => {
   try {
     if (!req.body || Object.keys(req.body).length === 0) {
@@ -435,9 +667,7 @@ export const createAdminSpeakerInvestorProfile = async (req, res, next) => {
 
     const payload = sanitizeSpeakerInvestorPayload(req.body);
 
-    if (!payload.name || !payload.designation) {
-      return res.status(400).json({ message: "name and designation are required." });
-    }
+    if (!validateRequired(payload, [{ key: "name", label: "Name" }, { key: "photoUrl", label: "Photo URL" }], res)) return;
 
     const existing = await SpeakerInvestorProfile.findOne({ slug: payload.slug }).lean();
     if (existing) {
@@ -467,9 +697,7 @@ export const updateAdminSpeakerInvestorProfile = async (req, res, next) => {
     const currentSlug = String(req.params.slug || "").trim();
     const payload = sanitizeSpeakerInvestorPayload(req.body);
 
-    if (!payload.name || !payload.designation) {
-      return res.status(400).json({ message: "name and designation are required." });
-    }
+    if (!validateRequired(payload, [{ key: "name", label: "Name" }, { key: "photoUrl", label: "Photo URL" }], res)) return;
 
     if (payload.slug && payload.slug !== currentSlug) {
       const duplicate = await SpeakerInvestorProfile.findOne({ slug: payload.slug }).lean();
@@ -534,22 +762,7 @@ export const createAdminPartnerLogo = async (req, res, next) => {
     }
     const payload = sanitizePartnerPayload(req.body);
 
-    // Attach metadata about who created this partner and request info
-    try {
-      payload.metadata = payload.metadata || {};
-      payload.metadata.createdBy = req.user?.sub || req.user?.id || null;
-      payload.metadata.createdByEmail = req.user?.email || null;
-      payload.metadata.ip = req.ip || (req.connection && req.connection.remoteAddress) || null;
-      payload.metadata.userAgent = req.get && req.get('user-agent') ? req.get('user-agent') : null;
-      payload.metadata.createdAt = new Date();
-    } catch (e) {
-      // eslint-disable-next-line no-console
-      console.warn('Unable to attach partner metadata', e?.message || e);
-    }
-
-    if (!payload.name) {
-      return res.status(400).json({ message: "name is required." });
-    }
+    if (!validateRequired(payload, [{ key: "name", label: "Name" }, { key: "logoUrl", label: "Logo URL" }], res)) return;
 
     const partner = await PartnerLogo.create(payload);
     await deleteCache("public:partners", "admin:partners");

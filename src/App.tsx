@@ -18,6 +18,7 @@ import AIChatbot from "@/components/AIChatbot";
 import ProtectedRoute from "./components/ProtectedRoute.tsx";
 import AdminDashboard from "./pages/AdminDashboard.tsx";
 import AdminSpeakerInvestors from "./pages/AdminSpeakerInvestors.tsx";
+import AdminLogin from "./pages/AdminLogin.tsx";
 
 const About = lazy(() => import("./pages/About.tsx"));
 const Blog = lazy(() => import("./pages/Blog.tsx"));
@@ -28,9 +29,12 @@ const Membership = lazy(() => import("./pages/Membership.tsx"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy.tsx"));
 const TermsOfService = lazy(() => import("./pages/TermsOfService.tsx"));
 const JoinUs = lazy(() => import("./pages/JoinUs.tsx"));
+const Gallery = lazy(() => import("./pages/Gallery.tsx"));
 const GetFunding = lazy(() => import("./pages/GetFunding.tsx"));
 const PartnerWithUs = lazy(() => import("./pages/PartnerWithUs.tsx"));
 const PastSpeakersInvestors = lazy(() => import("./pages/PastSpeakersInvestors.tsx"));
+const CollegePartners = lazy(() => import("./pages/CollegePartners.tsx"));
+const FundingApplication = lazy(() => import("./pages/FundingApplication.tsx"));
 
 const queryClient = new QueryClient();
 
@@ -48,10 +52,11 @@ const App = () => (
             <Route path="/register/user" element={<RegisterUser />} />
             <Route path="/register/investor" element={<RegisterInvestor />} />
             <Route path="/register/founder" element={<RegisterFounder />} />
+            <Route path="/admin/login" element={<AdminLogin />} />
             <Route
               path="/dashboard"
               element={(
-                <ProtectedRoute allowedRoles={["investor", "founder"]} redirectTo="/">
+                <ProtectedRoute allowedRoles={["user", "investor", "founder"]} redirectTo="/">
                   <Dashboard />
                 </ProtectedRoute>
               )}
@@ -59,7 +64,10 @@ const App = () => (
             <Route path="/profile/:profileId" element={<Profile />} />
             <Route path="/about" element={<About />} />
             <Route path="/join-us" element={<JoinUs />} />
+            <Route path="/gallery" element={<Gallery />} />
             <Route path="/get-funding" element={<GetFunding />} />
+            <Route path="/funding-application" element={<FundingApplication />} />
+            <Route path="/college-partners" element={<CollegePartners />} />
             <Route path="/partner-with-us" element={<PartnerWithUs />} />
             <Route path="/past-speakers-investors" element={<PastSpeakersInvestors />} />
             <Route path="/blog" element={<Blog />} />

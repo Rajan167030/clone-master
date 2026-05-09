@@ -311,6 +311,15 @@ const Admin = () => {
   };
 
   const handleSaveEvent = () => {
+    const missing = [];
+    if (!eventForm.title.trim()) missing.push("Title");
+    if (!eventForm.bannerImage.trim()) missing.push("Banner Image");
+
+    if (missing.length > 0) {
+      window.alert(`Please provide ${missing.join(" and ")} before saving.`);
+      return;
+    }
+
     const payload = {
       ...eventForm,
       about: splitLines(eventForm.about),

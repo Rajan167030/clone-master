@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Loader, X } from "lucide-react";
+import { Loader, User, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { updateMyProfileApi } from "@/lib/api";
+import { setSession } from "@/lib/session";
 
 interface EditProfileModalProps {
   isOpen: boolean;
@@ -20,12 +21,6 @@ interface EditProfileModalProps {
   initialData?: {
     headline?: string;
     profilePhoto?: string;
-    cardColors?: {
-      primary?: string;
-      secondary?: string;
-      accent?: string;
-      backgroundColor?: string;
-    };
   };
 }
 
@@ -39,12 +34,6 @@ export const EditProfileModal = ({
   const [formData, setFormData] = useState({
     headline: initialData.headline || "",
     profilePhoto: initialData.profilePhoto || "",
-    cardColors: {
-      primary: initialData.cardColors?.primary || "#667eea",
-      secondary: initialData.cardColors?.secondary || "#764ba2",
-      accent: initialData.cardColors?.accent || "#ffffff",
-      backgroundColor: initialData.cardColors?.backgroundColor || "#ffffff",
-    },
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -55,18 +44,7 @@ export const EditProfileModal = ({
     }));
   };
 
-  const handleColorChange = (
-    colorKey: keyof typeof formData.cardColors,
-    value: string
-  ) => {
-    setFormData((prev) => ({
-      ...prev,
-      cardColors: {
-        ...prev.cardColors,
-        [colorKey]: value,
-      },
-    }));
-  };
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -79,11 +57,15 @@ export const EditProfileModal = ({
         return;
       }
 
-      await updateMyProfileApi(token, {
+      const response = await updateMyProfileApi(token, {
         headline: formData.headline,
         profilePhoto: formData.profilePhoto,
-        cardColors: formData.cardColors,
       });
+
+      // Update local storage so the dashboard and other components reflect changes
+      if (response.account) {
+        setSession(token, response.account);
+      }
 
       toast.success("Profile updated successfully!");
       onSuccess?.();
@@ -125,117 +107,64 @@ export const EditProfileModal = ({
           </div>
 
           {/* Profile Photo Section */}
-          <div className="space-y-2">
-            <Label htmlFor="profilePhoto">Profile Photo URL</Label>
-            <Input
-              id="profilePhoto"
-              name="profilePhoto"
-              value={formData.profilePhoto}
-              onChange={handleChange}
-              placeholder="https://example.com/photo.jpg"
-              type="url"
-            />
-            {formData.profilePhoto && (
-              <img
-                src={formData.profilePhoto}
-                alt="Preview"
-                className="h-20 w-20 rounded-full object-cover"
+          <div className="space-y-3">
+            <Label>Profile Photo</Label>
+            <div className="flex items-center gap-4">
+              {formData.profilePhoto ? (
+                <div className="relative group">
+                  <img
+                    src={formData.profilePhoto}
+                    alt="Profile"
+                    className="h-20 w-20 rounded-full border-2 border-purple-100 object-cover shadow-sm"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setFormData(prev => ({ ...prev, profilePhoto: "" }))}
+                    className="absolute -top-1 -right-1 hidden h-6 w-6 items-center justify-center rounded-full bg-red-500 text-white group-hover:flex"
+                  >
+                    <X size={14} />
+                  </button>
+                </div>
+              ) : (
+                <div className="flex h-20 w-20 items-center justify-center rounded-full border-2 border-dashed border-slate-200 bg-slate-50 text-slate-400">
+                  <User className="h-10 w-10 text-slate-300" />
+                </div>
+              )}
+              
+              <div className="flex-1 space-y-2">
+                <Input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      const reader = new FileReader();
+                      reader.onloadend = () => {
+                        setFormData(prev => ({ ...prev, profilePhoto: reader.result as string }));
+                      };
+                      reader.readAsDataURL(file);
+                    }
+                  }}
+                  className="cursor-pointer file:mr-2 file:rounded-md file:border-0 file:bg-violet-50 file:px-2 file:py-1 file:text-xs file:font-semibold file:text-violet-700 hover:file:bg-violet-100"
+                />
+                <p className="text-[11px] text-slate-500">JPG, PNG or GIF. Max 1MB Recommended.</p>
+              </div>
+            </div>
+
+            <div className="space-y-1">
+              <Label htmlFor="profilePhoto" className="text-xs text-slate-500">Or use Photo URL</Label>
+              <Input
+                id="profilePhoto"
+                name="profilePhoto"
+                value={formData.profilePhoto.startsWith("data:") ? "" : formData.profilePhoto}
+                onChange={handleChange}
+                placeholder="https://example.com/photo.jpg"
+                className="h-9 text-xs"
               />
-            )}
+            </div>
           </div>
 
-          {/* Card Colors Section */}
-          <div className="space-y-3 border-t border-gray-200 pt-4">
-            <h3 className="font-semibold text-sm">Card Colors</h3>
 
-            {/* Primary Color */}
-            <div className="space-y-2">
-              <Label htmlFor="primary" className="flex items-center gap-2">
-                Primary (Gradient Start)
-                <input
-                  type="color"
-                  value={formData.cardColors.primary}
-                  onChange={(e) => handleColorChange("primary", e.target.value)}
-                  className="h-6 w-6 cursor-pointer rounded border border-gray-300"
-                />
-              </Label>
-              <Input
-                id="primary"
-                value={formData.cardColors.primary}
-                onChange={(e) => handleColorChange("primary", e.target.value)}
-                placeholder="#667eea"
-              />
-            </div>
-
-            {/* Secondary Color */}
-            <div className="space-y-2">
-              <Label htmlFor="secondary" className="flex items-center gap-2">
-                Secondary (Gradient End)
-                <input
-                  type="color"
-                  value={formData.cardColors.secondary}
-                  onChange={(e) => handleColorChange("secondary", e.target.value)}
-                  className="h-6 w-6 cursor-pointer rounded border border-gray-300"
-                />
-              </Label>
-              <Input
-                id="secondary"
-                value={formData.cardColors.secondary}
-                onChange={(e) => handleColorChange("secondary", e.target.value)}
-                placeholder="#764ba2"
-              />
-            </div>
-
-            {/* Accent Color */}
-            <div className="space-y-2">
-              <Label htmlFor="accent" className="flex items-center gap-2">
-                Accent (Text)
-                <input
-                  type="color"
-                  value={formData.cardColors.accent}
-                  onChange={(e) => handleColorChange("accent", e.target.value)}
-                  className="h-6 w-6 cursor-pointer rounded border border-gray-300"
-                />
-              </Label>
-              <Input
-                id="accent"
-                value={formData.cardColors.accent}
-                onChange={(e) => handleColorChange("accent", e.target.value)}
-                placeholder="#ffffff"
-              />
-            </div>
-
-            {/* Background Color */}
-            <div className="space-y-2">
-              <Label htmlFor="backgroundColor" className="flex items-center gap-2">
-                Card Background
-                <input
-                  type="color"
-                  value={formData.cardColors.backgroundColor}
-                  onChange={(e) => handleColorChange("backgroundColor", e.target.value)}
-                  className="h-6 w-6 cursor-pointer rounded border border-gray-300"
-                />
-              </Label>
-              <Input
-                id="backgroundColor"
-                value={formData.cardColors.backgroundColor}
-                onChange={(e) => handleColorChange("backgroundColor", e.target.value)}
-                placeholder="#ffffff"
-              />
-            </div>
-
-            {/* Color Preview */}
-            <div
-              className="h-32 rounded-lg border-2 border-gray-200 p-4 flex items-center justify-center text-center"
-              style={{
-                backgroundImage: `linear-gradient(135deg, ${formData.cardColors.primary} 0%, ${formData.cardColors.secondary} 100%)`,
-              }}
-            >
-              <span style={{ color: formData.cardColors.accent }} className="font-semibold">
-                Card Preview
-              </span>
-            </div>
-          </div>
 
           {/* Buttons */}
           <div className="flex gap-3 pt-4">
