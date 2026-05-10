@@ -1,38 +1,47 @@
 import { Link } from "react-router-dom";
-import Globe3DDemo from "@/components/Globe3DDemo";
+import { CalendarDays, ShieldCheck, Zap } from "lucide-react";
 
 const JoinUsSection = ({ showSocial = true }) => {
   if (!showSocial) return null;
 
   return (
-    <section className="relative py-16">
+    <section className="relative py-6 sm:py-8">
       <div className="container mx-auto px-4">
-        <div className="mx-auto max-w-4xl">
-          <div className="rounded-2xl border-2 border-dashed border-muted-foreground/30 bg-muted/5 p-6 md:p-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 items-center gap-6">
-              <div className="text-center md:text-left">
-                <p className="text-sm font-semibold uppercase tracking-[0.28em] text-muted-foreground">
-                  Join Our Community
-                </p>
-                <h2 className="mt-3 text-3xl font-bold text-foreground md:text-4xl">
-                  Become Part of Founders Connect
-                </h2>
-                <p className="mt-4 text-lg leading-8 text-muted-foreground">
-                  Join our vibrant founder community and connect with builders, founders, and innovators who are shaping what's next.
-                </p>
+        <div className="relative overflow-hidden rounded-[28px] border border-white/10 bg-[#0a0a0a] px-6 py-10 text-white shadow-[0_30px_80px_-30px_rgba(0,0,0,0.65)] sm:px-10 sm:py-12 lg:px-12 lg:py-14">
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(255,255,255,0.26),_transparent_34%),radial-gradient(circle_at_top_right,_rgba(255,255,255,0.22),_transparent_28%),linear-gradient(180deg,rgba(255,255,255,0.03),transparent_28%)]" />
+          <div className="pointer-events-none absolute -left-24 top-0 h-72 w-72 rounded-full bg-white/10 blur-3xl" />
+          <div className="pointer-events-none absolute -right-24 top-0 h-72 w-72 rounded-full bg-white/10 blur-3xl" />
 
-                <div className="mt-8 flex flex-col items-center md:items-start gap-3 sm:flex-row sm:justify-center md:justify-start">
-                  <Link
-                    to="/join-us"
-                    className="rounded-md border border-border bg-primary px-8 py-3 text-base font-semibold text-foreground transition-all hover:brightness-95"
-                  >
-                    Join our community
-                  </Link>
-                </div>
+          <div className="relative mx-auto max-w-4xl text-center">
+            <h2 className="mx-auto max-w-3xl text-4xl font-semibold leading-[1.02] tracking-tight text-white sm:text-5xl lg:text-[64px]">
+              join our vibrant founders community
+            </h2>
+            <p className="mx-auto mt-4 max-w-2xl text-base leading-7 text-white/82 sm:text-lg lg:text-lg">
+              Join thousands of founders who are building stronger networks, sharper insights, and real momentum with Founders Connect.
+            </p>
+
+            <div className="mt-8 flex justify-center">
+              <Link
+                to="/join-us"
+                className="inline-flex items-center justify-center rounded-full bg-white px-8 py-4 text-lg font-semibold text-black shadow-[0_12px_30px_-12px_rgba(255,255,255,0.55)] transition-transform duration-300 hover:-translate-y-0.5 hover:bg-white/95"
+              >
+                Join our community
+                <span className="ml-3 text-xl leading-none">→</span>
+              </Link>
+            </div>
+
+            <div className="mt-8 flex flex-wrap items-center justify-center gap-4 text-sm text-white/85 sm:gap-6">
+              <div className="inline-flex items-center gap-2">
+                <ShieldCheck className="h-5 w-5" />
+                <span>Secure & Reliable</span>
               </div>
-
-              <div className="flex items-center justify-center">
-                <Globe3DDemo />
+              <div className="inline-flex items-center gap-2">
+                <CalendarDays className="h-5 w-5" />
+                <span>Regular Updates</span>
+              </div>
+              <div className="inline-flex items-center gap-2">
+                <Zap className="h-5 w-5" />
+                <span>Lightning Fast</span>
               </div>
             </div>
           </div>

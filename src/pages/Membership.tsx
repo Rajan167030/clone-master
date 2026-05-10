@@ -1,339 +1,185 @@
-import { useState } from "react";
 import { Link } from "react-router-dom";
-import {
-  CheckCircle2,
-  ArrowRight,
-  Users,
-  TrendingUp,
-  Briefcase,
-  ChevronDown,
-  HelpCircle,
-} from "lucide-react";
+import { ArrowRight, CheckCircle2, Crown, Diamond, ShieldCheck } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useSEO } from "@/hooks/useSEO";
-
-type PricingPeriod = "monthly" | "yearly";
-
-interface MembershipTier {
+type MembershipTier = {
   name: string;
   icon: React.ReactNode;
   description: string;
-  monthlyPrice: number;
-  yearlyPrice: number;
-  savings?: string;
-  benefits: string[];
+  price: string;
+  badge?: string;
+  features: string[];
   registerLink: string;
   highlighted?: boolean;
-}
+};
 
 const membershipTiers: MembershipTier[] = [
   {
-    name: "Regular User",
-    icon: <Users size={32} className="text-blue-500" />,
-    description: "Perfect for professionals exploring opportunities",
-    monthlyPrice: 499,
-    yearlyPrice: 4990,
-    savings: "Save ₹1990 (33%)",
-    benefits: [
-      "Access to members-only job board",
-      "Monthly founder meetup invitations",
-      "Curated startup insights & resources",
-      "Members' directory access",
-      "Monthly newsletter with opportunities",
-      "Event attendee networking badge",
-      "Basic profile analytics",
-      "Email support (48-hour response)",
+    name: "Silver",
+    icon: <ShieldCheck className="h-6 w-6 text-slate-500" />,
+    description: "Dynamic membership for active founders",
+    price: "₹14,999",
+    features: [
+      "Access to FC member-only resources",
+      "Monthly advisor roundtables",
+      "Basic event priority registration",
     ],
     registerLink: "/register/user",
   },
   {
-    name: "Investor",
-    icon: <TrendingUp size={32} className="text-green-500" />,
-    description: "For investors looking to discover promising startups",
-    monthlyPrice: 0,
-    yearlyPrice: 0,
-    savings: undefined,
-    benefits: [
-      "Founders' directory with detailed profiles",
-      "Advanced search & filtering by sector",
-      "Monthly founder briefing sessions",
-      "Exclusive pitch event access (priority seating)",
-      "Deal flow updates & startup analytics",
-      "Direct messaging with verified founders",
-      "Investment portfolio tracking tools",
-      "Co-investor network directory",
-      "Custom reports & market intelligence",
-      "Dedicated investor support",
-      "Speaking opportunity invitations",
-      "Private founder introductions (20/month)",
+    name: "Gold",
+    icon: <Crown className="h-6 w-6 text-violet-500" />,
+    description: "Payment gateway ready for fast growth",
+    price: "₹29,999",
+    badge: "Recommended",
+    features: [
+      "Premium access to all FC workshops",
+      "Dedicated onboarding support",
+      "Higher referral earnings and credits",
     ],
-    registerLink: "/register/investor",
+    registerLink: "/register/founder",
     highlighted: true,
   },
   {
-    name: "Founder",
-    icon: <Briefcase size={32} className="text-purple-500" />,
-    description: "For founders building the next big thing",
-    monthlyPrice: 2999,
-    yearlyPrice: 29990,
-    savings: "Save ₹11970 (33%)",
-    benefits: [
-      "Premium founder profile with QR card",
-      "Weekly closed-door founder sessions",
-      "Investor matchmaking (10 intros/month)",
-      "Pitch feedback from experts",
-      "Startup playbooks & templates",
-      "Co-founder matching service",
-      "Early access to all events",
-      "Monthly 1-on-1 mentor calls",
-      "Capital raising resources & guides",
-      "Team building resources",
-      "Market research tools access",
-      "Exclusive founder community (Slack/WhatsApp)",
+    name: "Diamond",
+    icon: <Diamond className="h-6 w-6 text-slate-700" />,
+    description: "Full VIP access for founders who want scale",
+    price: "₹59,999",
+    features: [
+      "Exclusive founder investor sessions",
+      "Personal mentorship and strategy reviews",
+      "Priority product launch support",
     ],
-    registerLink: "/register/founder",
+    registerLink: "/register/investor",
   },
 ];
 
 const Membership = () => {
-  const [billingPeriod, setBillingPeriod] = useState<PricingPeriod>("yearly");
-  const [openFaqId, setOpenFaqId] = useState<number | null>(0);
-
   // SEO Hook
   useSEO({
     title: "Membership Plans | Founders Connect",
-    description: "Join Founders Connect membership to access exclusive founder and investor networks. Choose from investor, founder, or community tiers with premium benefits.",
-    keywords: "founders connect membership, founder membership, investor membership, membership pricing",
+    description: "Choose your Founders Connect membership tier: Silver, Gold, or Diamond.",
+    keywords: "founders connect membership, silver gold diamond membership, founder membership pricing",
     ogType: "website",
     canonicalUrl: "https://founders.connect/membership",
   });
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-[#f7f7fb]">
       <Navbar />
 
-      {/* Hero Section */}
-      <section className="relative overflow-hidden pt-24 pb-16">
-        <div className="pointer-events-none absolute -left-16 top-10 h-72 w-72 rounded-full bg-blob" />
-        <div className="pointer-events-none absolute right-0 top-24 h-80 w-80 rounded-full bg-blob" />
-
-        <div className="container mx-auto px-4">
+      <main className="px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
+        <section className="mx-auto max-w-[1400px] rounded-[28px] border border-slate-200 bg-white p-4 shadow-[0_20px_80px_-35px_rgba(15,23,42,0.18)] sm:p-6 lg:p-8">
           <div className="mx-auto max-w-4xl text-center">
-            <p className="mb-3 text-sm font-semibold uppercase tracking-[0.2em] text-primary">
+            <p className="text-sm font-semibold uppercase tracking-[0.22em] text-violet-500">
               Founders Connect Membership
             </p>
-            <h1 className="font-heading text-4xl font-extrabold leading-tight md:text-6xl">
-              Accelerate your journey with the right network
+            <h1 className="mt-3 text-4xl font-semibold tracking-tight text-slate-950 sm:text-5xl">
+              Pick the plan that matches your growth stage
             </h1>
-            <p className="mt-5 text-lg text-muted-foreground">
-              Choose your membership tier and unlock exclusive access to founders, investors,
-              and opportunities that matter. Cancel anytime.
+            <p className="mx-auto mt-4 max-w-2xl text-base leading-7 text-slate-500 sm:text-lg">
+              Three clean membership paths built for active founders, high-growth teams, and premium network access.
             </p>
           </div>
 
-          {/* Billing Toggle */}
-          {/* Removed - Yearly only */}
-        </div>
-      </section>
-
-      {/* Pricing Cards */}
-      <section className="relative py-16 px-4">
-        <div className="container mx-auto">
-          <div className="grid gap-8 md:grid-cols-1 lg:grid-cols-3 max-w-6xl mx-auto">
+          <div className="mt-8 grid gap-5 lg:grid-cols-3">
             {membershipTiers.map((tier) => (
               <Card
                 key={tier.name}
-                className={`relative flex flex-col overflow-hidden transition-all duration-300 hover:shadow-2xl ${
+                className={`relative flex flex-col overflow-hidden rounded-[32px] border border-slate-200 bg-white transition-all duration-300 ${
                   tier.highlighted
-                    ? "lg:scale-105 border-2 border-purple-500 shadow-xl"
-                    : "border"
-                }`}
+                    ? "border-violet-200 bg-violet-50/35 shadow-[0_25px_60px_-35px_rgba(168,85,247,0.55)]"
+                    : "shadow-[0_18px_50px_-35px_rgba(15,23,42,0.14)]"
+                } hover:-translate-y-2 hover:border-violet-300 hover:shadow-[0_28px_70px_-30px_rgba(168,85,247,0.38)] group`}
               >
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <div className="mb-3">{tier.icon}</div>
-                      <CardTitle className="text-2xl">{tier.name}</CardTitle>
-                    </div>
+                <CardHeader className="items-center px-6 pt-10 text-center transition-transform duration-300 group-hover:-translate-y-0.5">
+                  <div className="flex items-center gap-2">
+                    <CardTitle className="text-[28px] font-medium tracking-tight text-slate-950">
+                      {tier.name}
+                    </CardTitle>
+                    {tier.badge && (
+                      <Badge className="rounded-full bg-violet-100 px-3 py-1 text-xs font-semibold text-violet-600 hover:bg-violet-100">
+                        {tier.badge}
+                      </Badge>
+                    )}
                   </div>
-                  <p className="text-sm text-muted-foreground mt-2">
+                  <p className="mt-4 max-w-[230px] text-sm leading-6 text-slate-500 sm:text-[15px]">
                     {tier.description}
                   </p>
                 </CardHeader>
 
-                <CardContent className="flex-1 flex flex-col">
-                  {/* Pricing */}
-                  <div className="mb-6">
-                    <div className="flex items-baseline gap-1">
-                      <span className="text-4xl font-bold">
-                        ₹{tier.yearlyPrice}
-                      </span>
-                      <span className="text-muted-foreground">
-                        /year
-                      </span>
+                <CardContent className="flex flex-1 flex-col px-6 pb-8 pt-4 transition-transform duration-300 group-hover:-translate-y-0.5">
+                  <div className="mx-auto mb-8 w-full max-w-[270px] rounded-[28px] border border-slate-200 bg-[#f7f9fd] px-6 py-8 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] transition-all duration-300 group-hover:border-violet-200 group-hover:bg-white group-hover:shadow-[0_18px_40px_-28px_rgba(168,85,247,0.28)]">
+                    <div className="flex justify-center">
+                      {tier.icon}
                     </div>
-                    {tier.savings && (
-                      <p className="text-sm text-green-600 font-semibold mt-2">
-                        {tier.savings}
-                      </p>
-                    )}
+                    <div className="mt-4 text-5xl font-semibold tracking-tight text-slate-950 sm:text-[64px]">
+                      {tier.price}
+                    </div>
+                    <p className="mt-1 text-sm text-slate-500">one-time</p>
                   </div>
 
-                  {/* CTA Button */}
-                  <Button
-                    asChild
-                    className={`w-full mb-6 gap-2 ${
-                      tier.highlighted
-                        ? "bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800"
-                        : ""
-                    }`}
-                  >
-                    <Link to={tier.registerLink}>
-                      Join Now <ArrowRight size={16} />
-                    </Link>
-                  </Button>
-
-                  {/* Benefits List */}
-                  <div className="space-y-3">
-                    <p className="text-xs font-semibold uppercase text-muted-foreground">
-                      Includes
-                    </p>
-                    {tier.benefits.map((benefit) => (
-                      <div
-                        key={benefit}
-                        className="flex items-start gap-3 text-sm"
-                      >
-                        <CheckCircle2
-                          size={16}
-                          className="mt-0.5 flex-shrink-0 text-green-600"
-                        />
-                        <span className="text-muted-foreground">{benefit}</span>
+                  <div className="space-y-4">
+                    {tier.features.map((feature) => (
+                      <div key={feature} className="flex items-start gap-3 text-sm leading-6 text-slate-600 sm:text-[15px]">
+                        <CheckCircle2 className="mt-0.5 h-4 w-4 flex-shrink-0 text-violet-500" />
+                        <span>{feature}</span>
                       </div>
                     ))}
                   </div>
+
+                  <Button
+                    asChild
+                    className={`mt-8 w-full rounded-full border px-6 py-6 text-base font-semibold transition-all duration-300 group-hover:scale-[1.01] ${
+                      tier.highlighted
+                        ? "border-violet-500 bg-violet-500 text-white hover:bg-violet-600"
+                        : "border-slate-200 bg-white text-slate-900 hover:border-slate-300 hover:bg-slate-50"
+                    }`}
+                  >
+                    <Link to={tier.registerLink}>
+                      Choose {tier.name}
+                    </Link>
+                  </Button>
                 </CardContent>
               </Card>
             ))}
           </div>
-        </div>
-      </section>
 
+          <div className="mt-8 grid gap-5 lg:grid-cols-2">
+            <Card className="rounded-[28px] border border-violet-100 bg-white shadow-[0_18px_50px_-35px_rgba(168,85,247,0.35)]">
+              <CardHeader className="px-6 pt-8 pb-2">
+                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-violet-400">
+                  Referral Reward
+                </p>
+                <CardTitle className="mt-3 text-[32px] font-semibold tracking-tight text-slate-950">
+                  Earn 10% commission
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="px-6 pb-8 text-base leading-7 text-slate-500">
+                FC members can refer other founders and earn a 10% commission on their membership payment. This is valid for Founders Connect membership only.
+              </CardContent>
+            </Card>
 
-
-      {/* FAQ Section */}
-      <section className="relative py-20 px-4 bg-gradient-to-b from-background via-purple-50/5 to-background">
-        <div className="container mx-auto max-w-3xl">
-          <div className="text-center mb-16">
-            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-purple-100 mb-4">
-              <HelpCircle size={24} className="text-purple-600" />
-            </div>
-            <h2 className="text-4xl font-bold mb-3 text-gradient">Frequently Asked Questions</h2>
-            <p className="text-muted-foreground text-lg">
-              Find answers to common questions about our membership plans
-            </p>
+            <Card className="rounded-[28px] border border-slate-200 bg-white shadow-[0_18px_50px_-35px_rgba(15,23,42,0.18)]">
+              <CardHeader className="px-6 pt-8 pb-2">
+                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-violet-400">
+                  Membership Benefits
+                </p>
+                <CardTitle className="mt-3 text-[32px] font-semibold tracking-tight text-slate-950">
+                  Structured plan access
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="px-6 pb-8 text-base leading-7 text-slate-500">
+                Choose Silver for a lean start, Gold for fast growth with payment gateway support, or Diamond for VIP founder-level access and hands-on mentorship.
+              </CardContent>
+            </Card>
           </div>
-
-          <div className="space-y-3">
-            {[
-              {
-                q: "Can I change my membership tier anytime?",
-                a: "Yes! You can upgrade or downgrade your membership anytime. Changes take effect at the start of your next billing cycle.",
-              },
-              {
-                q: "Is there a free trial?",
-                a: "We offer a 7-day free trial for new members. No credit card required to start exploring.",
-              },
-              {
-                q: "Do you offer refunds?",
-                a: "We have a 30-day money-back guarantee. If you're not satisfied, we'll refund your membership fee.",
-              },
-              {
-                q: "What payment methods do you accept?",
-                a: "We accept all major credit/debit cards, UPI, and bank transfers. All payments are secured with industry-standard encryption.",
-              },
-              {
-                q: "Can I cancel my membership?",
-                a: "Yes, you can cancel anytime with no questions asked. Your access continues until the end of your billing period.",
-              },
-              {
-                q: "What if I'm not sure which tier is right for me?",
-                a: "Contact our support team at support@foundersconnect.in or schedule a free consultation call to find the perfect plan for you.",
-              },
-            ].map((faq, idx) => (
-              <div
-                key={idx}
-                className="group border border-border rounded-xl overflow-hidden bg-background transition-all duration-300 hover:border-purple-300 hover:shadow-lg"
-              >
-                <button
-                  onClick={() => setOpenFaqId(openFaqId === idx ? null : idx)}
-                  className="w-full px-6 py-4 flex items-center justify-between hover:bg-purple-50/5 transition-colors duration-200"
-                >
-                  <span className="text-left font-semibold text-foreground text-base">
-                    {faq.q}
-                  </span>
-                  <ChevronDown
-                    size={20}
-                    className={`text-purple-600 flex-shrink-0 transition-transform duration-300 ${
-                      openFaqId === idx ? "rotate-180" : ""
-                    }`}
-                  />
-                </button>
-                
-                {openFaqId === idx && (
-                  <div className="border-t border-border bg-gradient-to-r from-purple-50/5 to-transparent px-6 py-4 animate-in fade-in-50 slide-in-from-top-2 duration-200">
-                    <p className="text-muted-foreground leading-relaxed">
-                      {faq.a}
-                    </p>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-
-          {/* Additional Help */}
-          <div className="mt-12 p-6 rounded-xl border border-purple-200 bg-gradient-to-r from-purple-50 to-blue-50 text-center">
-            <p className="text-muted-foreground mb-4">
-              Didn't find your answer?
-            </p>
-            <Button asChild className="gap-2">
-              <Link to="/contact">
-                Contact Our Support Team <ArrowRight size={16} />
-              </Link>
-            </Button>
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="relative py-16 px-4 bg-gradient-to-r from-purple-600 to-purple-800 text-white">
-        <div className="container mx-auto max-w-3xl text-center">
-          <h2 className="text-3xl font-bold mb-4">Ready to join Founders Connect?</h2>
-          <p className="text-purple-100 mb-8">
-            Choose your membership tier and start connecting with the right people today.
-          </p>
-          <div className="flex flex-wrap gap-4 justify-center">
-            <Button
-              asChild
-              className="bg-white text-purple-700 hover:bg-gray-100 gap-2"
-            >
-              <Link to="/register">
-                Join Now <ArrowRight size={16} />
-              </Link>
-            </Button>
-            <Button
-              asChild
-              variant="outline"
-              className="border-white text-white hover:bg-purple-700"
-            >
-              <Link to="/contact">Contact Sales</Link>
-            </Button>
-          </div>
-        </div>
-      </section>
+        </section>
+      </main>
 
       <Footer />
     </div>

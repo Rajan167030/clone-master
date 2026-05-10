@@ -981,10 +981,10 @@ const AdminDashboard = () => {
   ];
 
   return (
-    <div className="flex min-h-screen bg-slate-100 dark:bg-[#0a0a0a]">
+    <div className="flex min-h-screen bg-slate-100">
       {/* Sidebar (desktop) */}
-      <aside className="hidden md:flex w-64 bg-slate-950 dark:bg-[#0a0a0a] text-white fixed h-screen flex flex-col overflow-y-auto">
-        <div className="border-b border-slate-800 dark:border-slate-700 p-5">
+      <aside className="hidden md:flex w-64 bg-slate-950 text-white fixed h-screen flex flex-col overflow-y-auto">
+        <div className="border-b border-slate-800 p-5">
           <Link to="/admin" className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-violet-400 to-violet-600 font-bold text-white">
               FC
@@ -1073,7 +1073,7 @@ const AdminDashboard = () => {
       )}
 
       {/* Main Content */}
-      <main className="flex-1 ml-0 md:ml-64 p-4 md:p-6 bg-slate-50 dark:bg-slate-900">
+      <main className="flex-1 ml-0 md:ml-64 p-4 md:p-6">
         <div className="max-w-7xl mx-auto">
           {/* Header */}
           <div className="mb-8">
@@ -1083,8 +1083,8 @@ const AdminDashboard = () => {
               </Button>
               <div className="text-sm text-slate-700">Admin</div>
             </div>
-            <p className="text-sm font-medium uppercase tracking-[0.2em] text-violet-700 dark:text-violet-400">Admin Dashboard</p>
-            <h1 className="mt-2 text-3xl font-bold text-slate-900 dark:text-white sm:text-4xl">
+            <p className="text-sm font-medium uppercase tracking-[0.2em] text-violet-700">Admin Dashboard</p>
+            <h1 className="mt-2 text-3xl font-bold text-slate-900 sm:text-4xl">
               {activeTab === "dashboard" && "Control Center"}
               {activeTab === "analytics" && "Analytics"}
               {activeTab === "events" && "Events Management"}
@@ -1095,7 +1095,7 @@ const AdminDashboard = () => {
               {activeTab === "automation" && "Email Automation"}
               {activeTab === "funding" && "Funding Applications"}
             </h1>
-            <p className="mt-3 max-w-3xl text-slate-600 dark:text-slate-400">
+            <p className="mt-3 max-w-3xl text-slate-600">
               {activeTab === "dashboard" && "Welcome back! Here's your admin overview."}
               {activeTab === "analytics" && "Analyze form activity, content growth, and campaign performance in one place."}
               {activeTab === "events" && "Create, edit, or manage event content"}
