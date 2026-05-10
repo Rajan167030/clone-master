@@ -120,6 +120,8 @@ export type DynamicEvent = {
   videos: string[];
   faqs: Array<{ question: string; answer: string }>;
   isPublished?: boolean;
+  featuredOnSlider?: boolean;
+  sliderOrder?: number;
 };
 
 export type DynamicBlogPost = {
@@ -200,7 +202,16 @@ export type NewsletterSubscriber = {
   updatedAt?: string;
 };
 
-export type NewsletterAudience = "subscribers" | "members" | "everyone";
+export type NewsletterAudience = "subscribers" | "members" | "everyone" | "custom";
+
+export type RecipientUploadStats = {
+  totalParsed: number;
+  accepted: number;
+  invalid: number;
+  duplicates: number;
+  source?: string;
+  previewInvalid?: string[];
+};
 
 export type CloudinarySignedUploadResponse = {
   cloudName: string;
@@ -216,6 +227,7 @@ export type SiteNotice = {
   key: string;
   title: string;
   message: string;
+  bannerImage?: string;
   buttonLabel: string;
   buttonUrl: string;
   isActive: boolean;
@@ -411,6 +423,11 @@ export const getPublicEventsApi = () =>
     method: "GET",
   });
 
+export const getPublicSliderEventsApi = () =>
+  request<{ events: DynamicEvent[] }>("/content/events/slider", {
+    method: "GET",
+  });
+
 export const getPublicEventBySlugApi = (slug: string) =>
   request<{ event: DynamicEvent }>(`/content/events/${slug}`, {
     method: "GET",
@@ -547,7 +564,13 @@ export const sendAdminNewsletterApi = (
 
 export const sendAdminEmailAutomationApi = (
   token: string,
-  payload: { subject: string; html: string; audience: NewsletterAudience },
+  payload: {
+    subject: string;
+    html: string;
+    audience: NewsletterAudience;
+    recipientsText?: string;
+    recipients?: Array<{ email: string; name?: string } | string>;
+  },
 ) =>
   request<{
     message: string;
@@ -557,6 +580,7 @@ export const sendAdminEmailAutomationApi = (
       sent: number;
       failed: number;
       failures: Array<{ email: string; message: string }>;
+      recipientUpload?: RecipientUploadStats;
     };
   }>("/admin/email-automation/send", {
     method: "POST",
@@ -596,10 +620,23 @@ export type Campaign = {
   html?: string;
   scheduledAt?: string;
   stats: { total: number; sent: number; failed: number };
+  recipientUpload?: RecipientUploadStats;
 };
 
-export const createAdminCampaignApi = (token: string, payload: { name?: string; subject: string; html?: string; templateId?: string; audience?: NewsletterAudience; scheduledAt?: string }) =>
-  request<{ message: string; campaignId: string; total: number }>("/admin/campaigns", {
+export const createAdminCampaignApi = (
+  token: string,
+  payload: {
+    name?: string;
+    subject: string;
+    html?: string;
+    templateId?: string;
+    audience?: NewsletterAudience;
+    scheduledAt?: string;
+    recipientsText?: string;
+    recipients?: Array<{ email: string; name?: string } | string>;
+  },
+) =>
+  request<{ message: string; campaignId: string; total: number; recipientUpload?: RecipientUploadStats }>("/admin/campaigns", {
     method: "POST",
     headers: { Authorization: `Bearer ${token}` },
     body: JSON.stringify(payload),

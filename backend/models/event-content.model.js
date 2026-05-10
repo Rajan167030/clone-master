@@ -36,6 +36,8 @@ const EventContentSchema = new Schema(
     videos: { type: [String], default: [] },
     faqs: { type: [EventFaqSchema], default: [] },
     isPublished: { type: Boolean, default: true, index: true },
+    featuredOnSlider: { type: Boolean, default: false, index: true },
+    sliderOrder: { type: Number, default: 0 },
   },
   { timestamps: true, collection: "event_contents" },
 );

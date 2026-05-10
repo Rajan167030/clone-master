@@ -2,7 +2,7 @@ import { useId, useState, type ChangeEvent, type FormEvent } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, Zap, Target, TrendingUp, Link as LinkIcon, Copy, CheckCircle, MessageCircle } from "lucide-react";
+import { Users, Zap, Target, TrendingUp, Copy, CheckCircle, MessageCircle, ArrowRight, ShieldCheck, Clock3 } from "lucide-react";
 import EmailVerificationBox from "@/components/EmailVerificationBox";
 import { Button } from "@/components/ui/button";
 import { submitJoinRequestApi } from "@/lib/api";
@@ -56,6 +56,24 @@ const benefits = [
     icon: TrendingUp,
     title: "Accelerate Your Growth",
     description: "Learn from experienced founders, get mentorship, and accelerate your startup's journey to success.",
+  },
+];
+
+const joiningFlow = [
+  {
+    icon: ShieldCheck,
+    title: "Verified Profiles",
+    description: "Email verification keeps the network authentic and trusted.",
+  },
+  {
+    icon: Clock3,
+    title: "Fast Review",
+    description: "Your form is reviewed by the team before onboarding.",
+  },
+  {
+    icon: MessageCircle,
+    title: "Community Access",
+    description: "Approved members get connected to active founder circles.",
   },
 ];
 
@@ -193,29 +211,58 @@ const JoinUs = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
 
-      <section className="relative pt-24 pb-16">
+      <section className="relative overflow-hidden pt-24 pb-20">
         <div className="pointer-events-none absolute -left-20 top-12 h-64 w-64 rounded-full bg-blob" />
         <div className="pointer-events-none absolute right-0 top-32 h-80 w-80 rounded-full bg-blob" />
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-72 bg-[radial-gradient(circle_at_top,rgba(124,58,237,0.14),transparent_60%)]" />
 
         <div className="container mx-auto px-4">
-          <div className="mx-auto mb-12 max-w-4xl text-center">
-            <p className="mb-3 text-sm font-semibold uppercase tracking-[0.2em] text-primary">Join Our Community</p>
-            <h1 className="font-heading text-4xl font-extrabold leading-tight md:text-6xl">Become Part of Founders Connect</h1>
-            <p className="mt-5 text-lg text-muted-foreground"></p>
-              </div>
+          <div className="mx-auto mb-10 max-w-5xl rounded-3xl border border-border/70 bg-white/80 p-6 shadow-xl backdrop-blur-sm md:p-10">
+            <p className="mb-3 text-center text-xs font-semibold uppercase tracking-[0.28em] text-primary md:text-sm">Join Our Community</p>
+            <h1 className="text-center font-heading text-4xl font-extrabold leading-tight md:text-6xl">
+              Build With India&apos;s Most Ambitious Founder Network
+            </h1>
+            <p className="mx-auto mt-5 max-w-3xl text-center text-base text-muted-foreground md:text-lg">
+              From first-time builders to experienced operators, Founders Connect is where serious people meet,
+              collaborate, and launch faster.
+            </p>
 
-          <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
-            <Button type="button" variant="outline" onClick={handleCopyLink} className="gap-2">
-              <Copy size={16} />
-              Copy Form Link
-            </Button>
+            <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
+              <Button type="button" variant="outline" onClick={handleCopyLink} className="gap-2">
+                <Copy size={16} />
+                Copy Join Link
+              </Button>
+              <Button
+                type="button"
+                onClick={() => window.open(WHATSAPP_GROUP_URL, "_blank", "noopener,noreferrer")}
+                className="gap-2 bg-green-600 text-white hover:bg-green-700"
+              >
+                <MessageCircle size={16} />
+                WhatsApp Community
+              </Button>
+            </div>
+
+            <div className="mx-auto mt-7 grid max-w-3xl gap-3 sm:grid-cols-3">
+              <div className="rounded-xl border border-border/70 bg-slate-50 p-3 text-center">
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Members</p>
+                <p className="mt-1 text-2xl font-extrabold text-slate-900">1000+</p>
+              </div>
+              <div className="rounded-xl border border-border/70 bg-slate-50 p-3 text-center">
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Cities</p>
+                <p className="mt-1 text-2xl font-extrabold text-slate-900">50+</p>
+              </div>
+              <div className="rounded-xl border border-border/70 bg-slate-50 p-3 text-center">
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Focused On</p>
+                <p className="mt-1 text-sm font-bold text-slate-900">Founder Growth</p>
+              </div>
+            </div>
           </div>
 
           {copyMessage && <p className="mt-3 text-center text-sm text-muted-foreground">{copyMessage}</p>}
 
-          <div className="mx-auto my-16 grid max-w-7xl grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+          <div className="mx-auto my-14 grid max-w-7xl grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
             {benefits.map(({ icon: Icon, title, description }) => (
-              <Card key={title} className="group relative aspect-square w-full overflow-hidden rounded-2xl border border-border/60 bg-gradient-to-b from-neutral-100 to-white px-5 py-4 shadow-lg transition-all duration-300 hover:-translate-y-2 hover:scale-[1.02] hover:border-primary/40 hover:shadow-2xl dark:from-neutral-900 dark:to-neutral-950">
+              <Card key={title} className="group relative w-full overflow-hidden rounded-2xl border border-border/60 bg-gradient-to-b from-neutral-100 to-white px-5 py-5 shadow-lg transition-all duration-300 hover:-translate-y-2 hover:scale-[1.02] hover:border-primary/40 hover:shadow-2xl dark:from-neutral-900 dark:to-neutral-950">
                 <Grid size={14} />
                 <CardHeader className="relative z-10 flex-row items-start gap-4 p-0 pt-4">
                   <div className="mt-1 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-primary text-primary-foreground shadow-md transition-transform duration-300 group-hover:scale-110">
@@ -232,22 +279,32 @@ const JoinUs = () => {
             ))}
           </div>
 
-          <div className="mx-auto max-w-4xl">
-            <Card className="border-2 border-dashed border-muted-foreground/30 bg-muted/5 shadow-xl">
+          <div className="mx-auto grid max-w-7xl gap-6 lg:grid-cols-[1.1fr_0.75fr]">
+            <Card className="border-2 border-dashed border-muted-foreground/30 bg-white shadow-xl">
               <CardHeader className="text-center">
                 <CardTitle className="text-2xl md:text-3xl">Detailed Join Form</CardTitle>
-                <p className="mt-2 text-muted-foreground">All fields are required. Share this link with anyone who wants to join the community.</p>
+                <p className="mt-2 text-muted-foreground">Strong profiles get faster review. Fill accurate details for better matching.</p>
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleSubmit} className="grid gap-4 md:grid-cols-2">
+                  <div className="md:col-span-2 rounded-xl border border-primary/20 bg-primary/5 px-4 py-3 text-sm text-slate-700">
+                    <p className="font-semibold text-slate-900">Before you submit</p>
+                    <p className="mt-1">
+                      Verify your email and make sure LinkedIn plus website URLs are correct. This helps us shortlist quickly.
+                    </p>
+                  </div>
+
+                  <div className="md:col-span-2 pt-1">
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Personal Details</p>
+                  </div>
                   <div>
                     <label className="mb-2 block text-sm font-semibold text-foreground">Full Name *</label>
-                    <input required name="name" value={formData.name} onChange={handleChange} placeholder="Your full name" className="w-full rounded border border-border bg-background px-4 py-2 text-foreground placeholder:text-muted-foreground" />
+                    <input required name="name" value={formData.name} onChange={handleChange} placeholder="Your full name" className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20" />
                   </div>
 
                   <div>
                     <label className="mb-2 block text-sm font-semibold text-foreground">Email *</label>
-                    <input required type="email" name="email" value={formData.email} onChange={handleChange} placeholder="your@email.com" className="w-full rounded border border-border bg-background px-4 py-2 text-foreground placeholder:text-muted-foreground" />
+                    <input required type="email" name="email" value={formData.email} onChange={handleChange} placeholder="your@email.com" className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20" />
                     <div className="mt-2">
                       <EmailVerificationBox
                         email={formData.email}
@@ -257,16 +314,19 @@ const JoinUs = () => {
                         onReset={() => setEmailVerificationToken("")}
                       />
                     </div>
+                    <p className="mt-2 text-xs text-slate-500">
+                      {emailVerificationToken ? "Email verified. You can submit now." : "Verify your email to unlock final submission."}
+                    </p>
                   </div>
 
                   <div>
                     <label className="mb-2 block text-sm font-semibold text-foreground">Phone Number *</label>
-                    <input required type="tel" name="phone" value={formData.phone} onChange={handleChange} placeholder="+91 XXXXX XXXXX" className="w-full rounded border border-border bg-background px-4 py-2 text-foreground placeholder:text-muted-foreground" />
+                    <input required type="tel" name="phone" value={formData.phone} onChange={handleChange} placeholder="+91 XXXXX XXXXX" className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20" />
                   </div>
 
                   <div>
                     <label className="mb-2 block text-sm font-semibold text-foreground">Occupation *</label>
-                    <select required name="occupation" value={formData.occupation} onChange={handleChange} className="w-full rounded border border-border bg-background px-4 py-2 text-foreground placeholder:text-muted-foreground">
+                    <select required name="occupation" value={formData.occupation} onChange={handleChange} className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20">
                       {occupationOptions.map((opt) => (
                         <option key={opt.value} value={opt.value}>
                           {opt.label}
@@ -278,53 +338,102 @@ const JoinUs = () => {
                   {formData.occupation === "Student" && (
                     <div>
                       <label className="mb-2 block text-sm font-semibold text-foreground">College / University Name *</label>
-                      <input required name="collegeName" value={formData.collegeName} onChange={handleChange} placeholder="Your college or university name" className="w-full rounded border border-border bg-background px-4 py-2 text-foreground placeholder:text-muted-foreground" />
+                      <input required name="collegeName" value={formData.collegeName} onChange={handleChange} placeholder="Your college or university name" className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20" />
                     </div>
                   )}
 
+                  <div className="md:col-span-2 pt-1">
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Professional Details</p>
+                  </div>
+
                   <div>
                     <label className="mb-2 block text-sm font-semibold text-foreground">Company / Startup Name *</label>
-                    <input required name="companyName" value={formData.companyName} onChange={handleChange} placeholder="Your company or startup name" className="w-full rounded border border-border bg-background px-4 py-2 text-foreground placeholder:text-muted-foreground" />
+                    <input required name="companyName" value={formData.companyName} onChange={handleChange} placeholder="Your company or startup name" className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20" />
                   </div>
 
                   <div>
                     <label className="mb-2 block text-sm font-semibold text-foreground">City / Location *</label>
-                    <input required name="city" value={formData.city} onChange={handleChange} placeholder="City, State" className="w-full rounded border border-border bg-background px-4 py-2 text-foreground placeholder:text-muted-foreground" />
+                    <input required name="city" value={formData.city} onChange={handleChange} placeholder="City, State" className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20" />
                   </div>
 
                   <div>
                     <label className="mb-2 block text-sm font-semibold text-foreground">LinkedIn Profile *</label>
-                    <input required type="url" name="linkedinProfile" value={formData.linkedinProfile} onChange={handleChange} placeholder="https://linkedin.com/in/yourprofile" className="w-full rounded border border-border bg-background px-4 py-2 text-foreground placeholder:text-muted-foreground" />
+                    <input required type="url" name="linkedinProfile" value={formData.linkedinProfile} onChange={handleChange} placeholder="https://linkedin.com/in/yourprofile" className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20" />
                   </div>
 
                   <div>
                     <label className="mb-2 block text-sm font-semibold text-foreground">Website / Portfolio *</label>
-                    <input required type="url" name="website" value={formData.website} onChange={handleChange} placeholder="https://yourwebsite.com" className="w-full rounded border border-border bg-background px-4 py-2 text-foreground placeholder:text-muted-foreground" />
+                    <input required type="url" name="website" value={formData.website} onChange={handleChange} placeholder="https://yourwebsite.com" className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20" />
+                  </div>
+
+                  <div className="md:col-span-2 pt-1">
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Intent & Discovery</p>
                   </div>
 
                   <div className="md:col-span-2">
                     <label className="mb-2 block text-sm font-semibold text-foreground">Why do you want to join? *</label>
-                    <textarea required name="whyJoin" value={formData.whyJoin} onChange={handleChange} placeholder="Tell us what you hope to get from Founders Connect" rows={4} className="w-full rounded border border-border bg-background px-4 py-2 text-foreground placeholder:text-muted-foreground" />
+                    <textarea required name="whyJoin" value={formData.whyJoin} onChange={handleChange} placeholder="Tell us what you hope to get from Founders Connect" rows={4} className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20" />
                   </div>
 
                   <div className="md:col-span-2">
                     <label className="mb-2 block text-sm font-semibold text-foreground">How did you hear about us? *</label>
-                    <input required name="referralSource" value={formData.referralSource} onChange={handleChange} placeholder="Instagram, friend, event, LinkedIn, etc." className="w-full rounded border border-border bg-background px-4 py-2 text-foreground placeholder:text-muted-foreground" />
+                    <input required name="referralSource" value={formData.referralSource} onChange={handleChange} placeholder="Instagram, friend, event, LinkedIn, etc." className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20" />
                   </div>
 
                   <div className="md:col-span-2 mt-2 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                    <button type="submit" disabled={submitting} className="inline-flex items-center justify-center gap-2 rounded-md border border-border bg-primary px-5 py-3 text-sm font-semibold text-foreground transition-all hover:brightness-95 disabled:opacity-60">
+                    <button type="submit" disabled={submitting} className="inline-flex items-center justify-center gap-2 rounded-md border border-border bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground transition-all hover:brightness-95 disabled:opacity-60">
                       {submitting ? "Submitting..." : "Submit Join Request"}
+                      <ArrowRight size={16} />
                     </button>
-                   
+
                   </div>
                 </form>
               </CardContent>
             </Card>
+
+            <div className="space-y-6">
+              <Card className="border border-border/70 bg-white shadow-lg">
+                <CardHeader>
+                  <CardTitle className="text-xl">What Happens Next</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {joiningFlow.map(({ icon: Icon, title, description }) => (
+                    <div key={title} className="flex items-start gap-3 rounded-xl border border-slate-200 bg-slate-50 p-3">
+                      <div className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                        <Icon size={18} />
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-slate-900">{title}</p>
+                        <p className="mt-1 text-xs leading-relaxed text-slate-600">{description}</p>
+                      </div>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+
+              <Card className="border border-green-200 bg-gradient-to-br from-green-50 to-emerald-50 shadow-lg">
+                <CardHeader>
+                  <CardTitle className="text-xl text-green-800">Already Ready?</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm leading-relaxed text-green-800/90">
+                    Join the live WhatsApp community to stay updated on events, founder intros, and collaboration calls.
+                  </p>
+                  <Button
+                    type="button"
+                    onClick={() => window.open(WHATSAPP_GROUP_URL, "_blank", "noopener,noreferrer")}
+                    className="mt-4 w-full gap-2 bg-green-600 text-white hover:bg-green-700"
+                  >
+                    <MessageCircle size={18} />
+                    Open Community Group
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
           </div>
 
           {submitSuccess && (
-            <div className="mx-auto mt-8 max-w-4xl">
+            <div className="mx-auto mt-8 max-w-5xl">
               <Card className="border-2 border-green-500 bg-gradient-to-br from-green-50 to-blue-50 shadow-xl">
                 <CardHeader className="text-center">
                   <div className="mb-4 flex justify-center">

@@ -70,6 +70,8 @@ const sanitizeEventPayload = (body = {}) => {
     videos: normalizeStringArray(body.videos),
     faqs: normalizeFaqs(body.faqs),
     isPublished: typeof body.isPublished === "boolean" ? body.isPublished : true,
+    featuredOnSlider: typeof body.featuredOnSlider === "boolean" ? body.featuredOnSlider : false,
+    sliderOrder: Number(body.sliderOrder || 0),
   };
 };
 
@@ -99,6 +101,7 @@ const sanitizeSiteNoticePayload = (body = {}) => ({
   key: SITE_NOTICE_KEY,
   title: String(body.title || "Announcement").trim() || "Announcement",
   message: String(body.message || "").trim(),
+  bannerImage: String(body.bannerImage || "").trim(),
   buttonLabel: String(body.buttonLabel || "").trim(),
   buttonUrl: String(body.buttonUrl || "").trim(),
   isActive: typeof body.isActive === "boolean" ? body.isActive : false,
@@ -172,6 +175,23 @@ export const listPublicEvents = async (req, res, next) => {
     if (cached) return res.status(200).json(cached);
 
     const events = await EventContent.find({ isPublished: true }).sort({ createdAt: -1 }).lean();
+    const payload = { events };
+    await setCache(cacheKey, payload, 300);
+    return res.status(200).json(payload);
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const listPublicSliderEvents = async (req, res, next) => {
+  try {
+    const cacheKey = "public:slider-events";
+    const cached = await getCache(cacheKey);
+    if (cached) return res.status(200).json(cached);
+
+    const events = await EventContent.find({ isPublished: true, featuredOnSlider: true })
+      .sort({ sliderOrder: 1, createdAt: -1 })
+      .lean();
     const payload = { events };
     await setCache(cacheKey, payload, 300);
     return res.status(200).json(payload);

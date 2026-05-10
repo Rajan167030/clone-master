@@ -1,9 +1,10 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { ArrowUpRight, LayoutDashboard, LogOut } from "lucide-react";
+import { ArrowUpRight, LayoutDashboard, LogOut, Moon, Sun } from "lucide-react";
 import { gsap } from "gsap";
 import { Button } from "@/components/ui/button";
 import { clearSession, getAccount, isAuthenticated } from "@/lib/session";
+import { getDarkMode, toggleDarkMode } from "@/lib/darkMode";
 
 type NavCardLink = {
   label: string;
@@ -54,6 +55,7 @@ const navCards: NavCardItem[] = [
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isHamburgerOpen, setIsHamburgerOpen] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(false);
   const navRef = useRef<HTMLElement | null>(null);
   const contentRef = useRef<HTMLDivElement | null>(null);
   const cardsRef = useRef<Array<HTMLDivElement | null>>([]);
@@ -95,6 +97,10 @@ const Navbar = () => {
   }, []);
 
   useEffect(() => {
+    setIsDarkMode(getDarkMode());
+  }, []);
+
+  useEffect(() => {
     setIsOpen(false);
     setIsHamburgerOpen(false);
     tlRef.current?.reverse(0);
@@ -124,6 +130,11 @@ const Navbar = () => {
     navigate("/login", { replace: true });
   };
 
+  const handleToggleDarkMode = () => {
+    toggleDarkMode();
+    setIsDarkMode(!isDarkMode);
+  };
+
   const toggleMenu = () => {
     const tl = tlRef.current;
     if (!tl) return;
@@ -150,12 +161,12 @@ const Navbar = () => {
     <div className="fixed left-0 right-0 top-0 z-50 px-3 pt-4 sm:px-4 sm:pt-8">
       <nav
         ref={navRef}
-        className="mx-auto w-full max-w-[800px] rounded-[14px] sm:rounded-[18px] border border-white/20 bg-white/90 shadow-[0_14px_40px_rgba(15,23,42,0.14)] backdrop-blur-xl"
+        className="mx-auto w-full max-w-[800px] rounded-[14px] sm:rounded-[18px] border border-white/20 dark:border-white/10 bg-white/90 dark:bg-[#1a1a1a]/95 shadow-[0_14px_40px_rgba(15,23,42,0.14)] dark:shadow-[0_14px_40px_rgba(0,0,0,0.5)] backdrop-blur-xl dark:backdrop-blur-2xl"
       >
         <div className="relative flex h-16 sm:h-[72px] items-center justify-between px-3 sm:px-4 md:px-5 gap-2">
           <button
             type="button"
-            className="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-full text-slate-800 transition-colors hover:bg-slate-100 flex-shrink-0"
+            className="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-full text-slate-800 dark:text-slate-200 transition-colors hover:bg-slate-100 dark:hover:bg-slate-800 flex-shrink-0"
             onClick={toggleMenu}
             aria-label={isOpen ? "Close menu" : "Open menu"}
           >
@@ -163,6 +174,15 @@ const Navbar = () => {
               <span className={`h-0.5 w-5 sm:w-6 rounded-full bg-current transition-transform duration-300 ${isHamburgerOpen ? "translate-y-1.5 rotate-45" : ""}`} />
               <span className={`h-0.5 w-5 sm:w-6 rounded-full bg-current transition-transform duration-300 ${isHamburgerOpen ? "-translate-y-1.5 -rotate-45" : ""}`} />
             </div>
+          </button>
+
+          <button
+            type="button"
+            onClick={handleToggleDarkMode}
+            className="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-full text-slate-800 dark:text-slate-200 transition-colors hover:bg-slate-100 dark:hover:bg-slate-800 flex-shrink-0"
+            aria-label={isDarkMode ? "Switch to light mode" : "Switch to dark mode"}
+          >
+            {isDarkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
           </button>
 
           <Link
@@ -189,8 +209,11 @@ const Navbar = () => {
             <div
               key={item.label}
               ref={setCardRef(index)}
-              className="relative min-h-[120px] sm:min-h-[140px] rounded-[14px] sm:rounded-[18px] p-3 sm:p-4 shadow-lg transition-transform duration-300 hover:-translate-y-1"
-              style={{ backgroundColor: item.bgColor, color: item.textColor }}
+              className="relative min-h-[120px] sm:min-h-[140px] rounded-[14px] sm:rounded-[18px] p-3 sm:p-4 shadow-lg dark:shadow-md transition-transform duration-300 hover:-translate-y-1"
+              style={{
+                backgroundColor: isDarkMode ? "#2a2a2a" : item.bgColor,
+                color: isDarkMode ? "#e5e7eb" : item.textColor,
+              }}
             >
               <div className="text-lg sm:text-[22px] font-medium tracking-[-0.04em]">{item.label}</div>
               <div className="mt-3 sm:mt-4 flex flex-col gap-1.5 sm:gap-2">
@@ -203,7 +226,7 @@ const Navbar = () => {
                       setIsHamburgerOpen(false);
                       setIsOpen(false);
                     }}
-                    className="inline-flex items-center gap-1.5 sm:gap-2 text-sm sm:text-[15px] transition-opacity hover:opacity-75"
+                    className="inline-flex items-center gap-1.5 sm:gap-2 text-sm sm:text-[15px] transition-opacity hover:opacity-75 dark:hover:opacity-60"
                   >
                     <ArrowUpRight className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                     {link.label}
@@ -215,9 +238,9 @@ const Navbar = () => {
         </div>
 
         {authed && isOpen && (
-          <div className="absolute left-0 right-0 top-full mt-2 flex items-center justify-between border-t border-slate-200 px-3 py-2 sm:px-4 sm:py-3 text-xs text-slate-500 md:hidden bg-white/90 rounded-b-[14px] sm:rounded-b-[18px]">
+          <div className="absolute left-0 right-0 top-full mt-2 flex items-center justify-between border-t border-slate-200 dark:border-slate-700 px-3 py-2 sm:px-4 sm:py-3 text-xs text-slate-500 dark:text-slate-400 md:hidden bg-white/90 dark:bg-[#1a1a1a]/95 rounded-b-[14px] sm:rounded-b-[18px]">
             <span className="truncate mr-2">Signed in as {account?.fullName || account?.email || "Member"}</span>
-            <button type="button" className="inline-flex items-center gap-1 text-slate-700 flex-shrink-0 hover:text-purple-600 transition-colors" onClick={handleLogout}>
+            <button type="button" className="inline-flex items-center gap-1 text-slate-700 dark:text-slate-300 flex-shrink-0 hover:text-purple-600 dark:hover:text-purple-400 transition-colors" onClick={handleLogout}>
               <LogOut size={14} />
               Logout
             </button>

@@ -52,8 +52,8 @@ const socials = [
 
 const Footer = () => (
   <footer className="relative px-4 pb-12 pt-4 sm:px-6 lg:px-8">
-    <div className="pointer-events-none absolute inset-0 -top-24 bg-gradient-to-b from-transparent to-secondary/20" />
-    <div className="mx-auto w-full max-w-7xl rounded-[2rem] border border-border/70 bg-secondary/35 px-6 py-16 shadow-[0_20px_50px_-25px_hsl(var(--primary)/0.4),0_25px_60px_-20px_hsl(var(--foreground)/0.25)] backdrop-blur-md sm:px-8 lg:px-10">
+    <div className="pointer-events-none absolute inset-0 -top-24 bg-gradient-to-b from-transparent to-secondary/20 dark:to-slate-800/20" />
+    <div className="mx-auto w-full max-w-7xl rounded-[2rem] border border-border/70 dark:border-slate-700/50 bg-secondary/35 dark:bg-[#1a1a1a]/40 px-6 py-16 shadow-[0_20px_50px_-25px_hsl(var(--primary)/0.4),0_25px_60px_-20px_hsl(var(--foreground)/0.25)] dark:shadow-[0_20px_50px_-25px_rgba(0,0,0,0.6)] backdrop-blur-md sm:px-8 lg:px-10">
       <div className="grid grid-cols-2 gap-8 mb-12 md:grid-cols-5">
         <div className="col-span-2">
           <div className="flex items-center gap-3 mb-4">

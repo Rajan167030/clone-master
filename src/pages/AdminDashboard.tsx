@@ -54,6 +54,7 @@ import {
   type SiteNotice,
   type Testimonial,
   type Campaign,
+  type RecipientUploadStats,
 } from "@/lib/api";
 import { getToken, getAccount } from "@/lib/session";
 import { Button } from "@/components/ui/button";
@@ -108,6 +109,8 @@ const emptyEventForm = {
   videos: "",
   faqs: "",
   isPublished: true,
+  featuredOnSlider: false,
+  sliderOrder: 0,
 };
 
 const emptyBlogForm = {
@@ -126,6 +129,7 @@ const emptyBlogForm = {
 const emptySiteNoticeForm = {
   title: "Announcement",
   message: "",
+  bannerImage: "",
   buttonLabel: "",
   buttonUrl: "",
   isActive: false,
@@ -149,6 +153,7 @@ type NewsletterSendSummary = {
   failed: number;
   failures: Array<{ email: string; message: string }>;
   audience?: NewsletterAudience;
+  recipientUpload?: RecipientUploadStats;
 };
 
 const emptyPartnerForm = {
@@ -212,6 +217,40 @@ const parseSections = (value: string) =>
 
 const normalizeEmail = (email: string) => String(email || "").trim().toLowerCase();
 
+const EMAIL_REGEX = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+
+const parseCustomRecipientStats = (value: string) => {
+  const parsed = String(value || "")
+    .split(/[\n,;\t ]+/)
+    .map((item) => normalizeEmail(item))
+    .filter(Boolean);
+
+  const unique = new Set<string>();
+  let invalid = 0;
+  let duplicates = 0;
+
+  for (const email of parsed) {
+    if (!EMAIL_REGEX.test(email)) {
+      invalid += 1;
+      continue;
+    }
+
+    if (unique.has(email)) {
+      duplicates += 1;
+      continue;
+    }
+
+    unique.add(email);
+  }
+
+  return {
+    totalParsed: parsed.length,
+    accepted: unique.size,
+    invalid,
+    duplicates,
+  };
+};
+
 const AdminDashboard = () => {
   const token = useMemo(() => getToken() || "", []);
   const account = getAccount();
@@ -241,6 +280,7 @@ const AdminDashboard = () => {
   const [newsletterForm, setNewsletterForm] = useState(emptyNewsletterForm);
   const [campaignScheduledAt, setCampaignScheduledAt] = useState("");
   const [newsletterAudience, setNewsletterAudience] = useState<NewsletterAudience>("everyone");
+  const [customRecipientInput, setCustomRecipientInput] = useState("");
   const [newsletterSending, setNewsletterSending] = useState(false);
   const [newsletterResult, setNewsletterResult] = useState<NewsletterSendSummary | null>(null);
   const [partnerForm, setPartnerForm] = useState(emptyPartnerForm);
@@ -264,8 +304,10 @@ const AdminDashboard = () => {
   const [uploadingEventBanner, setUploadingEventBanner] = useState(false);
   const [uploadingBlogCover, setUploadingBlogCover] = useState(false);
   const [uploadingGalleryImage, setUploadingGalleryImage] = useState(false);
+  const [uploadingNoticeBanner, setUploadingNoticeBanner] = useState(false);
   const [eventImageMode, setEventImageMode] = useState<ImageInputMode>("url");
   const [blogImageMode, setBlogImageMode] = useState<ImageInputMode>("url");
+  const [noticeImageMode, setNoticeImageMode] = useState<ImageInputMode>("url");
 
   const exportToCSV = (data: unknown[], filename = "export") => {
     if (!data || !data.length) {
@@ -315,12 +357,16 @@ const AdminDashboard = () => {
     };
   }, [joinRequests, members, subscribers]);
 
+  const customRecipientStats = useMemo(() => parseCustomRecipientStats(customRecipientInput), [customRecipientInput]);
+
   const recipientCountForAudience =
     newsletterAudience === "subscribers"
       ? newsletterRecipientCounts.subscribers
       : newsletterAudience === "members"
         ? newsletterRecipientCounts.members
-        : newsletterRecipientCounts.everyone;
+        : newsletterAudience === "custom"
+          ? customRecipientStats.accepted
+          : newsletterRecipientCounts.everyone;
 
   const loadAdminData = () => {
     Promise.all([
@@ -374,6 +420,7 @@ const AdminDashboard = () => {
             ? {
                 title: noticeResponse.notice.title || "Announcement",
                 message: noticeResponse.notice.message || "",
+                bannerImage: noticeResponse.notice.bannerImage || "",
                 buttonLabel: noticeResponse.notice.buttonLabel || "",
                 buttonUrl: noticeResponse.notice.buttonUrl || "",
                 isActive: Boolean(noticeResponse.notice.isActive),
@@ -481,6 +528,7 @@ const AdminDashboard = () => {
         setSiteNoticeForm({
           title: response.notice.title || "Announcement",
           message: response.notice.message || "",
+          bannerImage: response.notice.bannerImage || "",
           buttonLabel: response.notice.buttonLabel || "",
           buttonUrl: response.notice.buttonUrl || "",
           isActive: Boolean(response.notice.isActive),
@@ -497,13 +545,23 @@ const AdminDashboard = () => {
       return;
     }
 
+    if (newsletterAudience === "custom" && customRecipientStats.totalParsed === 0) {
+      window.alert("Paste at least one email address for custom audience.");
+      return;
+    }
+
     if (recipientCountForAudience === 0) {
       window.alert("There are no recipients for the selected audience.");
       return;
     }
 
+    const invalidHint =
+      newsletterAudience === "custom" && (customRecipientStats.invalid > 0 || customRecipientStats.duplicates > 0)
+        ? `\nInvalid ignored: ${customRecipientStats.invalid}, duplicates ignored: ${customRecipientStats.duplicates}`
+        : "";
+
     const confirmed = window.confirm(
-      `Send this email to ${recipientCountForAudience} recipient${recipientCountForAudience === 1 ? "" : "s"}?`,
+      `Send this email to ${recipientCountForAudience} recipient${recipientCountForAudience === 1 ? "" : "s"}?${invalidHint}`,
     );
 
     if (!confirmed) {
@@ -521,12 +579,21 @@ const AdminDashboard = () => {
       templateId: selectedTemplateId || undefined,
       audience: newsletterAudience,
       scheduledAt: campaignScheduledAt || undefined,
+      recipientsText: newsletterAudience === "custom" ? customRecipientInput : undefined,
     })
       .then((response) => {
         window.alert(response.message);
-        setNewsletterResult({ total: response.total, sent: 0, failed: 0, failures: [] });
+        setNewsletterResult({
+          total: response.total,
+          sent: 0,
+          failed: 0,
+          failures: [],
+          audience: newsletterAudience,
+          recipientUpload: response.recipientUpload,
+        });
         setNewsletterForm(emptyNewsletterForm);
         setNewsletterAudience("everyone");
+        setCustomRecipientInput("");
         setCampaignScheduledAt("");
         loadAdminData();
       })
@@ -547,6 +614,7 @@ const AdminDashboard = () => {
           html: (current as { html?: string }).html || "",
         });
         setNewsletterAudience((current.audience as NewsletterAudience) || "everyone");
+        setCustomRecipientInput("");
       })
       .catch((error) => {
         window.alert(error instanceof Error ? error.message : "Unable to load campaign details.");
@@ -653,6 +721,57 @@ const AdminDashboard = () => {
       window.alert(message);
     } finally {
       setUploadingBlogCover(false);
+    }
+  };
+
+  const handleSiteNoticeBannerUpload = async (file?: File | null) => {
+    if (!file) return;
+    if (!token) {
+      window.alert("Please log in again before uploading images.");
+      return;
+    }
+
+    setUploadingNoticeBanner(true);
+    try {
+      const signaturePayload = await getCloudinaryUploadSignatureApi(token, {
+        folder: "founders-connect/notices",
+      });
+
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("api_key", signaturePayload.apiKey);
+      formData.append("timestamp", String(signaturePayload.timestamp));
+      formData.append("signature", signaturePayload.signature);
+      formData.append("folder", signaturePayload.folder);
+
+      if (signaturePayload.publicId) {
+        formData.append("public_id", signaturePayload.publicId);
+      }
+
+      const uploadResponse = await fetch(signaturePayload.uploadUrl, {
+        method: "POST",
+        body: formData,
+      });
+
+      const uploadData = (await uploadResponse.json().catch(() => ({}))) as CloudinaryUploadResponse & {
+        error?: { message?: string };
+      };
+
+      if (!uploadResponse.ok || !uploadData.secure_url) {
+        throw new Error(uploadData.error?.message || "Cloudinary upload failed.");
+      }
+
+      setSiteNoticeForm((current) => ({
+        ...current,
+        bannerImage: uploadData.secure_url || "",
+      }));
+
+      window.alert("Image uploaded successfully.");
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Unable to upload image.";
+      window.alert(message);
+    } finally {
+      setUploadingNoticeBanner(false);
     }
   };
 
@@ -862,10 +981,10 @@ const AdminDashboard = () => {
   ];
 
   return (
-    <div className="flex min-h-screen bg-slate-100">
+    <div className="flex min-h-screen bg-slate-100 dark:bg-[#0a0a0a]">
       {/* Sidebar (desktop) */}
-      <aside className="hidden md:flex w-64 bg-slate-950 text-white fixed h-screen flex flex-col overflow-y-auto">
-        <div className="border-b border-slate-800 p-5">
+      <aside className="hidden md:flex w-64 bg-slate-950 dark:bg-[#0a0a0a] text-white fixed h-screen flex flex-col overflow-y-auto">
+        <div className="border-b border-slate-800 dark:border-slate-700 p-5">
           <Link to="/admin" className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-violet-400 to-violet-600 font-bold text-white">
               FC
@@ -954,7 +1073,7 @@ const AdminDashboard = () => {
       )}
 
       {/* Main Content */}
-      <main className="flex-1 ml-0 md:ml-64 p-4 md:p-6">
+      <main className="flex-1 ml-0 md:ml-64 p-4 md:p-6 bg-slate-50 dark:bg-slate-900">
         <div className="max-w-7xl mx-auto">
           {/* Header */}
           <div className="mb-8">
@@ -964,8 +1083,8 @@ const AdminDashboard = () => {
               </Button>
               <div className="text-sm text-slate-700">Admin</div>
             </div>
-            <p className="text-sm font-medium uppercase tracking-[0.2em] text-violet-700">Admin Dashboard</p>
-            <h1 className="mt-2 text-3xl font-bold text-slate-900 sm:text-4xl">
+            <p className="text-sm font-medium uppercase tracking-[0.2em] text-violet-700 dark:text-violet-400">Admin Dashboard</p>
+            <h1 className="mt-2 text-3xl font-bold text-slate-900 dark:text-white sm:text-4xl">
               {activeTab === "dashboard" && "Control Center"}
               {activeTab === "analytics" && "Analytics"}
               {activeTab === "events" && "Events Management"}
@@ -976,7 +1095,7 @@ const AdminDashboard = () => {
               {activeTab === "automation" && "Email Automation"}
               {activeTab === "funding" && "Funding Applications"}
             </h1>
-            <p className="mt-3 max-w-3xl text-slate-600">
+            <p className="mt-3 max-w-3xl text-slate-600 dark:text-slate-400">
               {activeTab === "dashboard" && "Welcome back! Here's your admin overview."}
               {activeTab === "analytics" && "Analyze form activity, content growth, and campaign performance in one place."}
               {activeTab === "events" && "Create, edit, or manage event content"}
@@ -1089,6 +1208,74 @@ const AdminDashboard = () => {
                     onChange={(e) => setSiteNoticeForm((current) => ({ ...current, message: e.target.value }))}
                     className="min-h-28"
                   />
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <label className="text-sm font-medium text-slate-700">Banner Image (optional)</label>
+                      <div className="flex gap-2 rounded-lg border border-slate-200 bg-slate-50 p-1">
+                        <button
+                          type="button"
+                          onClick={() => setNoticeImageMode("url")}
+                          className={`px-3 py-1 rounded text-xs font-medium transition-colors ${
+                            noticeImageMode === "url"
+                              ? "bg-violet-500 text-white"
+                              : "bg-transparent text-slate-600 hover:text-slate-900"
+                          }`}
+                        >
+                          Paste URL
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setNoticeImageMode("upload")}
+                          className={`px-3 py-1 rounded text-xs font-medium transition-colors ${
+                            noticeImageMode === "upload"
+                              ? "bg-violet-500 text-white"
+                              : "bg-transparent text-slate-600 hover:text-slate-900"
+                          }`}
+                        >
+                          <Upload className="inline h-3 w-3 mr-1" />
+                          Upload
+                        </button>
+                      </div>
+                    </div>
+                    {noticeImageMode === "url" ? (
+                      <Input
+                        placeholder="https://example.com/image.jpg"
+                        value={siteNoticeForm.bannerImage}
+                        onChange={(e) => setSiteNoticeForm((current) => ({ ...current, bannerImage: e.target.value }))}
+                      />
+                    ) : (
+                      <div className="flex flex-wrap items-center gap-3">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          disabled={uploadingNoticeBanner}
+                          onClick={() => document.getElementById("notice-banner-upload")?.click()}
+                        >
+                          {uploadingNoticeBanner ? "Uploading..." : "Choose Image"}
+                        </Button>
+                        <input
+                          id="notice-banner-upload"
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            void handleSiteNoticeBannerUpload(file);
+                            e.target.value = "";
+                          }}
+                        />
+                        <span className="text-xs text-slate-500">File will be uploaded to Cloudinary</span>
+                      </div>
+                    )}
+                    {siteNoticeForm.bannerImage && (
+                      <img
+                        src={siteNoticeForm.bannerImage}
+                        alt="Popup banner preview"
+                        className="h-24 w-full rounded-lg border border-slate-200 object-cover sm:h-28"
+                      />
+                    )}
+                  </div>
                   <div className="grid gap-3 sm:grid-cols-2">
                     <Input
                       placeholder="Button label (optional)"
@@ -1282,6 +1469,47 @@ const AdminDashboard = () => {
                     <Textarea placeholder="Audience (one per line)" value={eventForm.audience} onChange={(e) => setEventForm((c) => ({ ...c, audience: e.target.value }))} />
                     <Textarea placeholder="Tags (one per line)" value={eventForm.tags} onChange={(e) => setEventForm((c) => ({ ...c, tags: e.target.value }))} />
                     <Textarea placeholder="FAQs: question || answer" value={eventForm.faqs} onChange={(e) => setEventForm((c) => ({ ...c, faqs: e.target.value }))} />
+                    
+                    <div className="space-y-3 border-t pt-4">
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          id="event-published"
+                          checked={eventForm.isPublished}
+                          onChange={(e) => setEventForm((c) => ({ ...c, isPublished: e.target.checked }))}
+                          className="h-4 w-4"
+                        />
+                        <label htmlFor="event-published" className="text-sm font-medium text-slate-700 cursor-pointer">
+                          Publish Event
+                        </label>
+                      </div>
+                      
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          id="event-slider"
+                          checked={eventForm.featuredOnSlider}
+                          onChange={(e) => setEventForm((c) => ({ ...c, featuredOnSlider: e.target.checked }))}
+                          className="h-4 w-4"
+                        />
+                        <label htmlFor="event-slider" className="text-sm font-medium text-slate-700 cursor-pointer">
+                          Feature on Hero Slider
+                        </label>
+                      </div>
+                      
+                      {eventForm.featuredOnSlider && (
+                        <div className="ml-6">
+                          <Input
+                            type="number"
+                            placeholder="Slider Order (0 = first)"
+                            value={eventForm.sliderOrder}
+                            onChange={(e) => setEventForm((c) => ({ ...c, sliderOrder: Number(e.target.value) }))}
+                            className="text-sm"
+                          />
+                        </div>
+                      )}
+                    </div>
+                    
                     <div className="flex flex-wrap gap-3 pt-4">
                       <Button onClick={handleSaveEvent} className="gap-2">
                         <CheckCircle2 className="h-4 w-4" />
@@ -1349,6 +1577,8 @@ const AdminDashboard = () => {
                                   videos: event.videos.join("\n"),
                                   faqs: serializeFaqs(event.faqs),
                                   isPublished: event.isPublished ?? true,
+                                  featuredOnSlider: event.featuredOnSlider ?? false,
+                                  sliderOrder: event.sliderOrder ?? 0,
                                 });
                                 setShowEventForm(true);
                               }}
@@ -2443,13 +2673,33 @@ const AdminDashboard = () => {
                           <option value="subscribers">Active newsletter subscribers</option>
                           <option value="members">Active members</option>
                           <option value="everyone">Everyone</option>
+                          <option value="custom">Custom pasted email list</option>
                         </select>
                       </div>
                       <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
                         <p className="text-xs font-medium text-slate-500">Estimated recipients</p>
                         <p className="text-2xl font-bold text-slate-900">{recipientCountForAudience}</p>
+                        {newsletterAudience === "custom" && (
+                          <p className="mt-1 text-xs text-slate-500">
+                            Parsed: {customRecipientStats.totalParsed} | Invalid: {customRecipientStats.invalid} | Duplicates: {customRecipientStats.duplicates}
+                          </p>
+                        )}
                       </div>
                     </div>
+                    {newsletterAudience === "custom" && (
+                      <div>
+                        <label className="mb-2 block text-sm font-semibold text-slate-700">Paste emails (1000+ supported)</label>
+                        <Textarea
+                          placeholder="Paste emails separated by newline, comma, semicolon, or space"
+                          value={customRecipientInput}
+                          onChange={(e) => setCustomRecipientInput(e.target.value)}
+                          className="min-h-36 font-mono text-sm"
+                        />
+                        <p className="mt-2 text-xs text-slate-500">
+                          Tip: invalid or duplicate emails are ignored automatically. Campaign logs keep sent/failed tracking.
+                        </p>
+                      </div>
+                    )}
                     <div className="grid gap-3 sm:grid-cols-2">
                       <div>
                         <label className="mb-2 block text-sm font-semibold text-slate-700">Template</label>
@@ -2540,6 +2790,11 @@ const AdminDashboard = () => {
                         {newsletterResult.audience && (
                           <p className="mt-1 text-xs text-slate-500">
                             Audience: {newsletterResult.audience}
+                          </p>
+                        )}
+                        {newsletterResult.recipientUpload && (
+                          <p className="mt-1 text-xs text-slate-500">
+                            Parsed: {newsletterResult.recipientUpload.totalParsed} | Accepted: {newsletterResult.recipientUpload.accepted} | Invalid: {newsletterResult.recipientUpload.invalid} | Duplicates: {newsletterResult.recipientUpload.duplicates}
                           </p>
                         )}
                         {newsletterResult.failed > 0 && (

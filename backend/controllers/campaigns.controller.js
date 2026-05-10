@@ -50,7 +50,7 @@ export const previewTemplate = async (req, res) => {
 // Campaigns
 export const createCampaign = async (req, res) => {
   try {
-    const { name, subject, html, templateId, audience, scheduledAt } = req.body || {};
+    const { name, subject, html, templateId, audience, scheduledAt, recipientsText, recipients } = req.body || {};
     if (!subject || !(html || templateId)) return res.status(400).json({ message: 'Missing subject or HTML/template.' });
 
     if (!isEmailConfigured()) {
@@ -64,26 +64,39 @@ export const createCampaign = async (req, res) => {
       finalHtml = tpl.html;
     }
 
-    const recipients = await getRecipients(audience);
+    const recipientContext = await getRecipients(audience, { recipientsText, recipients });
+
+    if (recipientContext.recipients.length === 0) {
+      return res.status(400).json({ message: 'There are no recipients for the selected audience.' });
+    }
 
     const campaign = await Campaign.create({
       name: name || subject.slice(0, 80),
       subject,
       template: templateId,
       html: finalHtml,
-      audience: audience || 'subscribers',
+      audience: recipientContext.selectedAudience || 'subscribers',
       scheduledAt: scheduledAt ? new Date(scheduledAt) : new Date(),
       status: scheduledAt ? 'scheduled' : 'scheduled',
-      stats: { total: recipients.length },
+      stats: { total: recipientContext.recipients.length },
+      recipientUpload: recipientContext.recipientUpload || undefined,
       createdBy: req.user?.id,
     });
 
     // schedule using Agenda
-    await scheduleCampaign(campaign._id, recipients, { scheduledAt: campaign.scheduledAt });
+    await scheduleCampaign(campaign._id, recipientContext.recipients, { scheduledAt: campaign.scheduledAt });
 
-    return res.json({ message: 'Campaign created and scheduled', campaignId: campaign._id, total: recipients.length });
+    return res.json({
+      message: 'Campaign created and scheduled',
+      campaignId: campaign._id,
+      total: recipientContext.recipients.length,
+      recipientUpload: recipientContext.recipientUpload || undefined,
+    });
   } catch (err) {
     console.error('createCampaign error', err);
+    if (err instanceof Error && /recipients|limit/i.test(err.message)) {
+      return res.status(400).json({ message: err.message });
+    }
     return res.status(500).json({ message: 'Server error' });
   }
 };

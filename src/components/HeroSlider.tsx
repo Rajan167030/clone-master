@@ -5,8 +5,9 @@ import { ArrowRight } from "lucide-react";
 import slide1 from "@/assets/hero-slide1.jpg";
 import slide2 from "@/assets/hero-slide2.jpg";
 import slide3 from "@/assets/hero-slide3.jpg";
+import { getPublicSliderEventsApi } from "@/lib/api";
 
-const slides = [
+const fallbackSlides = [
   {
     title: "Founders Connect",
     highlight: "Startup Meetup 2026",
@@ -32,14 +33,40 @@ const slides = [
 
 const HeroSlider = () => {
   const [current, setCurrent] = useState(0);
+  const [slides, setSlides] = useState(fallbackSlides);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    // Fetch featured slider events
+    const fetchSliderEvents = async () => {
+      try {
+        const data = await getPublicSliderEventsApi();
+        if (data?.events && data.events.length > 0) {
+          // Convert events to slides format
+          const eventSlides = data.events.map((event: any) => ({
+            title: event.title,
+            highlight: event.subtitle || event.title,
+            link: `/events/${event.slug}`,
+            image: event.bannerImage || slide1,
+            alt: event.bannerAlt || event.title,
+          }));
+          setSlides(eventSlides.length > 0 ? eventSlides : fallbackSlides);
+        }
+      } catch (error) {
+        console.error("Failed to fetch slider events:", error);
+        // Keep fallback slides on error
+      }
+    };
+
+    fetchSliderEvents();
+  }, []);
 
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrent((prev) => (prev + 1) % slides.length);
     }, 5000);
     return () => clearInterval(timer);
-  }, []);
+  }, [slides.length]);
 
   return (
     <section className="relative pt-16">

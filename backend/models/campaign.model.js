@@ -6,7 +6,15 @@ const CampaignSchema = new mongoose.Schema(
     subject: { type: String, required: true, trim: true },
     template: { type: mongoose.Schema.Types.ObjectId, ref: 'EmailTemplate', index: true },
     html: { type: String },
-    audience: { type: String, enum: ['subscribers', 'members', 'everyone'], default: 'subscribers' },
+    audience: { type: String, enum: ['subscribers', 'members', 'everyone', 'custom'], default: 'subscribers' },
+    recipientUpload: {
+      totalParsed: { type: Number, default: 0 },
+      accepted: { type: Number, default: 0 },
+      invalid: { type: Number, default: 0 },
+      duplicates: { type: Number, default: 0 },
+      source: { type: String, default: '' },
+      previewInvalid: { type: [String], default: [] },
+    },
     scheduledAt: { type: Date, index: true },
     status: { type: String, enum: ['draft', 'scheduled', 'running', 'completed', 'failed'], default: 'draft', index: true },
     stats: {

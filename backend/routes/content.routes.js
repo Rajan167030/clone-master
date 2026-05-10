@@ -8,6 +8,7 @@ import {
   getPublicSiteNotice,
   listPublicBlogs,
   listPublicEvents,
+  listPublicSliderEvents,
   listPublicTestimonials,
   getPublicCloudinaryUploadSignature,
 } from "../controllers/content.controller.js";
@@ -20,6 +21,7 @@ import { submitFundingApplication } from "../controllers/funding.controller.js";
 const contentRouter = Router();
 
 contentRouter.get("/events", listPublicEvents);
+contentRouter.get("/events/slider", listPublicSliderEvents);
 contentRouter.get("/events/:slug", getPublicEventBySlug);
 contentRouter.get("/blogs", listPublicBlogs);
 contentRouter.get("/blogs/:slug", getPublicBlogBySlug);

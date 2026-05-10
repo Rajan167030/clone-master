@@ -7,6 +7,7 @@ const SiteNoticeSchema = new Schema(
     key: { type: String, required: true, unique: true, index: true, trim: true },
     title: { type: String, default: "Announcement", trim: true },
     message: { type: String, default: "", trim: true },
+    bannerImage: { type: String, default: "", trim: true },
     buttonLabel: { type: String, default: "", trim: true },
     buttonUrl: { type: String, default: "", trim: true },
     isActive: { type: Boolean, default: false, index: true },

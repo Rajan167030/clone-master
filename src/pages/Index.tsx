@@ -82,7 +82,14 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background">
       <Dialog open={isNoticeOpen} onOpenChange={setIsNoticeOpen}>
-        <DialogContent className="max-w-xl overflow-hidden border-violet-100 p-0 sm:max-w-2xl">
+        <DialogContent className="max-w-xl overflow-hidden border-violet-100 dark:border-violet-900/50 p-0 sm:max-w-2xl bg-white dark:bg-[#1a1a1a]">
+          {siteNotice?.bannerImage && (
+            <img
+              src={siteNotice.bannerImage}
+              alt="Popup banner"
+              className="w-full h-40 object-cover sm:h-48"
+            />
+          )}
           <div className="bg-gradient-to-r from-violet-500 to-violet-600 px-6 py-5 text-white">
             <p className="text-xs font-semibold uppercase tracking-[0.22em] text-white/80">Announcement</p>
             <DialogTitle className="mt-2 text-2xl font-heading font-bold text-white">
@@ -90,7 +97,7 @@ const Index = () => {
             </DialogTitle>
           </div>
           <div className="space-y-5 px-6 py-6">
-            <DialogDescription className="whitespace-pre-wrap text-base leading-7 text-slate-600">
+            <DialogDescription className="whitespace-pre-wrap text-base leading-7 text-slate-600 dark:text-slate-300">
               {siteNotice?.message}
             </DialogDescription>
             {siteNotice?.buttonLabel && siteNotice?.buttonUrl && (
