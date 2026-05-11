@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import {
   ArrowLeft,
@@ -29,12 +29,48 @@ import NotFound from "./NotFound";
 const EventDetails = () => {
   const { slug = "" } = useParams();
   const [event, setEvent] = useState<DynamicEvent | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    let isActive = true;
+    setIsLoading(true);
+    setEvent(null);
+
     getPublicEventBySlugApi(slug)
-      .then((response) => setEvent(response.event))
-      .catch(() => setEvent(null));
-  }, [fallbackEvent, slug]);
+      .then((response) => {
+        if (isActive) {
+          setEvent(response.event);
+        }
+      })
+      .catch(() => {
+        if (isActive) {
+          setEvent(null);
+        }
+      })
+      .finally(() => {
+        if (isActive) {
+          setIsLoading(false);
+        }
+      });
+
+    return () => {
+      isActive = false;
+    };
+  }, [slug]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navbar />
+        <div className="container mx-auto flex min-h-[60vh] items-center justify-center px-4">
+          <div className="rounded-2xl border bg-background/80 px-6 py-4 text-sm text-muted-foreground shadow-lg">
+            Loading event details...
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   if (!event) {
     return <NotFound />;
