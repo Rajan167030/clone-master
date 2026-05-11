@@ -20,7 +20,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { getEventBySlug } from "@/lib/events";
 import {
   getPublicEventBySlugApi,
   type DynamicEvent,
@@ -29,17 +28,12 @@ import NotFound from "./NotFound";
 
 const EventDetails = () => {
   const { slug = "" } = useParams();
-  const fallbackEvent = useMemo(() => getEventBySlug(slug), [slug]);
-  const [event, setEvent] = useState<DynamicEvent | null>(fallbackEvent || null);
+  const [event, setEvent] = useState<DynamicEvent | null>(null);
 
   useEffect(() => {
     getPublicEventBySlugApi(slug)
-      .then((response) => {
-        setEvent(response.event);
-      })
-      .catch(() => {
-        setEvent(fallbackEvent || null);
-      });
+      .then((response) => setEvent(response.event))
+      .catch(() => setEvent(null));
   }, [fallbackEvent, slug]);
 
   if (!event) {

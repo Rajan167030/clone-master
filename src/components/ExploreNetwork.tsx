@@ -58,8 +58,8 @@ const GridItem = ({ area, icon, title, description }: GridItemProps) => {
       <div className="relative h-full overflow-hidden rounded-2xl border border-slate-300 bg-white p-[1px] shadow-[0_4px_16px_-12px_rgba(15,23,42,0.35)] md:rounded-3xl">
         <GlowingEffect
           blur={0}
-          borderWidth={3}
-          spread={80}
+          borderWidth={16}
+          spread={200}
           glow={true}
           disabled={false}
           proximity={64}

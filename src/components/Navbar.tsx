@@ -152,7 +152,7 @@ const Navbar = () => {
     <div className="fixed left-0 right-0 top-0 z-50 px-3 pt-4 sm:px-4 sm:pt-8">
       <nav
         ref={navRef}
-        className="mx-auto w-full max-w-[800px] rounded-[14px] sm:rounded-[18px] border border-white/20 bg-white/90 shadow-[0_14px_40px_rgba(15,23,42,0.14)] backdrop-blur-xl"
+        className="mx-auto w-full max-w-[920px] rounded-[14px] sm:rounded-[18px] border border-white/20 bg-white/90 shadow-[0_14px_40px_rgba(15,23,42,0.14)] backdrop-blur-xl"
       >
         <div className="relative flex h-16 sm:h-[72px] items-center justify-between px-3 sm:px-4 md:px-5 gap-2">
           <button

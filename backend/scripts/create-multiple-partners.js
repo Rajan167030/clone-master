@@ -14,10 +14,10 @@
     const token = loginJson.token;
 
     const partners = [
-      { name: 'Test Partner A', logoUrl: 'https://example.com/logo-a.png', websiteUrl: 'https://example.com/a', order: 1, isActive: true },
-      { name: 'Test Partner B', logoUrl: 'https://example.com/logo-b.png', websiteUrl: 'https://example.com/b', order: 2, isActive: true },
-      { name: 'Test Partner C', logoUrl: 'https://example.com/logo-c.png', websiteUrl: 'https://example.com/c', order: 3, isActive: false },
-      { name: 'Test Partner D', logoUrl: 'https://example.com/logo-d.png', websiteUrl: 'https://example.com/d', order: 4, isActive: true },
+      { name: 'Test Partner A', websiteUrl: 'https://example.com/a', order: 1, isActive: true },
+      { name: 'Test Partner B', websiteUrl: 'https://example.com/b', order: 2, isActive: true },
+      { name: 'Test Partner C', websiteUrl: 'https://example.com/c', order: 3, isActive: false },
+      { name: 'Test Partner D', websiteUrl: 'https://example.com/d', order: 4, isActive: true },
     ];
 
     for (const p of partners) {

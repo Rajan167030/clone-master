@@ -6,26 +6,22 @@ import Footer from "@/components/Footer";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import NotFound from "./NotFound";
-import { getBlogBySlug } from "@/lib/blogs";
 import { getPublicBlogBySlugApi, type DynamicBlogPost } from "@/lib/api";
 import { useSEO, useStructuredData } from "@/hooks/useSEO";
 
 const BlogDetails = () => {
   const { slug = "" } = useParams();
-  const fallbackPost = useMemo(() => getBlogBySlug(slug), [slug]);
-  const [post, setPost] = useState<DynamicBlogPost | null>(fallbackPost || null);
+  const [post, setPost] = useState<DynamicBlogPost | null>(null);
 
-  const seoTitle = post?.title || fallbackPost?.title || "Blog Post";
-  const seoDescription = post?.excerpt || fallbackPost?.excerpt || "Read the latest insights from Founders Connect.";
-  const seoKeywords = post?.tags?.length
-    ? `${post.tags.join(", ")}, startup blog, founder insights, Founders Connect`
-    : "startup blog, founder insights, Founders Connect";
+  const seoTitle = post?.title || "Blog Post";
+  const seoDescription = post?.excerpt || "Read the latest insights from Founders Connect.";
+  const seoKeywords = post?.tags?.length ? `${post.tags.join(", ")}, startup blog, founder insights, Founders Connect` : "startup blog, founder insights, Founders Connect";
 
   useSEO({
     title: seoTitle,
     description: seoDescription,
     keywords: seoKeywords,
-    ogImage: post?.coverImage || fallbackPost?.coverImage || "",
+    ogImage: post?.coverImage || "",
     ogType: "article",
     canonicalUrl: `https://founders.connect/blog/${slug}`,
   });
@@ -35,25 +31,19 @@ const BlogDetails = () => {
     "@type": "BlogPosting",
     headline: seoTitle,
     description: seoDescription,
-    image: post?.coverImage || fallbackPost?.coverImage || undefined,
+    image: post?.coverImage || undefined,
     author: {
       "@type": "Person",
-      name: post?.author || fallbackPost?.author || "Founders Connect Editorial",
+      name: post?.author || "Founders Connect Editorial",
     },
-    datePublished: post?.date || fallbackPost?.date || undefined,
+    datePublished: post?.date || undefined,
     mainEntityOfPage: `https://founders.connect/blog/${slug}`,
     keywords: seoKeywords,
   });
 
   useEffect(() => {
-    getPublicBlogBySlugApi(slug)
-      .then((response) => {
-        setPost(response.post);
-      })
-      .catch(() => {
-        setPost(fallbackPost || null);
-      });
-  }, [fallbackPost, slug]);
+    getPublicBlogBySlugApi(slug).then((response) => setPost(response.post)).catch(() => setPost(null));
+  }, [slug]);
 
   if (!post) {
     return <NotFound />;

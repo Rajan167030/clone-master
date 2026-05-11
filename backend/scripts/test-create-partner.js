@@ -17,7 +17,7 @@
     const createRes = await fetch('http://localhost:4000/api/admin/partners', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ name: 'Test Partner From Script', logoUrl: 'https://example.com/logo.png', websiteUrl: 'https://example.com', order: 1, isActive: true }),
+      body: JSON.stringify({ name: 'Test Partner From Script', websiteUrl: 'https://example.com', order: 1, isActive: true }),
     });
     const createJson = await createRes.json().catch(() => ({}));
     console.log('CREATE_RESPONSE_STATUS:', createRes.status);

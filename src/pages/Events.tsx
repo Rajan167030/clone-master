@@ -3,7 +3,6 @@ import { Link } from "react-router-dom";
 import { ArrowRight, CalendarDays, MapPin, Ticket, ExternalLink } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { events } from "@/lib/events";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -23,7 +22,7 @@ const Events = () => {
     canonicalUrl: "https://founders.connect/events",
   });
 
-  const [eventList, setEventList] = useState<DynamicEvent[]>(events);
+  const [eventList, setEventList] = useState<DynamicEvent[]>([]);
 
   useEffect(() => {
     getPublicEventsApi()
@@ -33,7 +32,7 @@ const Events = () => {
         }
       })
       .catch(() => {
-        setEventList(events);
+        setEventList([]);
       });
   }, []);
 

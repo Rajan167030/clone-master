@@ -782,7 +782,7 @@ export const createAdminPartnerLogo = async (req, res, next) => {
     }
     const payload = sanitizePartnerPayload(req.body);
 
-    if (!validateRequired(payload, [{ key: "name", label: "Name" }, { key: "logoUrl", label: "Logo URL" }], res)) return;
+    if (!validateRequired(payload, [{ key: "name", label: "Name" }], res)) return;
 
     const partner = await PartnerLogo.create(payload);
     await deleteCache("public:partners", "admin:partners");

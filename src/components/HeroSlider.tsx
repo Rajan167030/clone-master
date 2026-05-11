@@ -1,32 +1,35 @@
-import { useState, useEffect } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
-import slide1 from "@/assets/hero-slide1.jpg";
-import slide2 from "@/assets/hero-slide2.jpg";
-import slide3 from "@/assets/hero-slide3.jpg";
 import { getPublicSliderEventsApi } from "@/lib/api";
+
+const cloudinaryImages = {
+  slide1: "https://res.cloudinary.com/founders-connect/image/upload/c_fill,w_1200,h_600/hero/slide1.jpg",
+  slide2: "https://res.cloudinary.com/founders-connect/image/upload/c_fill,w_1200,h_600/hero/slide2.jpg",
+  slide3: "https://res.cloudinary.com/founders-connect/image/upload/c_fill,w_1200,h_600/hero/slide3.jpg",
+};
 
 const fallbackSlides = [
   {
     title: "Founders Connect",
     highlight: "Startup Meetup 2026",
     link: "/events/founders-connect-dehradun-edition-v1",
-    image: slide1,
+    image: cloudinaryImages.slide1,
     alt: "Founders Connect startup meetup event",
   },
   {
     title: "Founders Connect",
     highlight: "Investor Networking Night",
     link: "/events/founders-connect-investor-networking-night",
-    image: slide2,
+    image: cloudinaryImages.slide2,
     alt: "Founders Connect investor networking event",
   },
   {
     title: "Join the",
     highlight: "Founders Connect Membership",
     link: "/membership",
-    image: slide3,
+    image: cloudinaryImages.slide3,
     alt: "Founders Connect membership community",
   },
 ];
@@ -34,7 +37,12 @@ const fallbackSlides = [
 const HeroSlider = () => {
   const [current, setCurrent] = useState(0);
   const [slides, setSlides] = useState(fallbackSlides);
-  const navigate = useNavigate();
+  const currentSlide = slides[current] ?? fallbackSlides[0];
+  const heroTitle = useMemo(() => {
+    const title = currentSlide?.title?.trim() || "Founders Connect";
+    const highlight = currentSlide?.highlight?.trim() || "Join now";
+    return `${title} ${highlight}`;
+  }, [currentSlide]);
 
   useEffect(() => {
     // Fetch featured slider events
@@ -71,17 +79,17 @@ const HeroSlider = () => {
   return (
     <section className="relative pt-16">
       <div className="container mx-auto px-4 py-8">
-        <div className="relative rounded-2xl overflow-hidden h-[420px] md:h-[480px]">
+        <div className="relative rounded-2xl overflow-hidden h-[520px] md:h-[640px]">
           <Link
-            to={slides[current].link}
-            aria-label={`Open ${slides[current].highlight}`}
+            to={currentSlide.link}
+            aria-label={`Open ${currentSlide.highlight}`}
             className="absolute inset-0 z-10 block"
           >
             <AnimatePresence mode="wait">
               <motion.img
                 key={`img-${current}`}
-                src={slides[current].image}
-                alt={slides[current].alt}
+                src={currentSlide.image}
+                alt={currentSlide.alt}
                 width={1600}
                 height={900}
                 initial={{ opacity: 0, scale: 1.05 }}
@@ -92,31 +100,19 @@ const HeroSlider = () => {
               />
             </AnimatePresence>
           </Link>
-          <div className="pointer-events-none absolute inset-0 z-20 bg-gradient-to-r from-background via-background/70 to-transparent" />
+          <div className="pointer-events-none absolute inset-0 z-20 bg-gradient-to-b from-black/45 via-black/35 to-black/60" />
 
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={current}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.5 }}
-              className="pointer-events-none absolute inset-0 z-30 flex flex-col justify-center px-8 md:px-16"
+          
+
+          <div className="absolute inset-0 z-40 flex items-end justify-start pointer-events-none px-6 md:px-12 pb-10 md:pb-16">
+            <Link
+              to={currentSlide.link}
+              className="pointer-events-auto inline-flex items-center gap-2 rounded-full border border-purple-400/55 bg-purple-500/20 px-7 py-3 text-lg font-medium text-white backdrop-blur-sm transition-all hover:bg-purple-500/35 active:scale-95 ml-0 md:ml-8"
             >
-              <h1 className="font-heading font-extrabold text-4xl md:text-6xl text-foreground leading-tight">
-                {slides[current].title}
-                <br />
-                <span className="text-gradient">{slides[current].highlight}</span>
-              </h1>
-              <button
-                onClick={() => navigate(slides[current].link)}
-                className="pointer-events-auto mt-6 inline-flex w-fit items-center gap-2 rounded-lg bg-primary px-6 py-3 font-semibold text-primary-foreground transition-all hover:bg-primary/90 hover:gap-3 active:scale-95"
-              >
-                Explore Now
-                <ArrowRight className="h-5 w-5" />
-              </button>
-            </motion.div>
-          </AnimatePresence>
+              Join now
+              <ArrowRight className="h-5 w-5" />
+            </Link>
+          </div>
 
           <div className="absolute bottom-6 left-1/2 z-40 flex -translate-x-1/2 gap-2">
             {slides.map((_, i) => (

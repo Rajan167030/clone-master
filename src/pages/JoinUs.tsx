@@ -2,7 +2,7 @@ import { useId, useState, type ChangeEvent, type FormEvent } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, Zap, Target, TrendingUp, Copy, CheckCircle, MessageCircle, ArrowRight, ShieldCheck, Clock3 } from "lucide-react";
+import { Users, Zap, Target, TrendingUp, Copy, CheckCircle, MessageCircle, ArrowRight, ShieldCheck, Clock3, ChevronLeft } from "lucide-react";
 import EmailVerificationBox from "@/components/EmailVerificationBox";
 import { Button } from "@/components/ui/button";
 import { submitJoinRequestApi } from "@/lib/api";
@@ -77,6 +77,12 @@ const joiningFlow = [
   },
 ];
 
+const joinSteps = [
+  { id: 1, title: "Personal" },
+  { id: 2, title: "Professional" },
+  { id: 3, title: "Intent" },
+];
+
 const Grid = ({ pattern, size }: { pattern?: number[][]; size?: number }) => {
   const p =
     pattern ??
@@ -147,6 +153,7 @@ const JoinUs = () => {
   const [copyMessage, setCopyMessage] = useState("");
   const [emailVerificationToken, setEmailVerificationToken] = useState("");
   const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [currentStep, setCurrentStep] = useState(1);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     if (e.target.name === "email") {
@@ -197,6 +204,7 @@ const JoinUs = () => {
         setFormData(initialFormData);
         setEmailVerificationToken("");
         setSubmitSuccess(true);
+        setCurrentStep(1);
         window.alert("Join request submitted successfully.");
       }
     } catch (error) {
@@ -205,6 +213,44 @@ const JoinUs = () => {
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const validateStep = (step: number): { valid: boolean; message: string } => {
+    if (step === 1) {
+      if (!formData.name.trim()) return { valid: false, message: "Full Name is required." };
+      if (!formData.email.trim()) return { valid: false, message: "Email is required." };
+      if (!formData.phone.trim()) return { valid: false, message: "Phone Number is required." };
+      if (!formData.occupation) return { valid: false, message: "Occupation is required." };
+      if (formData.occupation === "Student" && !formData.collegeName.trim()) {
+        return { valid: false, message: "College / University Name is required for students." };
+      }
+      if (!emailVerificationToken) {
+        return { valid: false, message: "Please verify your email before moving to next step." };
+      }
+    }
+
+    if (step === 2) {
+      if (!formData.companyName.trim()) return { valid: false, message: "Company / Startup Name is required." };
+      if (!formData.city.trim()) return { valid: false, message: "City / Location is required." };
+      if (!formData.linkedinProfile.trim()) return { valid: false, message: "LinkedIn Profile is required." };
+      if (!formData.website.trim()) return { valid: false, message: "Website / Portfolio is required." };
+    }
+
+    if (step === 3) {
+      if (!formData.whyJoin.trim()) return { valid: false, message: "Please tell us why you want to join." };
+      if (!formData.referralSource.trim()) return { valid: false, message: "Please add how you heard about us." };
+    }
+
+    return { valid: true, message: "" };
+  };
+
+  const handleNextStep = () => {
+    const validation = validateStep(currentStep);
+    if (!validation.valid) {
+      window.alert(validation.message);
+      return;
+    }
+    setCurrentStep((prev) => Math.min(prev + 1, 3));
   };
 
   return (
@@ -232,14 +278,10 @@ const JoinUs = () => {
                 <Copy size={16} />
                 Copy Join Link
               </Button>
-              <Button
-                type="button"
-                onClick={() => window.open(WHATSAPP_GROUP_URL, "_blank", "noopener,noreferrer")}
-                className="gap-2 bg-green-600 text-white hover:bg-green-700"
-              >
+              
                 <MessageCircle size={16} />
-                WhatsApp Community
-              </Button>
+                
+              
             </div>
 
             <div className="mx-auto mt-7 grid max-w-3xl gap-3 sm:grid-cols-3">
@@ -286,108 +328,142 @@ const JoinUs = () => {
                 <p className="mt-2 text-muted-foreground">Strong profiles get faster review. Fill accurate details for better matching.</p>
               </CardHeader>
               <CardContent>
-                <form onSubmit={handleSubmit} className="grid gap-4 md:grid-cols-2">
-                  <div className="md:col-span-2 rounded-xl border border-primary/20 bg-primary/5 px-4 py-3 text-sm text-slate-700">
-                    <p className="font-semibold text-slate-900">Before you submit</p>
-                    <p className="mt-1">
-                      Verify your email and make sure LinkedIn plus website URLs are correct. This helps us shortlist quickly.
-                    </p>
-                  </div>
-
-                  <div className="md:col-span-2 pt-1">
-                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Personal Details</p>
-                  </div>
-                  <div>
-                    <label className="mb-2 block text-sm font-semibold text-foreground">Full Name *</label>
-                    <input required name="name" value={formData.name} onChange={handleChange} placeholder="Your full name" className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20" />
-                  </div>
-
-                  <div>
-                    <label className="mb-2 block text-sm font-semibold text-foreground">Email *</label>
-                    <input required type="email" name="email" value={formData.email} onChange={handleChange} placeholder="your@email.com" className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20" />
-                    <div className="mt-2">
-                      <EmailVerificationBox
-                        email={formData.email}
-                        purpose="join-us"
-                        token={emailVerificationToken}
-                        onVerified={setEmailVerificationToken}
-                        onReset={() => setEmailVerificationToken("")}
-                      />
-                    </div>
-                    <p className="mt-2 text-xs text-slate-500">
-                      {emailVerificationToken ? "Email verified. You can submit now." : "Verify your email to unlock final submission."}
-                    </p>
-                  </div>
-
-                  <div>
-                    <label className="mb-2 block text-sm font-semibold text-foreground">Phone Number *</label>
-                    <input required type="tel" name="phone" value={formData.phone} onChange={handleChange} placeholder="+91 XXXXX XXXXX" className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20" />
-                  </div>
-
-                  <div>
-                    <label className="mb-2 block text-sm font-semibold text-foreground">Occupation *</label>
-                    <select required name="occupation" value={formData.occupation} onChange={handleChange} className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20">
-                      {occupationOptions.map((opt) => (
-                        <option key={opt.value} value={opt.value}>
-                          {opt.label}
-                        </option>
+                <form onSubmit={handleSubmit} className="space-y-6">
+                  <div className="relative">
+                    <div className="absolute left-[12%] right-[12%] top-5 h-1 rounded-full bg-gradient-to-r from-sky-100 via-cyan-100 to-indigo-100" />
+                    <div
+                      className="absolute left-[12%] top-5 h-1 rounded-full bg-gradient-to-r from-primary via-sky-500 to-cyan-500 transition-all duration-500"
+                      style={{ width: `${((currentStep - 1) / (joinSteps.length - 1)) * 76}%` }}
+                    />
+                    <div className="relative grid grid-cols-3 gap-3">
+                      {joinSteps.map((step) => (
+                        <div key={step.id} className="flex flex-col items-center text-center">
+                          <div
+                            className={`flex h-10 w-10 items-center justify-center rounded-full border text-sm font-bold transition-all duration-300 ${
+                              currentStep >= step.id
+                                ? "border-primary bg-primary text-primary-foreground shadow-lg shadow-primary/30"
+                                : "border-border bg-white text-muted-foreground"
+                            }`}
+                          >
+                            {currentStep > step.id ? <CheckCircle size={16} /> : step.id}
+                          </div>
+                        </div>
                       ))}
-                    </select>
+                    </div>
                   </div>
 
-                  {formData.occupation === "Student" && (
-                    <div>
-                      <label className="mb-2 block text-sm font-semibold text-foreground">College / University Name *</label>
-                      <input required name="collegeName" value={formData.collegeName} onChange={handleChange} placeholder="Your college or university name" className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20" />
+                  {currentStep === 1 && (
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <div>
+                        <label className="mb-2 block text-sm font-semibold text-foreground">Full Name *</label>
+                        <input name="name" value={formData.name} onChange={handleChange} placeholder="Your full name" className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20" />
+                      </div>
+
+                      <div>
+                        <label className="mb-2 block text-sm font-semibold text-foreground">Email *</label>
+                        <input type="email" name="email" value={formData.email} onChange={handleChange} placeholder="your@email.com" className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20" />
+                        <div className="mt-2">
+                          <EmailVerificationBox
+                            email={formData.email}
+                            purpose="join-us"
+                            token={emailVerificationToken}
+                            onVerified={setEmailVerificationToken}
+                            onReset={() => setEmailVerificationToken("")}
+                          />
+                        </div>
+                        <p className="mt-2 text-xs text-slate-500">
+                          {emailVerificationToken ? "Email verified. You can move to next step." : "Verify your email to continue."}
+                        </p>
+                      </div>
+
+                      <div>
+                        <label className="mb-2 block text-sm font-semibold text-foreground">Phone Number *</label>
+                        <input type="tel" name="phone" value={formData.phone} onChange={handleChange} placeholder="+91 XXXXX XXXXX" className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20" />
+                      </div>
+
+                      <div>
+                        <label className="mb-2 block text-sm font-semibold text-foreground">Occupation *</label>
+                        <select name="occupation" value={formData.occupation} onChange={handleChange} className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20">
+                          {occupationOptions.map((opt) => (
+                            <option key={opt.value} value={opt.value}>
+                              {opt.label}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      {formData.occupation === "Student" && (
+                        <div className="md:col-span-2">
+                          <label className="mb-2 block text-sm font-semibold text-foreground">College / University Name *</label>
+                          <input name="collegeName" value={formData.collegeName} onChange={handleChange} placeholder="Your college or university name" className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20" />
+                        </div>
+                      )}
                     </div>
                   )}
 
-                  <div className="md:col-span-2 pt-1">
-                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Professional Details</p>
-                  </div>
+                  {currentStep === 2 && (
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <div>
+                        <label className="mb-2 block text-sm font-semibold text-foreground">Company / Startup Name *</label>
+                        <input name="companyName" value={formData.companyName} onChange={handleChange} placeholder="Your company or startup name" className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20" />
+                      </div>
 
-                  <div>
-                    <label className="mb-2 block text-sm font-semibold text-foreground">Company / Startup Name *</label>
-                    <input required name="companyName" value={formData.companyName} onChange={handleChange} placeholder="Your company or startup name" className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20" />
-                  </div>
+                      <div>
+                        <label className="mb-2 block text-sm font-semibold text-foreground">City / Location *</label>
+                        <input name="city" value={formData.city} onChange={handleChange} placeholder="City, State" className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20" />
+                      </div>
 
-                  <div>
-                    <label className="mb-2 block text-sm font-semibold text-foreground">City / Location *</label>
-                    <input required name="city" value={formData.city} onChange={handleChange} placeholder="City, State" className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20" />
-                  </div>
+                      <div>
+                        <label className="mb-2 block text-sm font-semibold text-foreground">LinkedIn Profile *</label>
+                        <input type="url" name="linkedinProfile" value={formData.linkedinProfile} onChange={handleChange} placeholder="https://linkedin.com/in/yourprofile" className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20" />
+                      </div>
 
-                  <div>
-                    <label className="mb-2 block text-sm font-semibold text-foreground">LinkedIn Profile *</label>
-                    <input required type="url" name="linkedinProfile" value={formData.linkedinProfile} onChange={handleChange} placeholder="https://linkedin.com/in/yourprofile" className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20" />
-                  </div>
+                      <div>
+                        <label className="mb-2 block text-sm font-semibold text-foreground">Website / Portfolio *</label>
+                        <input type="url" name="website" value={formData.website} onChange={handleChange} placeholder="https://yourwebsite.com" className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20" />
+                      </div>
+                    </div>
+                  )}
 
-                  <div>
-                    <label className="mb-2 block text-sm font-semibold text-foreground">Website / Portfolio *</label>
-                    <input required type="url" name="website" value={formData.website} onChange={handleChange} placeholder="https://yourwebsite.com" className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20" />
-                  </div>
+                  {currentStep === 3 && (
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <div className="md:col-span-2">
+                        <label className="mb-2 block text-sm font-semibold text-foreground">Why do you want to join? *</label>
+                        <textarea name="whyJoin" value={formData.whyJoin} onChange={handleChange} placeholder="Tell us what you hope to get from Founders Connect" rows={4} className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20" />
+                      </div>
 
-                  <div className="md:col-span-2 pt-1">
-                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Intent & Discovery</p>
-                  </div>
+                      <div className="md:col-span-2">
+                        <label className="mb-2 block text-sm font-semibold text-foreground">How did you hear about us? *</label>
+                        <input name="referralSource" value={formData.referralSource} onChange={handleChange} placeholder="Instagram, friend, event, LinkedIn, etc." className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20" />
+                      </div>
+                    </div>
+                  )}
 
-                  <div className="md:col-span-2">
-                    <label className="mb-2 block text-sm font-semibold text-foreground">Why do you want to join? *</label>
-                    <textarea required name="whyJoin" value={formData.whyJoin} onChange={handleChange} placeholder="Tell us what you hope to get from Founders Connect" rows={4} className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20" />
-                  </div>
+                  <div className="mt-2 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    {currentStep > 1 ? (
+                      <Button type="button" variant="outline" onClick={() => setCurrentStep((prev) => Math.max(prev - 1, 1))} className="gap-2">
+                        <ChevronLeft size={16} />
+                        Back
+                      </Button>
+                    ) : (
+                      <div />
+                    )}
 
-                  <div className="md:col-span-2">
-                    <label className="mb-2 block text-sm font-semibold text-foreground">How did you hear about us? *</label>
-                    <input required name="referralSource" value={formData.referralSource} onChange={handleChange} placeholder="Instagram, friend, event, LinkedIn, etc." className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20" />
-                  </div>
-
-                  <div className="md:col-span-2 mt-2 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                    <button type="submit" disabled={submitting} className="inline-flex items-center justify-center gap-2 rounded-md border border-border bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground transition-all hover:brightness-95 disabled:opacity-60">
-                      {submitting ? "Submitting..." : "Submit Join Request"}
-                      <ArrowRight size={16} />
-                    </button>
-
+                    {currentStep < 3 ? (
+                      <Button type="button" onClick={handleNextStep} className="gap-2">
+                        Next Step
+                        <ArrowRight size={16} />
+                      </Button>
+                    ) : (
+                      <button type="submit" disabled={submitting} className="inline-flex items-center justify-center gap-2 rounded-md border border-border bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground transition-all hover:brightness-95 disabled:opacity-60">
+                        {submitting ? "Submitting..." : "Submit Join Request"}
+                        <ArrowRight size={16} />
+                      </button>
+                    )}
                   </div>
                 </form>
+
+               
               </CardContent>
             </Card>
 
@@ -408,25 +484,6 @@ const JoinUs = () => {
                       </div>
                     </div>
                   ))}
-                </CardContent>
-              </Card>
-
-              <Card className="border border-green-200 bg-gradient-to-br from-green-50 to-emerald-50 shadow-lg">
-                <CardHeader>
-                  <CardTitle className="text-xl text-green-800">Already Ready?</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm leading-relaxed text-green-800/90">
-                    Join the live WhatsApp community to stay updated on events, founder intros, and collaboration calls.
-                  </p>
-                  <Button
-                    type="button"
-                    onClick={() => window.open(WHATSAPP_GROUP_URL, "_blank", "noopener,noreferrer")}
-                    className="mt-4 w-full gap-2 bg-green-600 text-white hover:bg-green-700"
-                  >
-                    <MessageCircle size={18} />
-                    Open Community Group
-                  </Button>
                 </CardContent>
               </Card>
             </div>

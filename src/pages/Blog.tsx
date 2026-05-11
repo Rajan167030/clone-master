@@ -3,7 +3,6 @@ import { Link } from "react-router-dom";
 import { ArrowRight, Clock3 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { blogPosts } from "@/lib/blogs";
 import { getPublicBlogsApi, type DynamicBlogPost } from "@/lib/api";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -18,7 +17,7 @@ const Blog = () => {
     ogType: "website",
     canonicalUrl: "https://founders.connect/blog",
   });
-  const [posts, setPosts] = useState<DynamicBlogPost[]>(blogPosts);
+  const [posts, setPosts] = useState<DynamicBlogPost[]>([]);
 
   useEffect(() => {
     getPublicBlogsApi()
@@ -28,7 +27,7 @@ const Blog = () => {
         }
       })
       .catch(() => {
-        setPosts(blogPosts);
+        setPosts([]);
       });
   }, []);
 
