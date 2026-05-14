@@ -34,7 +34,7 @@ const fallbackSlides = [
   },
 ];
 
-const HeroSlider = () => {
+const HeroSlider = ({ className }: { className?: string }) => {
   const [current, setCurrent] = useState(0);
   const [slides, setSlides] = useState(fallbackSlides);
   const currentSlide = slides[current] ?? fallbackSlides[0];
@@ -77,7 +77,7 @@ const HeroSlider = () => {
   }, [slides.length]);
 
   return (
-    <section className="relative pt-16">
+    <section className={`relative pt-16 ${className}`}>
       <div className="container mx-auto px-4 py-8">
         <div className="relative rounded-2xl overflow-hidden h-[520px] md:h-[640px]">
           <Link

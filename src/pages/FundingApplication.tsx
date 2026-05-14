@@ -58,6 +58,8 @@ export default function FundingApplication() {
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
   const [deckUploadStatus, setDeckUploadStatus] = useState("");
+  const [currentStep, setCurrentStep] = useState(1);
+  const totalSteps = 5;
 
   const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target as HTMLInputElement;
@@ -74,24 +76,51 @@ export default function FundingApplication() {
     setDeckUploadStatus(f ? `Selected: ${f.name}` : "");
   };
 
-  const validate = () => {
-    const required = [
-      "name",
-      "mobile",
-      "email",
-      "address",
-      "startupName",
-      "brief",
-      "problem",
-      "solution",
-      "targetCustomers",
-    ];
-    for (const k of required) {
-      // @ts-ignore
-      if (!String(form[k] || "").trim()) return `${k} is required`;
+  const validateStep = (step: number) => {
+    switch (step) {
+      case 1:
+        const required1 = ["name", "mobile", "email", "address"];
+        for (const k of required1) {
+          if (!String(form[k as keyof typeof form] || "").trim()) return `${k} is required`;
+        }
+        return null;
+      case 2:
+        const required2 = ["startupName", "brief"];
+        for (const k of required2) {
+          if (!String(form[k as keyof typeof form] || "").trim()) return `${k} is required`;
+        }
+        return null;
+      case 3:
+        const required3 = ["problem", "solution", "targetCustomers"];
+        for (const k of required3) {
+          if (!String(form[k as keyof typeof form] || "").trim()) return `${k} is required`;
+        }
+        return null;
+      case 4:
+        return null; // Optional fields
+      case 5:
+        if (!form.agreeAccurate) return "Please confirm the information is accurate.";
+        return null;
+      default:
+        return null;
     }
-    if (!form.agreeAccurate) return "Please confirm the information is accurate.";
-    return null;
+  };
+
+  const nextStep = () => {
+    const err = validateStep(currentStep);
+    if (err) {
+      window.alert(err);
+      return;
+    }
+    if (currentStep < totalSteps) {
+      setCurrentStep(currentStep + 1);
+    }
+  };
+
+  const prevStep = () => {
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1);
+    }
   };
 
   const handleSubmit = async (e: FormEvent) => {
@@ -253,172 +282,227 @@ export default function FundingApplication() {
                 <CardDescription className="text-base">Provide as much detail as possible to help us understand your vision.</CardDescription>
               </CardHeader>
               <CardContent>
-                <form onSubmit={handleSubmit} className="grid gap-6 md:grid-cols-2">
-                  <div className="space-y-2">
-                    <label className="text-sm font-semibold">Founder Name *</label>
-                    <Input name="name" placeholder="John Doe" value={form.name} onChange={handleChange} required className="h-11" />
+                {/* Progress Indicator */}
+                <div className="mb-8">
+                  <div className="flex items-center justify-between mb-4">
+                    <span className="text-sm font-medium text-muted-foreground">Step {currentStep} of {totalSteps}</span>
+                    <span className="text-sm font-medium text-primary">{Math.round((currentStep / totalSteps) * 100)}% Complete</span>
                   </div>
-
-                  <div className="space-y-2">
-                    <label className="text-sm font-semibold">WhatsApp Number *</label>
-                    <Input name="mobile" placeholder="+91 XXXX XXXX" value={form.mobile} onChange={handleChange} required className="h-11" />
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="text-sm font-semibold">Email Address *</label>
-                    <Input type="email" placeholder="john@startup.com" name="email" value={form.email} onChange={handleChange} required className="h-11" />
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="text-sm font-semibold">Base City *</label>
-                    <Input name="address" placeholder="Mumbai, India" value={form.address} onChange={handleChange} required className="h-11" />
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="text-sm font-semibold">Startup Name *</label>
-                    <Input name="startupName" placeholder="TechVision AI" value={form.startupName} onChange={handleChange} required className="h-11" />
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="text-sm font-semibold">Product Link</label>
-                    <Input name="startupLink" placeholder="https://..." value={form.startupLink} onChange={handleChange} className="h-11" />
-                  </div>
-
-                  <div className="md:col-span-2 space-y-2">
-                    <label className="text-sm font-semibold">Startup Sector / Industry</label>
-                    <select name="sector" value={form.sector} onChange={handleChange} className="w-full rounded-md border border-input bg-background h-11 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
-                      <option value="">Select sector</option>
-                      <option>FinTech</option>
-                      <option>HealthTech</option>
-                      <option>EdTech</option>
-                      <option>AgriTech</option>
-                      <option>SaaS</option>
-                      <option>AI / ML</option>
-                      <option>E-commerce</option>
-                      <option>Climate / CleanTech</option>
-                      <option>D2C</option>
-                      <option>Other</option>
-                    </select>
-                  </div>
-
-                  {form.sector === "Other" && (
-                    <div className="md:col-span-2 space-y-2 animate-in fade-in slide-in-from-top-1">
-                      <label className="text-sm font-semibold">Specify Sector</label>
-                      <Input name="sectorOther" value={form.sectorOther} onChange={handleChange} className="h-11" />
-                    </div>
-                  )}
-
-                  <div className="md:col-span-2 space-y-2">
-                    <label className="text-sm font-semibold">Monthly Recurring Revenue (MRR) *</label>
-                    <select name="mrr" value={form.mrr} onChange={handleChange} required className="w-full rounded-md border border-input bg-background h-11 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
-                      <option value="">Select Range</option>
-                      <option>Pre-revenue</option>
-                      <option>₹1L – ₹5L</option>
-                      <option>₹5L – ₹20L</option>
-                      <option>₹20L+</option>
-                      <option>Other</option>
-                    </select>
-                  </div>
-
-                  {form.mrr === "Other" && (
-                    <div className="md:col-span-2 space-y-2 animate-in fade-in slide-in-from-top-1">
-                      <label className="text-sm font-semibold">Please specify MRR</label>
-                      <Input name="mrrOther" value={form.mrrOther} onChange={handleChange} className="h-11" />
-                    </div>
-                  )}
-
-                  <div className="md:col-span-2 space-y-2">
-                    <label className="text-sm font-semibold">Startup Description *</label>
-                    <Textarea 
-                      name="brief" 
-                      placeholder="What exactly does your startup do in one sentence?"
-                      value={form.brief} 
-                      onChange={handleChange} 
-                      required 
-                      rows={3} 
+                  <div className="w-full bg-muted rounded-full h-2">
+                    <div 
+                      className="bg-primary h-2 rounded-full transition-all duration-300"
+                      style={{ width: `${(currentStep / totalSteps) * 100}%` }}
                     />
                   </div>
+                </div>
 
-                  <div className="md:col-span-2 space-y-2">
-                    <label className="text-sm font-semibold">Pitch Deck (PDF Preferred)</label>
-                    <div className="flex items-center gap-4 rounded-xl border-2 border-dashed p-6 hover:border-primary/50 transition-colors bg-slate-50/50">
-                      <Input 
-                        type="file" 
-                        accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,image/*" 
-                        onChange={handleFile}
-                        className="cursor-pointer border-none bg-transparent shadow-none"
-                      />
-                    </div>
-                    {deckUploadStatus && <p className="mt-2 text-xs font-medium text-primary flex items-center gap-1"><CheckCircle2 size={12}/> {deckUploadStatus}</p>}
-                  </div>
-
-                  <div className="md:col-span-2 space-y-2 pt-4">
-                    <h3 className="font-bold text-lg border-b pb-2">Business & Product</h3>
-                    <div className="grid gap-6 mt-4">
+                <form onSubmit={handleSubmit} className="grid gap-6 md:grid-cols-2">
+                  {currentStep === 1 && (
+                    <>
+                      <div className="md:col-span-2 space-y-2">
+                        <h3 className="text-xl font-bold text-primary border-b pb-2">Personal Information</h3>
+                      </div>
                       <div className="space-y-2">
+                        <label className="text-sm font-semibold">Founder Name *</label>
+                        <Input name="name" placeholder="John Doe" value={form.name} onChange={handleChange} required className="h-11" />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-sm font-semibold">WhatsApp Number *</label>
+                        <Input name="mobile" placeholder="+91 XXXX XXXX" value={form.mobile} onChange={handleChange} required className="h-11" />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-sm font-semibold">Email Address *</label>
+                        <Input type="email" placeholder="john@startup.com" name="email" value={form.email} onChange={handleChange} required className="h-11" />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-sm font-semibold">Base City *</label>
+                        <Input name="address" placeholder="Mumbai, India" value={form.address} onChange={handleChange} required className="h-11" />
+                      </div>
+                    </>
+                  )}
+
+                  {currentStep === 2 && (
+                    <>
+                      <div className="md:col-span-2 space-y-2">
+                        <h3 className="text-xl font-bold text-primary border-b pb-2">Startup Details</h3>
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-sm font-semibold">Startup Name *</label>
+                        <Input name="startupName" placeholder="TechVision AI" value={form.startupName} onChange={handleChange} required className="h-11" />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-sm font-semibold">Product Link</label>
+                        <Input name="startupLink" placeholder="https://..." value={form.startupLink} onChange={handleChange} className="h-11" />
+                      </div>
+                      <div className="md:col-span-2 space-y-2">
+                        <label className="text-sm font-semibold">Startup Sector / Industry</label>
+                        <select name="sector" value={form.sector} onChange={handleChange} className="w-full rounded-md border border-input bg-background h-11 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                          <option value="">Select sector</option>
+                          <option>FinTech</option>
+                          <option>HealthTech</option>
+                          <option>EdTech</option>
+                          <option>AgriTech</option>
+                          <option>SaaS</option>
+                          <option>AI / ML</option>
+                          <option>E-commerce</option>
+                          <option>Climate / CleanTech</option>
+                          <option>D2C</option>
+                          <option>Other</option>
+                        </select>
+                      </div>
+                      {form.sector === "Other" && (
+                        <div className="md:col-span-2 space-y-2 animate-in fade-in slide-in-from-top-1">
+                          <label className="text-sm font-semibold">Specify Sector</label>
+                          <Input name="sectorOther" value={form.sectorOther} onChange={handleChange} className="h-11" />
+                        </div>
+                      )}
+                      <div className="md:col-span-2 space-y-2">
+                        <label className="text-sm font-semibold">Monthly Recurring Revenue (MRR) *</label>
+                        <select name="mrr" value={form.mrr} onChange={handleChange} required className="w-full rounded-md border border-input bg-background h-11 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                          <option value="">Select Range</option>
+                          <option>Pre-revenue</option>
+                          <option>₹1L – ₹5L</option>
+                          <option>₹5L – ₹20L</option>
+                          <option>₹20L+</option>
+                          <option>Other</option>
+                        </select>
+                      </div>
+                      {form.mrr === "Other" && (
+                        <div className="md:col-span-2 space-y-2 animate-in fade-in slide-in-from-top-1">
+                          <label className="text-sm font-semibold">Please specify MRR</label>
+                          <Input name="mrrOther" value={form.mrrOther} onChange={handleChange} className="h-11" />
+                        </div>
+                      )}
+                      <div className="md:col-span-2 space-y-2">
+                        <label className="text-sm font-semibold">Startup Description *</label>
+                        <Textarea 
+                          name="brief" 
+                          placeholder="What exactly does your startup do in one sentence?"
+                          value={form.brief} 
+                          onChange={handleChange} 
+                          required 
+                          rows={3} 
+                        />
+                      </div>
+                    </>
+                  )}
+
+                  {currentStep === 3 && (
+                    <>
+                      <div className="md:col-span-2 space-y-2">
+                        <h3 className="text-xl font-bold text-primary border-b pb-2">Business & Product</h3>
+                      </div>
+                      <div className="md:col-span-2 space-y-2">
                         <label className="text-sm font-semibold">Problem You're Solving *</label>
                         <Textarea name="problem" value={form.problem} onChange={handleChange} required rows={3} placeholder="Describe the core pain point..." />
                       </div>
-                      <div className="space-y-2">
+                      <div className="md:col-span-2 space-y-2">
                         <label className="text-sm font-semibold">Proposed Solution *</label>
                         <Textarea name="solution" value={form.solution} onChange={handleChange} required rows={3} placeholder="How does your product solve this?" />
                       </div>
-                      <div className="space-y-2">
+                      <div className="md:col-span-2 space-y-2">
                         <label className="text-sm font-semibold">Target Market *</label>
                         <Textarea name="targetCustomers" value={form.targetCustomers} onChange={handleChange} required rows={2} placeholder="Who are your primary customers?" />
                       </div>
-                    </div>
-                  </div>
+                    </>
+                  )}
 
-                  <div className="space-y-2">
-                    <label className="text-sm font-semibold">Approx. Revenue (Last 6 Months)</label>
-                    <Input name="revenue6Months" placeholder="e.g. ₹50L" value={form.revenue6Months} onChange={handleChange} className="h-11" />
-                  </div>
+                  {currentStep === 4 && (
+                    <>
+                      <div className="md:col-span-2 space-y-2">
+                        <h3 className="text-xl font-bold text-primary border-b pb-2">Financials & Funding</h3>
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-sm font-semibold">Approx. Revenue (Last 6 Months)</label>
+                        <Input name="revenue6Months" placeholder="e.g. ₹50L" value={form.revenue6Months} onChange={handleChange} className="h-11" />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-sm font-semibold">Avg. Monthly Growth %</label>
+                        <Input name="growthRate" placeholder="e.g. 15%" value={form.growthRate} onChange={handleChange} className="h-11" />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-sm font-semibold">Paying Customers</label>
+                        <Input name="payingCustomers" placeholder="e.g. 500+" value={form.payingCustomers} onChange={handleChange} className="h-11" />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-sm font-semibold">Current Fundraise Target</label>
+                        <select name="raiseAmountRange" value={form.raiseAmountRange} onChange={handleChange} className="w-full rounded-md border border-input bg-background h-11 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                          <option value="">Select Range</option>
+                          <option>₹0L – ₹10L</option>
+                          <option>₹10L – ₹20L</option>
+                          <option>₹20L – ₹50L</option>
+                          <option>₹50L – ₹1cr</option>
+                          <option>₹1cr+</option>
+                        </select>
+                      </div>
+                      <div className="md:col-span-2 space-y-2">
+                        <label className="text-sm font-semibold">Pitch Deck (PDF Preferred)</label>
+                        <div className="flex items-center gap-4 rounded-xl border-2 border-dashed p-6 hover:border-primary/50 transition-colors bg-slate-50/50">
+                          <Input 
+                            type="file" 
+                            accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,image/*" 
+                            onChange={handleFile}
+                            className="cursor-pointer border-none bg-transparent shadow-none"
+                          />
+                        </div>
+                        {deckUploadStatus && <p className="mt-2 text-xs font-medium text-primary flex items-center gap-1"><CheckCircle2 size={12}/> {deckUploadStatus}</p>}
+                      </div>
+                    </>
+                  )}
 
-                  <div className="space-y-2">
-                    <label className="text-sm font-semibold">Avg. Monthly Growth %</label>
-                    <Input name="growthRate" placeholder="e.g. 15%" value={form.growthRate} onChange={handleChange} className="h-11" />
-                  </div>
+                  {currentStep === 5 && (
+                    <>
+                      <div className="md:col-span-2 space-y-2">
+                        <h3 className="text-xl font-bold text-primary border-b pb-2">Review & Submit</h3>
+                        <p className="text-sm text-muted-foreground">Please review your information and confirm submission.</p>
+                      </div>
+                      <div className="md:col-span-2 flex flex-col gap-4 mt-4 border-t pt-8">
+                        <label className="flex items-start gap-3 cursor-pointer group">
+                          <input 
+                            type="checkbox" 
+                            name="agreeAccurate" 
+                            checked={Boolean(form.agreeAccurate)} 
+                            onChange={handleChange} 
+                            className="mt-1 h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary transition-colors"
+                          />
+                          <span className="text-sm text-slate-600 leading-tight">I confirm that all provided information is accurate and verified to the best of my knowledge.</span>
+                        </label>
+                      </div>
+                    </>
+                  )}
 
-                  <div className="space-y-2">
-                    <label className="text-sm font-semibold">Paying Customers</label>
-                    <Input name="payingCustomers" placeholder="e.g. 500+" value={form.payingCustomers} onChange={handleChange} className="h-11" />
+                  {/* Navigation Buttons */}
+                  <div className="md:col-span-2 flex gap-4 mt-8">
+                    {currentStep > 1 && (
+                      <Button 
+                        type="button" 
+                        variant="outline" 
+                        onClick={prevStep}
+                        className="flex-1 h-12"
+                      >
+                        Previous
+                      </Button>
+                    )}
+                    {currentStep < totalSteps ? (
+                      <Button 
+                        type="button" 
+                        onClick={nextStep}
+                        className="flex-1 h-12 bg-primary hover:bg-primary/90"
+                      >
+                        Next Step
+                      </Button>
+                    ) : (
+                      <Button 
+                        type="submit" 
+                        disabled={submitting} 
+                        className="flex-1 h-12 bg-primary hover:bg-primary/90"
+                      >
+                        {submitting ? "Processing Application..." : "Submit Application"}
+                      </Button>
+                    )}
                   </div>
-
-                  <div className="space-y-2">
-                    <label className="text-sm font-semibold">Current Fundraise Target</label>
-                    <select name="raiseAmountRange" value={form.raiseAmountRange} onChange={handleChange} className="w-full rounded-md border border-input bg-background h-11 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
-                      <option value="">Select Range</option>
-                      <option>₹0L – ₹10L</option>
-                      <option>₹10L – ₹20L</option>
-                      <option>₹20L – ₹50L</option>
-                      <option>₹50L – ₹1cr</option>
-                      <option>₹1cr+</option>
-                    </select>
-                  </div>
-
-                  <div className="md:col-span-2 flex flex-col gap-4 mt-4 border-t pt-8">
-                    <label className="flex items-start gap-3 cursor-pointer group">
-                      <input 
-                        type="checkbox" 
-                        name="agreeAccurate" 
-                        checked={Boolean(form.agreeAccurate)} 
-                        onChange={handleChange} 
-                        className="mt-1 h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary transition-colors"
-                      />
-                      <span className="text-sm text-slate-600 leading-tight">I confirm that all provided information is accurate and verified to the best of my knowledge.</span>
-                    </label>
-                  </div>
-
-                  <div className="md:col-span-2 mt-8">
-                    <Button 
-                      type="submit" 
-                      disabled={submitting} 
-                      className="w-full h-14 text-lg font-bold bg-primary hover:bg-primary/90 transition-all shadow-xl shadow-primary/25 rounded-2xl"
-                    >
-                      {submitting ? "Processing Application..." : "Submit Funding Application"}
-                    </Button>
-                    <p className="text-center text-xs text-slate-400 mt-6 italic">
+                  <div className="md:col-span-2">
+                    <p className="text-center text-xs text-slate-400 mt-4 italic">
                       Founders Connect ensures your data privacy. By submitting, you agree to our Terms of Service.
                     </p>
                   </div>

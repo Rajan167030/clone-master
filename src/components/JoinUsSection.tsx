@@ -1,11 +1,11 @@
 import { Link } from "react-router-dom";
 import { CalendarDays, ShieldCheck, Zap } from "lucide-react";
 
-const JoinUsSection = ({ showSocial = true }) => {
+const JoinUsSection = ({ showSocial = true, className }: { showSocial?: boolean, className?: string }) => {
   if (!showSocial) return null;
 
   return (
-    <section className="relative py-8 md:py-12">
+    <section className={`relative py-8 md:py-12 ${className}`}>
       <div className="container mx-auto px-4">
         <div className="mx-auto max-w-[1720px] rounded-[28px] border border-white/10 bg-[#0a0a0a] px-5 py-10 text-center shadow-[0_24px_80px_rgba(0,0,0,0.35)] md:px-10 md:py-16 relative overflow-hidden">
           <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.12),transparent_40%),radial-gradient(circle_at_top_left,rgba(255,255,255,0.18),transparent_28%),radial-gradient(circle_at_top_right,rgba(255,255,255,0.12),transparent_24%)]" />

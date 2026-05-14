@@ -12,7 +12,7 @@ const companies = [
   "Repestro", "100Krafts", "JJ Tax", "Physeek Fit", "Nextgen",
 ];
 
-const PortfolioMarquee = () => {
+const PortfolioMarquee = ({ className }: { className?: string }) => {
   const [partners, setPartners] = useState<PartnerLogo[]>([]);
 
   useEffect(() => {
@@ -33,7 +33,7 @@ const PortfolioMarquee = () => {
     : companies.map((name) => ({ key: name, name, logoUrl: "", websiteUrl: "", logoWidth: "auto", logoHeight: "auto" }));
 
   return (
-    <section id="portfolio" className="py-24 border-t border-border relative">
+    <section id="portfolio" className={`py-24 border-t border-border relative ${className}`}>
       <div className="container mx-auto px-4 mb-12">
         <div className="text-center max-w-2xl mx-auto">
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 mb-4">
@@ -50,14 +50,14 @@ const PortfolioMarquee = () => {
         </div>
       </div>
 
-      <div className="relative overflow-hidden">
+      <div className="relative overflow-hidden mb-8">
         <div className="absolute left-0 top-0 bottom-0 w-32 bg-gradient-to-r from-background to-transparent z-10 pointer-events-none" />
         <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-background to-transparent z-10 pointer-events-none" />
 
-        <div className="animate-marquee flex whitespace-nowrap">
+        <div className="animate-marquee-reverse flex whitespace-nowrap" style={{ width: '200%' }}>
           {[...partnerItems, ...partnerItems].map((partner, i) => {
             const content = (
-              <div className="inline-flex items-center justify-center mx-3 px-7 py-4 rounded-xl border border-border card-gradient min-w-[180px] h-[90px] hover:border-primary/40 hover:shadow-lg transition-all cursor-pointer">
+              <div className="inline-flex items-center justify-center mx-6 px-4 py-2 min-w-[150px]">
                 {partner.logoUrl ? (
                   <img 
                     src={partner.logoUrl} 
@@ -66,10 +66,10 @@ const PortfolioMarquee = () => {
                       width: partner.logoWidth || "auto",
                       height: partner.logoHeight || "auto",
                     }}
-                    className="max-h-16 object-contain"
+                    className="max-h-12 object-contain"
                   />
                 ) : (
-                  <span className="text-base md:text-xl font-semibold text-foreground">{partner.name}</span>
+                  <span className="text-sm md:text-base font-medium text-foreground">{partner.name}</span>
                 )}
               </div>
             );
@@ -80,6 +80,41 @@ const PortfolioMarquee = () => {
               </a>
             ) : (
               <div key={`${partner.key}-${i}`}>{content}</div>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="relative overflow-hidden">
+        <div className="absolute left-0 top-0 bottom-0 w-32 bg-gradient-to-r from-background to-transparent z-10 pointer-events-none" />
+        <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-background to-transparent z-10 pointer-events-none" />
+
+        <div className="animate-marquee-reverse flex whitespace-nowrap" style={{ width: '200%' }}>
+          {[...partnerItems, ...partnerItems].reverse().map((partner, i) => {
+            const content = (
+              <div className="inline-flex items-center justify-center mx-6 px-4 py-2 min-w-[150px]">
+                {partner.logoUrl ? (
+                  <img 
+                    src={partner.logoUrl} 
+                    alt={partner.name} 
+                    style={{
+                      width: partner.logoWidth || "auto",
+                      height: partner.logoHeight || "auto",
+                    }}
+                    className="max-h-12 object-contain"
+                  />
+                ) : (
+                  <span className="text-sm md:text-base font-medium text-foreground">{partner.name}</span>
+                )}
+              </div>
+            );
+
+            return partner.websiteUrl ? (
+              <a key={`${partner.key}-reverse-${i}`} href={partner.websiteUrl} target="_blank" rel="noreferrer">
+                {content}
+              </a>
+            ) : (
+              <div key={`${partner.key}-reverse-${i}`}>{content}</div>
             );
           })}
         </div>

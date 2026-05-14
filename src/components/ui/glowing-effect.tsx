@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 
 type GlowingEffectProps = {
+  className?: string;
   blur?: number;
   borderWidth?: number;
   spread?: number;
@@ -11,6 +12,7 @@ type GlowingEffectProps = {
 };
 
 export function GlowingEffect({
+  className,
   blur = 0,
   borderWidth = 2,
   spread = 80,
@@ -61,7 +63,7 @@ export function GlowingEffect({
     };
   }, [disabled, inactiveZone, proximity]);
 
-  const gradient = `radial-gradient(${spread}px circle at ${position.x}% ${position.y}%, rgba(56, 189, 248, 0.9), rgba(56, 189, 248, 0.35) 40%, transparent 70%)`;
+  const gradient = `radial-gradient(${spread}px circle at ${position.x}% ${position.y}%, rgba(147, 51, 234, 0.9), rgba(147, 51, 234, 0.35) 40%, transparent 70%)`;
 
   return (
     <div

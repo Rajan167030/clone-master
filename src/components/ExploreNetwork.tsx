@@ -57,12 +57,12 @@ const GridItem = ({ area, icon, title, description }: GridItemProps) => {
     <li className={`min-h-[14rem] list-none ${area}`}>
       <div className="relative h-full overflow-hidden rounded-2xl border border-slate-300 bg-white p-[1px] shadow-[0_4px_16px_-12px_rgba(15,23,42,0.35)] md:rounded-3xl">
         <GlowingEffect
-          blur={0}
-          borderWidth={16}
-          spread={200}
+          blur={2}
+          borderWidth={24}
+          spread={300}
           glow={true}
           disabled={false}
-          proximity={64}
+          proximity={80}
           inactiveZone={0.01}
         />
         <div className="border-0.75 relative flex h-full flex-col justify-between gap-6 overflow-hidden rounded-[inherit] border border-slate-200 bg-gradient-to-b from-white to-slate-50 p-6 md:p-6">

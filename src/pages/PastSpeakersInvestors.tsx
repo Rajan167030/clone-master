@@ -7,12 +7,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ArrowRight } from "lucide-react";
 import { getPublicSpeakerInvestorProfilesApi, type SpeakerInvestorProfile } from "@/lib/api";
 
-const stats = [
-  { label: "Past speakers", value: "25+" },
-  { label: "Investor guests", value: "15+" },
-  { label: "Cities reached", value: "8" },
-];
-
 const RANDOM_AVATARS = [
   "https://i.pravatar.cc/300?img=1",
   "https://i.pravatar.cc/300?img=2",
@@ -134,18 +128,6 @@ const PastSpeakersInvestors = () => {
                 </a>
               </Button>
             </div>
-          </div>
-
-          {/* Stats — 3 columns even on mobile (small values) */}
-          <div className="mt-8 grid grid-cols-3 gap-2 sm:mt-12 sm:gap-4">
-            {stats.map((stat) => (
-              <Card key={stat.label} className="border-border/60 bg-background/90 shadow-sm backdrop-blur">
-                <CardContent className="p-3 text-center sm:p-6">
-                  <div className="text-2xl font-extrabold text-foreground sm:text-3xl">{stat.value}</div>
-                  <p className="mt-1 text-xs text-muted-foreground sm:mt-2 sm:text-sm">{stat.label}</p>
-                </CardContent>
-              </Card>
-            ))}
           </div>
 
           {loadError && (

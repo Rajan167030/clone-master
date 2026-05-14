@@ -8,8 +8,8 @@ const stats = [
   { value: "1,000+", label: "Angel Investors", icon: Users },
 ];
 
-const StatsSection = () => (
-  <section id="stats" className="py-24 relative">
+const StatsSection = ({ className }: { className?: string }) => (
+  <section id="stats" className={`py-24 relative ${className}`}>
     <div className="container mx-auto px-4">
       <div className="text-center max-w-2xl mx-auto mb-14">
         <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 mb-4">

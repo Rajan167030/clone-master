@@ -154,22 +154,23 @@ export default function AIChatbot() {
             <div ref={messagesEndRef} />
           </div>
           <div className="relative border-t border-white/10 p-3">
-            <input
-              className="w-full rounded-2xl border border-white/10 bg-white/10 px-4 py-3 text-sm text-white placeholder:text-white/45 outline-none ring-0 transition focus:border-cyan-300/30 focus:bg-white/14"
-              placeholder="Ask me about events, membership..."
-              value={input}
-              onChange={e => setInput(e.target.value)}
-              onKeyDown={e => e.key === "Enter" && handleSend()}
-            />
-            <button
-              className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-violet-300/25 bg-[linear-gradient(135deg,hsl(264_84%_46%),hsl(280_80%_38%))] px-4 py-3 text-sm font-semibold text-white shadow-[0_12px_28px_-12px_rgba(124,58,237,0.9)] transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
-              onClick={handleSend}
-              aria-label="Send"
-              disabled={loading}
-            >
-              {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send size={16} />}
-              Send message
-            </button>
+            <div className="relative">
+              <input
+                className="w-full rounded-2xl border border-white/10 bg-white/10 px-4 py-3 pr-12 text-sm text-white placeholder:text-white/45 outline-none ring-0 transition focus:border-cyan-300/30 focus:bg-white/14"
+                placeholder="Ask me about events, membership..."
+                value={input}
+                onChange={e => setInput(e.target.value)}
+                onKeyDown={e => e.key === "Enter" && handleSend()}
+              />
+              <button
+                className="absolute right-2 top-1/2 -translate-y-1/2 grid h-8 w-8 place-items-center rounded-xl border border-violet-300/25 bg-[linear-gradient(135deg,hsl(264_84%_46%),hsl(280_80%_38%))] text-white shadow-[0_8px_20px_-8px_rgba(124,58,237,0.8)] transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
+                onClick={handleSend}
+                aria-label="Send message"
+                disabled={loading || !input.trim()}
+              >
+                {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send size={16} />}
+              </button>
+            </div>
           </div>
         </div>
       )}

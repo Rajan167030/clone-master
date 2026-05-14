@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import HeroParallax from "@/components/ui/hero-parallax";
 import { getPublicGalleryApi, type GalleryImage } from "@/lib/api";
 
-const GallerySection = () => {
+const GallerySection = ({ className }: { className?: string }) => {
   const [images, setImages] = useState<GalleryImage[]>([]);
 
   useEffect(() => {
@@ -27,7 +27,7 @@ const GallerySection = () => {
     thumbnail: image.imageUrl,
   }));
 
-  return <HeroParallax products={products} />;
+  return <div className={className}><HeroParallax products={products} /></div>;
 };
 
 export default GallerySection;
