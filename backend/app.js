@@ -13,9 +13,30 @@ const app = express();
 
 app.use(
   cors({
-    origin: process.env.CLIENT_ORIGIN
-      ? process.env.CLIENT_ORIGIN.split(',').map(url => url.trim())
-      : "http://localhost:5173",
+    origin: (origin, callback) => {
+      // Allow requests with no origin (like mobile apps or curl requests)
+      if (!origin) return callback(null, true);
+
+      const allowedOrigins = [
+        'https://foundersconnect.vercel.app',
+        'https://www.foundersconnect.co.in',
+        'https://foundersconnect.co.in',
+        'http://localhost:5173',
+        'http://localhost:8080',
+        'http://localhost:3000'
+      ];
+
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      // For development, allow all localhost origins
+      if (origin.includes('localhost')) {
+        return callback(null, true);
+      }
+
+      return callback(new Error('Not allowed by CORS'));
+    },
     credentials: true,
   }),
 );
