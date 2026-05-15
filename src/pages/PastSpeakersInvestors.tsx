@@ -109,25 +109,12 @@ const PastSpeakersInvestors = () => {
 
         <div className="container relative z-10 mx-auto px-4 py-8 sm:py-12 md:py-16">
           <div className="mx-auto max-w-3xl text-center">
-            <h1 className="font-heading text-3xl font-extrabold leading-tight text-foreground sm:text-4xl md:text-5xl lg:text-6xl">
-              Speakers &amp; Investors
-            </h1>
+            
             <p className="mt-3 text-sm text-muted-foreground sm:mt-4 sm:text-base md:text-lg">
               Celebrating the brilliant minds who shaped our community events.
             </p>
 
-            <div className="mt-6 flex flex-wrap justify-center gap-2 sm:mt-8 sm:gap-3">
-              <Button asChild size="sm" className="gap-2 bg-gradient-primary text-primary-foreground sm:size-default">
-                <a href="#speakers">
-                  View Speakers <ArrowRight className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                </a>
-              </Button>
-              <Button asChild variant="outline" size="sm" className="gap-2 sm:size-default">
-                <a href="#investors">
-                  View Investors <ArrowRight className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                </a>
-              </Button>
-            </div>
+            
           </div>
 
           {loadError && (

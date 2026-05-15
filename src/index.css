@@ -34,7 +34,7 @@
     --input: 264 20% 92%;
     --ring: 264 84% 46%;
 
-    --radius: 0.75rem;
+    --radius: 0rem;
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 220 20% 15%;
@@ -69,6 +69,25 @@
   }
   .card-gradient {
     background-image: var(--gradient-card);
+  }
+
+  /* Premium styling utilities */
+  .premium-shadow {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04);
+  }
+
+  .premium-shadow-hover {
+    transition: all 0.3s ease;
+  }
+
+  .premium-shadow-hover:hover {
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12), 0 4px 12px rgba(0, 0, 0, 0.06);
+    transform: translateY(-2px);
+  }
+
+  .premium-border {
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
   }
 }
 

@@ -149,18 +149,18 @@ const Navbar = () => {
     <div className="fixed left-0 right-0 top-0 z-50 px-3 pt-4 sm:px-4 sm:pt-8">
       <nav
         ref={navRef}
-        className="mx-auto w-full max-w-[920px] rounded-[14px] sm:rounded-[18px] border border-white/20 bg-white/90 shadow-[0_14px_40px_rgba(15,23,42,0.14)] backdrop-blur-xl"
+        className="mx-auto w-full max-w-[920px] border border-white/20 bg-white/90 shadow-[0_14px_40px_rgba(15,23,42,0.14)] backdrop-blur-xl"
       >
         <div className="relative flex h-16 sm:h-[72px] items-center justify-between px-3 sm:px-4 md:px-5 gap-2">
           <button
             type="button"
-            className="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-full text-slate-800 transition-colors hover:bg-slate-100 flex-shrink-0"
+            className="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center text-slate-800 transition-colors hover:bg-slate-100 flex-shrink-0"
             onClick={toggleMenu}
             aria-label={isOpen ? "Close menu" : "Open menu"}
           >
             <div className="flex flex-col items-center justify-center gap-1.5">
-              <span className={`h-0.5 w-5 sm:w-6 rounded-full bg-current transition-transform duration-300 ${isHamburgerOpen ? "translate-y-1.5 rotate-45" : ""}`} />
-              <span className={`h-0.5 w-5 sm:w-6 rounded-full bg-current transition-transform duration-300 ${isHamburgerOpen ? "-translate-y-1.5 -rotate-45" : ""}`} />
+              <span className={`h-0.5 w-5 sm:w-6 bg-current transition-transform duration-300 ${isHamburgerOpen ? "translate-y-1.5 rotate-45" : ""}`} />
+              <span className={`h-0.5 w-5 sm:w-6 bg-current transition-transform duration-300 ${isHamburgerOpen ? "-translate-y-1.5 -rotate-45" : ""}`} />
             </div>
           </button>
 
@@ -168,12 +168,12 @@ const Navbar = () => {
             to={authed ? "/dashboard" : "/"}
             className="absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 items-center gap-2 hidden sm:flex"
           >
-            <span className="rounded-full bg-purple-700 px-3 py-1 text-xs sm:text-sm font-semibold tracking-wide text-white whitespace-nowrap">
+            <span className="bg-purple-700 px-3 py-1 text-xs sm:text-sm font-semibold tracking-wide text-white whitespace-nowrap">
               Founders Connect
             </span>
           </Link>
 
-          <Button asChild className="h-9 sm:h-10 rounded-lg sm:rounded-xl bg-purple-600 px-3 sm:px-4 text-xs sm:text-sm font-semibold text-white hover:bg-purple-700 transition-colors flex-shrink-0">
+          <Button asChild className="h-9 sm:h-10 bg-purple-600 px-3 sm:px-4 text-xs sm:text-sm font-semibold text-white hover:bg-purple-700 transition-colors flex-shrink-0">
             <Link to={topButtonTo}>{topButtonLabel}</Link>
           </Button>
         </div>
@@ -188,7 +188,7 @@ const Navbar = () => {
             <div
               key={item.label}
               ref={setCardRef(index)}
-              className="relative min-h-[120px] sm:min-h-[140px] rounded-[14px] sm:rounded-[18px] p-3 sm:p-4 shadow-lg transition-transform duration-300 hover:-translate-y-1"
+              className="relative min-h-[120px] sm:min-h-[140px] p-3 sm:p-4 shadow-lg transition-transform duration-300 hover:-translate-y-1"
               style={{ backgroundColor: item.bgColor, color: item.textColor }}
             >
               <div className="text-lg sm:text-[22px] font-medium tracking-[-0.04em]">{item.label}</div>
@@ -214,7 +214,7 @@ const Navbar = () => {
         </div>
 
         {authed && isOpen && (
-          <div className="absolute left-0 right-0 top-full mt-2 flex items-center justify-between border-t border-slate-200 px-3 py-2 sm:px-4 sm:py-3 text-xs text-slate-500 md:hidden bg-white/90 rounded-b-[14px] sm:rounded-b-[18px]">
+          <div className="absolute left-0 right-0 top-full mt-2 flex items-center justify-between border-t border-slate-200 px-3 py-2 sm:px-4 sm:py-3 text-xs text-slate-500 md:hidden bg-white/90">
             <span className="truncate mr-2">Signed in as {account?.fullName || account?.email || "Member"}</span>
             <button type="button" className="inline-flex items-center gap-1 text-slate-700 flex-shrink-0 hover:text-purple-600 transition-colors" onClick={handleLogout}>
               <LogOut size={14} />
