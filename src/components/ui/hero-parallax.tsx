@@ -1,6 +1,6 @@
 import { motion, useScroll, useTransform } from "framer-motion";
 import { ArrowUpRight } from "lucide-react";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 
 export type HeroParallaxProduct = {
   title: string;
@@ -10,6 +10,60 @@ export type HeroParallaxProduct = {
 
 type HeroParallaxProps = {
   products: HeroParallaxProduct[];
+};
+
+// Cloudinary image optimization function
+const getOptimizedImageUrl = (url: string, width: number = 800, quality: number = 80) => {
+  if (!url.includes('cloudinary.com')) return url;
+
+  // Insert transformations before the image path
+  const transformations = `f_auto,q_${quality},w_${width},c_limit`;
+  return url.replace('/upload/', `/upload/${transformations}/`);
+};
+
+// Lazy loading image component with preloading
+const OptimizedImage = ({
+  src,
+  alt,
+  className,
+  priority = false,
+  onLoad,
+  ...props
+}: {
+  src: string;
+  alt: string;
+  className?: string;
+  priority?: boolean;
+  onLoad?: () => void;
+} & React.ImgHTMLAttributes<HTMLImageElement>) => {
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [hasError, setHasError] = useState(false);
+
+  const optimizedSrc = getOptimizedImageUrl(src);
+
+  return (
+    <>
+      {!isLoaded && !hasError && (
+        <div className={`${className} bg-muted animate-pulse rounded-lg`} />
+      )}
+      <img
+        src={optimizedSrc}
+        alt={alt}
+        className={`${className} ${!isLoaded ? 'opacity-0' : 'opacity-100'} transition-opacity duration-300`}
+        loading={priority ? "eager" : "lazy"}
+        fetchPriority={priority ? "high" : "auto"}
+        onLoad={() => {
+          setIsLoaded(true);
+          onLoad?.();
+        }}
+        onError={() => {
+          setHasError(true);
+          setIsLoaded(true);
+        }}
+        {...props}
+      />
+    </>
+  );
 };
 
 const splitIntoRows = (products: HeroParallaxProduct[]) => {
@@ -38,10 +92,11 @@ const ParallaxRow = ({
         whileHover={{ y: reverse ? -6 : 6 }}
         className="group relative block h-72 w-[22rem] flex-shrink-0 overflow-hidden rounded-3xl border border-border/70 bg-card shadow-xl shadow-black/5"
       >
-        <img
+        <OptimizedImage
           src={product.thumbnail}
           alt={product.title}
           className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+          priority={index < 3} // Preload first 3 images
         />
 
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-90 transition-opacity duration-300 group-hover:opacity-100" />

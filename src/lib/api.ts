@@ -141,6 +141,7 @@ export type GalleryImage = {
   _id: string;
   title: string;
   imageUrl: string;
+  thumbnailUrl?: string; // Optimized thumbnail URL
   altText?: string;
   caption?: string;
   linkUrl?: string;

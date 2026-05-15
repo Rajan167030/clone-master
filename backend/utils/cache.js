@@ -1,3 +1,7 @@
+import dotenv from "dotenv";
+
+dotenv.config();
+
 const DEFAULT_TTL_SECONDS = 300;
 
 const getUpstashConfig = () => {

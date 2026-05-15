@@ -5,9 +5,9 @@ import { ArrowRight } from "lucide-react";
 import { getPublicSliderEventsApi } from "@/lib/api";
 
 const cloudinaryImages = {
-  slide1: "https://res.cloudinary.com/founders-connect/image/upload/c_fill,w_1200,h_600/hero/slide1.jpg",
-  slide2: "https://res.cloudinary.com/founders-connect/image/upload/c_fill,w_1200,h_600/hero/slide2.jpg",
-  slide3: "https://res.cloudinary.com/founders-connect/image/upload/c_fill,w_1200,h_600/hero/slide3.jpg",
+  slide1: "https://res.cloudinary.com/founders-connect/image/upload/f_auto,q_85,w_1200,h_600,c_fill/hero/slide1.jpg",
+  slide2: "https://res.cloudinary.com/founders-connect/image/upload/f_auto,q_85,w_1200,h_600,c_fill/hero/slide2.jpg",
+  slide3: "https://res.cloudinary.com/founders-connect/image/upload/f_auto,q_85,w_1200,h_600,c_fill/hero/slide3.jpg",
 };
 
 const fallbackSlides = [
@@ -97,6 +97,8 @@ const HeroSlider = ({ className }: { className?: string }) => {
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.7 }}
                 className="absolute inset-0 w-full h-full object-cover"
+                loading={current === 0 ? "eager" : "lazy"}
+                fetchPriority={current === 0 ? "high" : "auto"}
               />
             </AnimatePresence>
           </Link>
