@@ -24,7 +24,7 @@ const GallerySection = ({ className }: { className?: string }) => {
   const products = images.map((image) => ({
     title: image.title,
     link: image.linkUrl || "#gallery",
-    thumbnail: image.thumbnailUrl || image.imageUrl, // Use optimized thumbnail
+    thumbnail: image.imageUrl,
   }));
 
   return <div className={className}><HeroParallax products={products} /></div>;

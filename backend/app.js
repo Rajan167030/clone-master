@@ -1,8 +1,6 @@
 import cors from "cors";
 import express from "express";
 import mongoose from "mongoose";
-import compression from "compression";
-import helmet from "helmet";
 import authRouter from "./routes/auth.routes.js";
 import adminRouter from "./routes/admin.routes.js";
 import contentRouter from "./routes/content.routes.js";
@@ -13,26 +11,6 @@ import { errorHandler, notFoundHandler } from "./middlewares/error.middleware.js
 
 const app = express();
 
-// Security middleware
-app.use(helmet({
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
-      fontSrc: ["'self'", "https://fonts.gstatic.com"],
-      imgSrc: ["'self'", "data:", "https:", "http:"],
-      connectSrc: ["'self'", "https://res.cloudinary.com"],
-    },
-  },
-}));
-
-// Performance middleware
-app.use(compression({
-  level: 6, // Good balance between speed and compression
-  threshold: 1024, // Only compress responses larger than 1KB
-}));
-
-// CORS configuration
 app.use(
   cors({
     origin: (origin, callback) => {

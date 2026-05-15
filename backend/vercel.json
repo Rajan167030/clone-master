@@ -5,31 +5,5 @@
       "source": "/(.*)",
       "destination": "/api/index.js"
     }
-  ],
-  "functions": {
-    "api/index.js": {
-      "maxDuration": 30,
-      "memory": 1024
-    }
-  },
-  "regions": ["sin1"],
-  "headers": [
-    {
-      "source": "/api/(.*)",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=300, s-maxage=600"
-        },
-        {
-          "key": "CDN-Cache-Control",
-          "value": "max-age=3600"
-        },
-        {
-          "key": "Vercel-CDN-Cache-Control",
-          "value": "max-age=3600"
-        }
-      ]
-    }
   ]
 }

@@ -36,14 +36,6 @@ const normalizeSections = (value) =>
         .filter((item) => item.heading && item.content)
     : [];
 
-// Cloudinary image optimization function
-const getOptimizedImageUrl = (url, width = 800, quality = 80) => {
-  if (!url || !String(url).includes('cloudinary.com')) return url;
-
-  const transformations = `f_auto,q_${quality},w_${width},c_limit`;
-  return String(url).replace('/upload/', `/upload/${transformations}/`);
-};
-
 const sanitizeEventPayload = (body = {}) => {
   const title = String(body.title || "").trim();
   let slug = String(body.slug || "").trim();
@@ -328,15 +320,7 @@ export const listPublicGalleryImages = async (req, res, next) => {
     if (cached) return res.status(200).json(cached);
 
     const images = await GalleryImage.find({ isActive: true }).sort({ order: 1, createdAt: -1 }).lean();
-
-    // Optimize image URLs for better performance
-    const optimizedImages = images.map(image => ({
-      ...image,
-      imageUrl: getOptimizedImageUrl(image.imageUrl, 800, 80), // 800px width, 80% quality
-      thumbnailUrl: getOptimizedImageUrl(image.imageUrl, 400, 70), // Smaller thumbnail
-    }));
-
-    const payload = { images: optimizedImages };
+    const payload = { images };
     await setCache(cacheKey, payload, 300);
     return res.status(200).json(payload);
   } catch (error) {

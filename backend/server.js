@@ -2,6 +2,7 @@ import dotenv from "dotenv";
 import mongoose from "mongoose";
 import { connectMongo } from "./config/mongodb.js";
 
+dotenv.config({ path: "backend/.env" });
 dotenv.config();
 
 const { default: app } = await import("./app.js");
