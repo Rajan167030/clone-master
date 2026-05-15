@@ -58,6 +58,7 @@ const navCards: NavCardItem[] = [
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isHamburgerOpen, setIsHamburgerOpen] = useState(false);
+
   const navRef = useRef<HTMLElement | null>(null);
   const contentRef = useRef<HTMLDivElement | null>(null);
   const cardsRef = useRef<Array<HTMLDivElement | null>>([]);
@@ -97,12 +98,6 @@ const Navbar = () => {
       tlRef.current = null;
     };
   }, []);
-
-  useEffect(() => {
-    setIsOpen(false);
-    setIsHamburgerOpen(false);
-    tlRef.current?.reverse(0);
-  }, [location.pathname]);
 
   useEffect(() => {
     if (!isOpen) return;

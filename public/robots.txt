@@ -13,4 +13,4 @@ Allow: /
 User-agent: *
 Allow: /
 
-Sitemap: https://founders.connect/sitemap.xml
+Sitemap: https://foundersconnect.co.in/sitemap.xml
