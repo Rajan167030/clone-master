@@ -55,7 +55,7 @@ const HeroSlider = ({ className }: { className?: string }) => {
             title: event.title,
             highlight: event.subtitle || event.title,
             link: `/events/${event.slug}`,
-            image: event.bannerImage || slide1,
+            image: event.bannerImage || cloudinaryImages.slide1,
             alt: event.bannerAlt || event.title,
           }));
           setSlides(eventSlides.length > 0 ? eventSlides : fallbackSlides);

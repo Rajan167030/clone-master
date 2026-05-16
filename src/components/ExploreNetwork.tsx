@@ -85,8 +85,8 @@ const GridItem = ({ area, icon, title, description }: GridItemProps) => {
   );
 };
 
-const ExploreNetwork = () => (
-  <section id="network" className="px-4 py-12 sm:px-6 lg:px-8">
+const ExploreNetwork = ({ className }: { className?: string }) => (
+  <section id="network" className={`px-4 py-12 sm:px-6 lg:px-8 ${className ?? ""}`}>
     <div className="mx-auto w-full max-w-[120rem] rounded-[2rem] border border-slate-200 bg-gradient-to-b from-slate-50 to-white p-3 md:p-5">
       <GlowingEffectDemoSecond />
     </div>

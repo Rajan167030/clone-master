@@ -17,6 +17,7 @@ import { registerApi } from "@/lib/api";
 import { setSession } from "@/lib/session";
 import { useToast } from "@/hooks/use-toast";
 import EmailVerificationBox from "@/components/EmailVerificationBox";
+import { countryCodes, getPhoneValidationError } from "@/lib/formValidation";
 
 const RegisterUser = () => {
   const navigate = useNavigate();
@@ -43,13 +44,14 @@ const RegisterUser = () => {
 
     const fullName = String(formData.get("fullName") || "").trim();
     const email = String(formData.get("email") || "").trim();
-    const phone = String(formData.get("phone") || "").trim();
+    const phoneCountryCode = String(formData.get("phoneCountryCode") || "").trim();
+    const phoneNumber = String(formData.get("phoneNumber") || "").trim();
     const city = String(formData.get("city") || "").trim();
     const interest = String(formData.get("interest") || "").trim();
     const occupation = String(formData.get("occupation") || "").trim();
 
     if (step === 1) {
-      if (!fullName || !email || !phone || !city) {
+      if (!fullName || !email || !city || getPhoneValidationError(phoneCountryCode, phoneNumber)) {
         toast({
           title: "Missing Required Fields",
           description: "Please fill full name, email, phone, and city.",
@@ -94,13 +96,14 @@ const RegisterUser = () => {
     const email = String(formData.get("email") || "").trim().toLowerCase();
     const password = String(formData.get("password") || "").trim();
     const confirmPassword = String(formData.get("confirmPassword") || "").trim();
-    const phone = String(formData.get("phone") || "").trim();
+    const phoneCountryCode = String(formData.get("phoneCountryCode") || "").trim();
+    const phoneNumber = String(formData.get("phoneNumber") || "").trim();
     const city = String(formData.get("city") || "").trim();
     const interest = String(formData.get("interest") || "").trim();
     const occupation = String(formData.get("occupation") || "").trim();
     const experienceLevel = selectedExperienceLevel;
 
-    if (!fullName || !email || !password || !phone || !city) {
+    if (!fullName || !email || !password || !city || getPhoneValidationError(phoneCountryCode, phoneNumber)) {
       toast({
         title: "Missing Required Fields",
         description: "Please fill in all required fields.",
@@ -160,7 +163,7 @@ const RegisterUser = () => {
       fullName,
       email,
       password,
-      phone,
+      phone: `${phoneCountryCode} ${phoneNumber}`,
       city,
       role: "user",
       roleDetails: {
@@ -209,10 +212,19 @@ const RegisterUser = () => {
               </p>
             </div>
 
-            <div className="space-y-4">
-              <p className="text-sm font-semibold text-gray-900 uppercase tracking-widest">
-                As a member you'll get:
-              </p>
+            <div className="space-y-2">
+              <label htmlFor="phoneNumber" className="text-sm font-semibold text-gray-700">Phone Number <span className="text-red-500">*</span></label>
+              <div className="flex gap-2">
+                <select id="phoneCountryCode" name="phoneCountryCode" defaultValue="+91" className="h-12 w-32 rounded-md border border-gray-300 bg-white px-3 text-sm text-gray-700 focus:ring-purple-500">
+                  {countryCodes.map((country) => (
+                    <option key={country.code} value={country.code}>{country.code}</option>
+                  ))}
+                </select>
+                <Input id="phoneNumber" name="phoneNumber" type="tel" placeholder="9876543210" className="h-12 border-gray-300 focus:ring-purple-500" required />
+              </div>
+            </div>
+
+            <div className="space-y-3">
               {benefits.map((benefit, idx) => (
                 <div key={idx} className="flex items-start gap-3">
                   <CheckCircle2 size={20} className="text-blue-600 flex-shrink-0 mt-1" />

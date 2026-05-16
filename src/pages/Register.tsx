@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { registerApi } from "@/lib/api";
 import { setSession } from "@/lib/session";
 import { useToast } from "@/hooks/use-toast";
+import { countryCodes, getPhoneValidationError, isValidWebsite } from "@/lib/formValidation";
 
 type Role = "user" | "investor" | "founder";
 
@@ -32,6 +33,8 @@ const Register = () => {
     const email = getFieldValue(formData, "email").toLowerCase();
     const password = getFieldValue(formData, "password");
     const confirmPassword = getFieldValue(formData, "confirmPassword");
+    const phoneCountryCode = getFieldValue(formData, "phoneCountryCode");
+    const phoneNumber = getFieldValue(formData, "phoneNumber");
 
     if (!fullName || !email || !password) {
       toast({
@@ -128,7 +131,26 @@ const Register = () => {
         return;
       }
 
+      if (!isValidWebsite(startupWebsite)) {
+        toast({
+          title: "Invalid Website",
+          description: "Please enter a valid startup website URL.",
+          variant: "destructive",
+        });
+        return;
+      }
+
       roleDetails = { startupName, startupStage, teamSize, startupWebsite };
+    }
+
+    const phoneError = getPhoneValidationError(phoneCountryCode, phoneNumber);
+    if (phoneError) {
+      toast({
+        title: "Invalid Phone Number",
+        description: phoneError,
+        variant: "destructive",
+      });
+      return;
     }
 
     setIsLoading(true);
@@ -137,7 +159,7 @@ const Register = () => {
       fullName,
       email,
       password,
-      phone: getFieldValue(formData, "phone"),
+      phone: `${phoneCountryCode} ${phoneNumber}`,
       city: getFieldValue(formData, "city"),
       role,
       roleDetails,
@@ -246,10 +268,19 @@ const Register = () => {
 
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <label htmlFor="phone" className="text-sm font-medium text-slate-700">
+                <label htmlFor="phoneNumber" className="text-sm font-medium text-slate-700">
                   Phone Number
                 </label>
-                <Input id="phone" name="phone" type="tel" placeholder="+91 9876543210" className="h-12 border-slate-200" required />
+                <div className="flex gap-2">
+                  <select id="phoneCountryCode" name="phoneCountryCode" defaultValue="+91" className="h-12 w-32 rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-700">
+                    {countryCodes.map((country) => (
+                      <option key={country.code} value={country.code}>
+                        {country.code}
+                      </option>
+                    ))}
+                  </select>
+                  <Input id="phoneNumber" name="phoneNumber" type="tel" placeholder="9876543210" className="h-12 border-slate-200" required />
+                </div>
               </div>
               <div className="space-y-2">
                 <label htmlFor="city" className="text-sm font-medium text-slate-700">

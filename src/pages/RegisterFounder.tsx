@@ -17,6 +17,7 @@ import { registerApi } from "@/lib/api";
 import { setSession } from "@/lib/session";
 import { useToast } from "@/hooks/use-toast";
 import EmailVerificationBox from "@/components/EmailVerificationBox";
+import { countryCodes, getPhoneValidationError, isValidWebsite } from "@/lib/formValidation";
 
 const RegisterFounder = () => {
   const navigate = useNavigate();
@@ -46,14 +47,15 @@ const RegisterFounder = () => {
 
     const fullName = String(formData.get("fullName") || "").trim();
     const email = String(formData.get("email") || "").trim();
-    const phone = String(formData.get("phone") || "").trim();
+    const phoneCountryCode = String(formData.get("phoneCountryCode") || "").trim();
+    const phoneNumber = String(formData.get("phoneNumber") || "").trim();
     const city = String(formData.get("city") || "").trim();
     const startupName = String(formData.get("startupName") || "").trim();
     const teamSize = Number(formData.get("teamSize"));
     const startupWebsite = String(formData.get("startupWebsite") || "").trim();
 
     if (step === 1) {
-      if (!fullName || !email || !phone || !city) {
+      if (!fullName || !email || !city || getPhoneValidationError(phoneCountryCode, phoneNumber)) {
         toast({
           title: "Missing Required Fields",
           description: "Please fill full name, email, phone, and city.",
@@ -76,6 +78,14 @@ const RegisterFounder = () => {
         toast({
           title: "Incomplete Startup Details",
           description: "Please fill startup name, stage, and website.",
+          variant: "destructive",
+        });
+        return false;
+      }
+      if (!isValidWebsite(startupWebsite)) {
+        toast({
+          title: "Invalid Website",
+          description: "Please enter a valid startup website URL.",
           variant: "destructive",
         });
         return false;
@@ -106,14 +116,17 @@ const RegisterFounder = () => {
     const email = String(formData.get("email") || "").trim().toLowerCase();
     const password = String(formData.get("password") || "").trim();
     const confirmPassword = String(formData.get("confirmPassword") || "").trim();
-    const phone = String(formData.get("phone") || "").trim();
+    const phoneCountryCode = String(formData.get("phoneCountryCode") || "").trim();
+    const phoneNumber = String(formData.get("phoneNumber") || "").trim();
     const city = String(formData.get("city") || "").trim();
     const startupName = String(formData.get("startupName") || "").trim();
     const startupStage = selectedStage;
     const teamSize = Number(formData.get("teamSize"));
     const startupWebsite = String(formData.get("startupWebsite") || "").trim();
 
-    if (!fullName || !email || !password || !phone || !city) {
+    const phoneError = getPhoneValidationError(phoneCountryCode, phoneNumber);
+
+    if (!fullName || !email || !password || !city || phoneError) {
       toast({
         title: "Missing Required Fields",
         description: "Please fill in all required fields.",
@@ -153,6 +166,15 @@ const RegisterFounder = () => {
       toast({
         title: "Missing Website",
         description: "Please provide your startup website.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!isValidWebsite(startupWebsite)) {
+      toast({
+        title: "Invalid Website",
+        description: "Please enter a valid startup website URL.",
         variant: "destructive",
       });
       return;
@@ -200,7 +222,7 @@ const RegisterFounder = () => {
       fullName,
       email,
       password,
-      phone,
+      phone: `${phoneCountryCode} ${phoneNumber}`,
       city,
       role: "founder",
       roleDetails: {
@@ -326,8 +348,15 @@ const RegisterFounder = () => {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label htmlFor="phone" className="text-sm font-semibold text-gray-700">Phone Number <span className="text-red-500">*</span></label>
-                    <Input id="phone" name="phone" type="tel" placeholder="+91 9876543210" className="h-12 border-gray-300 focus:ring-purple-500" required />
+                    <label htmlFor="phoneNumber" className="text-sm font-semibold text-gray-700">Phone Number <span className="text-red-500">*</span></label>
+                    <div className="flex gap-2">
+                      <select id="phoneCountryCode" name="phoneCountryCode" defaultValue="+91" className="h-12 w-32 rounded-md border border-gray-300 bg-white px-3 text-sm text-gray-700 focus:ring-purple-500">
+                        {countryCodes.map((country) => (
+                          <option key={country.code} value={country.code}>{country.code}</option>
+                        ))}
+                      </select>
+                      <Input id="phoneNumber" name="phoneNumber" type="tel" placeholder="9876543210" className="h-12 border-gray-300 focus:ring-purple-500" required />
+                    </div>
                   </div>
                   <div className="space-y-2">
                     <label htmlFor="city" className="text-sm font-semibold text-gray-700">City <span className="text-red-500">*</span></label>
@@ -374,7 +403,7 @@ const RegisterFounder = () => {
                       </div>
                       <div className="space-y-2">
                         <label htmlFor="startupWebsite" className="text-sm font-medium text-gray-700">Website <span className="text-red-500">*</span></label>
-                        <Input id="startupWebsite" name="startupWebsite" placeholder="https://yourstartup.com" className="h-12 border-gray-300 focus:ring-purple-500" required />
+                        <Input id="startupWebsite" name="startupWebsite" type="url" placeholder="https://yourstartup.com" className="h-12 border-gray-300 focus:ring-purple-500" required />
                       </div>
                     </div>
 

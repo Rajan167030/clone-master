@@ -12,7 +12,8 @@ const emptyFormData = {
   companyType: "",
   contactPerson: "",
   email: "",
-  phone: "",
+  phoneCountryCode: "+91",
+  phoneNumber: "",
   city: "",
   partnershipType: "",
   partnershipGoal: "",
@@ -40,6 +41,7 @@ const PartnerWithUs = () => {
   const [copyMessage, setCopyMessage] = useState("");
   const [emailVerificationToken, setEmailVerificationToken] = useState("");
   const [currentStep, setCurrentStep] = useState(1);
+  const [validationErrors, setValidationErrors] = useState<{ website?: string; phone?: string }>({});
 
   useEffect(() => {
     getPublicPartnerTypesApi()
@@ -79,6 +81,15 @@ const timelines = [
   "Exploring only",
 ];
 
+const countryCodes = [
+  { code: "+91", label: "India (+91)" },
+  { code: "+1", label: "USA/Canada (+1)" },
+  { code: "+44", label: "UK (+44)" },
+  { code: "+61", label: "Australia (+61)" },
+  { code: "+65", label: "Singapore (+65)" },
+  { code: "+971", label: "UAE (+971)" },
+];
+
 const benefits = [
   {
     icon: Users,
@@ -106,10 +117,52 @@ const benefits = [
       setEmailVerificationToken("");
     }
 
+    if (e.target.name === "website") {
+      setValidationErrors((prev) => ({ ...prev, website: undefined }));
+    }
+
+    if (e.target.name === "phoneCountryCode" || e.target.name === "phoneNumber") {
+      setValidationErrors((prev) => ({ ...prev, phone: undefined }));
+    }
+
     setFormData((prev) => ({
       ...prev,
-      [e.target.name]: e.target.value,
+      [e.target.name]: e.target.name === "phoneNumber" ? e.target.value.replace(/\D/g, "") : e.target.value,
     }));
+  };
+
+  const isValidWebsite = (value: string) => {
+    const trimmedValue = value.trim();
+    if (!trimmedValue) return true;
+
+    try {
+      const url = new URL(
+        trimmedValue.startsWith("http://") || trimmedValue.startsWith("https://")
+          ? trimmedValue
+          : `https://${trimmedValue}`,
+      );
+      return ["http:", "https:"].includes(url.protocol) && Boolean(url.hostname.includes("."));
+    } catch {
+      return false;
+    }
+  };
+
+  const getPhoneValidationError = () => {
+    const phoneDigits = formData.phoneNumber.replace(/\D/g, "");
+
+    if (!formData.phoneCountryCode) {
+      return "Please select a country code.";
+    }
+
+    if (!phoneDigits) {
+      return "Phone number is required.";
+    }
+
+    if (phoneDigits.length < 7 || phoneDigits.length > 15) {
+      return "Enter a valid phone number with 7 to 15 digits.";
+    }
+
+    return "";
   };
 
   const handleCopyFormUrl = async () => {
@@ -126,6 +179,19 @@ const benefits = [
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    const websiteError = isValidWebsite(formData.website) ? "" : "Please enter a valid website URL.";
+    const phoneError = getPhoneValidationError();
+
+    setValidationErrors({
+      website: websiteError || undefined,
+      phone: phoneError || undefined,
+    });
+
+    if (websiteError || phoneError) {
+      window.alert(websiteError || phoneError);
+      return;
+    }
+
     if (!emailVerificationToken) {
       window.alert("Please verify your email before submitting.");
       return;
@@ -135,6 +201,7 @@ const benefits = [
     try {
       await submitPartnerInquiryApi({
         ...formData,
+        phone: `${formData.phoneCountryCode} ${formData.phoneNumber}`,
         emailVerificationToken,
       });
 
@@ -154,11 +221,12 @@ const benefits = [
         if (!formData.companyName.trim()) return { valid: false, message: "Company name is required" };
         if (!formData.companyType) return { valid: false, message: "Company type is required" };
         if (!formData.city.trim()) return { valid: false, message: "City is required" };
+        if (formData.website && !isValidWebsite(formData.website)) return { valid: false, message: "Please enter a valid website URL." };
         return { valid: true, message: "" };
       
       case 2:
         if (!formData.contactPerson.trim()) return { valid: false, message: "Contact person is required" };
-        if (!formData.phone.trim()) return { valid: false, message: "Phone is required" };
+        if (getPhoneValidationError()) return { valid: false, message: getPhoneValidationError() };
         if (!formData.email.trim()) return { valid: false, message: "Email is required" };
         if (!emailVerificationToken) return { valid: false, message: "Email verification is required" };
         return { valid: true, message: "" };
@@ -186,8 +254,9 @@ const benefits = [
     <div className="min-h-screen bg-background">
       <Navbar />
 
+
       <section className="relative min-h-[520px] overflow-hidden pt-24">
-        <img src="https://res.cloudinary.com/founders-connect/image/upload/c_fill,w_1200,h_600/hero/partner-hero.jpg" alt="Founders Connect partnership" className="absolute inset-0 h-full w-full object-cover" />
+        <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=1200&q=80&fit=crop" alt="Founders Connect partnership" className="absolute inset-0 h-full w-full object-cover" />
         <div className="absolute inset-0 bg-slate-950/65" />
         <div className="container relative z-10 mx-auto px-4 py-16">
           <div className="max-w-3xl text-white">
@@ -318,7 +387,19 @@ const benefits = [
                         </label>
                         <label className="block text-sm font-semibold text-foreground">
                           Website
-                          <input type="url" name="website" value={formData.website} onChange={handleChange} placeholder="https://company.com" className="mt-2 w-full rounded border border-border bg-background px-4 py-2.5 text-foreground placeholder:text-muted-foreground" />
+                          <input
+                            type="url"
+                            name="website"
+                            value={formData.website}
+                            onChange={handleChange}
+                            placeholder="https://company.com"
+                            inputMode="url"
+                            autoComplete="url"
+                            className={`mt-2 w-full rounded border bg-background px-4 py-2.5 text-foreground placeholder:text-muted-foreground ${validationErrors.website ? "border-red-500" : "border-border"}`}
+                          />
+                          {validationErrors.website && (
+                            <p className="mt-1 text-xs font-medium text-red-600">{validationErrors.website}</p>
+                          )}
                         </label>
                       </div>
                     </div>
@@ -335,7 +416,34 @@ const benefits = [
                         </label>
                         <label className="block text-sm font-semibold text-foreground">
                           Phone *
-                          <input required type="tel" name="phone" value={formData.phone} onChange={handleChange} placeholder="+91 XXXXX XXXXX" className="mt-2 w-full rounded border border-border bg-background px-4 py-2.5 text-foreground placeholder:text-muted-foreground" />
+                          <div className="mt-2 flex gap-2">
+                            <select
+                              name="phoneCountryCode"
+                              value={formData.phoneCountryCode}
+                              onChange={handleChange}
+                              className="w-32 rounded border border-border bg-background px-3 py-2.5 text-foreground"
+                            >
+                              {countryCodes.map((country) => (
+                                <option key={country.code} value={country.code}>
+                                  {country.code}
+                                </option>
+                              ))}
+                            </select>
+                            <input
+                              required
+                              type="tel"
+                              name="phoneNumber"
+                              value={formData.phoneNumber}
+                              onChange={handleChange}
+                              placeholder="9876543210"
+                              inputMode="numeric"
+                              autoComplete="tel-national"
+                              className={`w-full rounded border bg-background px-4 py-2.5 text-foreground placeholder:text-muted-foreground ${validationErrors.phone ? "border-red-500" : "border-border"}`}
+                            />
+                          </div>
+                          {validationErrors.phone && (
+                            <p className="mt-1 text-xs font-medium text-red-600">{validationErrors.phone}</p>
+                          )}
                         </label>
                         <label className="block text-sm font-semibold text-foreground">
                           Email *
@@ -437,7 +545,11 @@ const benefits = [
                           </div>
                           <div>
                             <p className="text-xs font-semibold text-muted-foreground uppercase">Phone</p>
-                            <p className="font-medium text-foreground">{formData.phone}</p>
+                            <p className="font-medium text-foreground">{formData.phoneCountryCode} {formData.phoneNumber}</p>
+                          </div>
+                          <div>
+                            <p className="text-xs font-semibold text-muted-foreground uppercase">Website</p>
+                            <p className="font-medium text-foreground">{formData.website || "Not specified"}</p>
                           </div>
                           <div>
                             <p className="text-xs font-semibold text-muted-foreground uppercase">City</p>

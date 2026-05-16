@@ -7,13 +7,15 @@ import EmailVerificationBox from "@/components/EmailVerificationBox";
 import { Button } from "@/components/ui/button";
 import { submitJoinRequestApi } from "@/lib/api";
 import { useSEO } from "@/hooks/useSEO";
+import { countryCodes, getPhoneValidationError, isValidWebsite } from "@/lib/formValidation";
 
 const WHATSAPP_GROUP_URL = "https://chat.whatsapp.com/Hm4ZKUpvxsy9u2L7SqcfV3";
 
 const initialFormData = {
   name: "",
   email: "",
-  phone: "",
+  phoneCountryCode: "+91",
+  phoneNumber: "",
   occupation: "",
   collegeName: "",
   companyName: "",
@@ -154,10 +156,19 @@ const JoinUs = () => {
   const [emailVerificationToken, setEmailVerificationToken] = useState("");
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
+  const [validationErrors, setValidationErrors] = useState<{ website?: string; phone?: string }>({});
 
   const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     if (e.target.name === "email") {
       setEmailVerificationToken("");
+    }
+
+    if (e.target.name === "website") {
+      setValidationErrors((prev) => ({ ...prev, website: undefined }));
+    }
+
+    if (e.target.name === "phoneCountryCode" || e.target.name === "phoneNumber") {
+      setValidationErrors((prev) => ({ ...prev, phone: undefined }));
     }
 
     // If switching from Student to another occupation, clear collegeName
@@ -170,7 +181,7 @@ const JoinUs = () => {
     } else {
       setFormData((prev) => ({
         ...prev,
-        [e.target.name]: e.target.value,
+        [e.target.name]: e.target.name === "phoneNumber" ? e.target.value.replace(/\D/g, "") : e.target.value,
       }));
     }
   };
@@ -190,6 +201,19 @@ const JoinUs = () => {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
+    const websiteError = isValidWebsite(formData.website) ? "" : "Please enter a valid website URL.";
+    const phoneError = getPhoneValidationError(formData.phoneCountryCode, formData.phoneNumber);
+
+    setValidationErrors({
+      website: websiteError || undefined,
+      phone: phoneError || undefined,
+    });
+
+    if (websiteError || phoneError) {
+      window.alert(websiteError || phoneError);
+      return;
+    }
+
     if (!emailVerificationToken) {
       window.alert("Please verify your email before submitting.");
       return;
@@ -198,7 +222,11 @@ const JoinUs = () => {
     setSubmitting(true);
 
     try {
-      const data = await submitJoinRequestApi({ ...formData, emailVerificationToken });
+      const data = await submitJoinRequestApi({
+        ...formData,
+        phone: `${formData.phoneCountryCode} ${formData.phoneNumber}`,
+        emailVerificationToken,
+      });
 
       if (data?.ok) {
         setFormData(initialFormData);
@@ -219,7 +247,8 @@ const JoinUs = () => {
     if (step === 1) {
       if (!formData.name.trim()) return { valid: false, message: "Full Name is required." };
       if (!formData.email.trim()) return { valid: false, message: "Email is required." };
-      if (!formData.phone.trim()) return { valid: false, message: "Phone Number is required." };
+      const phoneError = getPhoneValidationError(formData.phoneCountryCode, formData.phoneNumber);
+      if (phoneError) return { valid: false, message: phoneError };
       if (!formData.occupation) return { valid: false, message: "Occupation is required." };
       if (formData.occupation === "Student" && !formData.collegeName.trim()) {
         return { valid: false, message: "College / University Name is required for students." };
@@ -234,6 +263,7 @@ const JoinUs = () => {
       if (!formData.city.trim()) return { valid: false, message: "City / Location is required." };
       if (!formData.linkedinProfile.trim()) return { valid: false, message: "LinkedIn Profile is required." };
       if (!formData.website.trim()) return { valid: false, message: "Website / Portfolio is required." };
+      if (!isValidWebsite(formData.website)) return { valid: false, message: "Please enter a valid website URL." };
     }
 
     if (step === 3) {
@@ -378,7 +408,30 @@ const JoinUs = () => {
 
                       <div>
                         <label className="mb-2 block text-sm font-semibold text-foreground">Phone Number *</label>
-                        <input type="tel" name="phone" value={formData.phone} onChange={handleChange} placeholder="+91 XXXXX XXXXX" className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20" />
+                        <div className="flex gap-2">
+                          <select
+                            name="phoneCountryCode"
+                            value={formData.phoneCountryCode}
+                            onChange={handleChange}
+                            className="w-32 rounded-lg border border-border bg-background px-3 py-2.5 text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                          >
+                            {countryCodes.map((country) => (
+                              <option key={country.code} value={country.code}>
+                                {country.code}
+                              </option>
+                            ))}
+                          </select>
+                          <input
+                            type="tel"
+                            name="phoneNumber"
+                            value={formData.phoneNumber}
+                            onChange={handleChange}
+                            placeholder="9876543210"
+                            inputMode="numeric"
+                            className={`w-full rounded-lg border bg-background px-4 py-2.5 text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 ${validationErrors.phone ? "border-red-500" : "border-border"}`}
+                          />
+                        </div>
+                        {validationErrors.phone && <p className="mt-1 text-xs font-medium text-red-600">{validationErrors.phone}</p>}
                       </div>
 
                       <div>
@@ -420,7 +473,17 @@ const JoinUs = () => {
 
                       <div>
                         <label className="mb-2 block text-sm font-semibold text-foreground">Website / Portfolio *</label>
-                        <input type="url" name="website" value={formData.website} onChange={handleChange} placeholder="https://yourwebsite.com" className="w-full rounded-lg border border-border bg-background px-4 py-2.5 text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20" />
+                        <input
+                          type="url"
+                          name="website"
+                          value={formData.website}
+                          onChange={handleChange}
+                          placeholder="https://yourwebsite.com"
+                          inputMode="url"
+                          autoComplete="url"
+                          className={`w-full rounded-lg border bg-background px-4 py-2.5 text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 ${validationErrors.website ? "border-red-500" : "border-border"}`}
+                        />
+                        {validationErrors.website && <p className="mt-1 text-xs font-medium text-red-600">{validationErrors.website}</p>}
                       </div>
                     </div>
                   )}
