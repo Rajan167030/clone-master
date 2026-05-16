@@ -1,12 +1,46 @@
-import { motion } from "framer-motion";
+import { useEffect, useState, useRef } from "react";
+import { motion, useInView, animate } from "framer-motion";
 import { TrendingUp, Building2, Users, DollarSign } from "lucide-react";
 
 const stats = [
-  { value: "1.5cr", label: "Raised in VC", icon: DollarSign },
-  { value: "50", label: "listed startup", icon: Building2 },
-  { value: "₹315Cr", label: "Angel Capital", icon: TrendingUp },
-  { value: "1,000+", label: "Angel Investors", icon: Users },
+  { prefix: "", number: 1.5, suffix: "cr", label: "Raised in VC", icon: DollarSign, isFloat: true, formatComma: false },
+  { prefix: "", number: 50, suffix: "", label: "listed startup", icon: Building2, isFloat: false, formatComma: false },
+  { prefix: "₹", number: 315, suffix: "Cr", label: "Angel Capital", icon: TrendingUp, isFloat: false, formatComma: false },
+  { prefix: "", number: 1000, suffix: "+", label: "Angel Investors", icon: Users, isFloat: false, formatComma: true },
 ];
+
+const Counter = ({ from = 0, to, prefix = "", suffix = "", isFloat = false, formatComma = false }: any) => {
+  const ref = useRef<HTMLSpanElement>(null);
+  const inView = useInView(ref, { once: true, margin: "-50px" });
+  const [value, setValue] = useState(from);
+
+  useEffect(() => {
+    if (inView) {
+      const controls = animate(from, to, {
+        duration: 2.5,
+        ease: "easeOut",
+        onUpdate(v) {
+          setValue(v);
+        },
+      });
+      return () => controls.stop();
+    }
+  }, [inView, from, to]);
+
+  const displayValue = isFloat 
+    ? value.toFixed(1) 
+    : Math.floor(value).toString();
+    
+  const formattedValue = formatComma 
+    ? Number(displayValue).toLocaleString() 
+    : displayValue;
+
+  return (
+    <span ref={ref}>
+      {prefix}{formattedValue}{suffix}
+    </span>
+  );
+};
 
 const StatsSection = ({ className }: { className?: string }) => (
   <section id="stats" className={`py-24 relative ${className}`}>
@@ -39,7 +73,13 @@ const StatsSection = ({ className }: { className?: string }) => (
               <stat.icon size={20} className="text-primary" />
             </div>
             <div className="font-heading font-bold text-3xl md:text-4xl text-foreground tabular-nums">
-              {stat.value}
+              <Counter 
+                to={stat.number} 
+                prefix={stat.prefix} 
+                suffix={stat.suffix} 
+                isFloat={stat.isFloat} 
+                formatComma={stat.formatComma} 
+              />
             </div>
             <div className="text-xs text-muted-foreground mt-1 uppercase tracking-wider font-medium">
               {stat.label}

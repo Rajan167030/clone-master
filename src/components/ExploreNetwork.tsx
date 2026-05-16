@@ -9,35 +9,35 @@ export function GlowingEffectDemoSecond() {
     <ul className="grid grid-cols-1 grid-rows-none gap-4 md:grid-cols-12 md:grid-rows-3 lg:gap-4 xl:max-h-[34rem] xl:grid-rows-2">
       <GridItem
         area="md:[grid-area:1/1/2/7] xl:[grid-area:1/1/2/5]"
-        icon={<Rocket className="h-4 w-4 text-slate-700" />}
+        icon={<Rocket className="h-10 w-10 text-slate-700" />}
         title="Raise Funds"
         description="Fuel your startup growth with founder-first capital access."
       />
 
       <GridItem
         area="md:[grid-area:1/7/2/13] xl:[grid-area:2/1/3/5]"
-        icon={<TrendingUp className="h-4 w-4 text-slate-700" />}
+        icon={<TrendingUp className="h-10 w-10 text-slate-700" />}
         title="Invest in Startups"
         description="Discover high-conviction early-stage opportunities."
       />
 
       <GridItem
         area="md:[grid-area:2/1/3/7] xl:[grid-area:1/5/3/8]"
-        icon={<Building2 className="h-4 w-4 text-slate-700" />}
+        icon={<Building2 className="h-10 w-10 text-slate-700" />}
         title="SME IPO"
         description="Prepare your company for structured public-market readiness."
       />
 
       <GridItem
         area="md:[grid-area:2/7/3/13] xl:[grid-area:1/8/2/13]"
-        icon={<Users className="h-4 w-4 text-slate-700" />}
+        icon={<Users className="h-10 w-10 text-slate-700" />}
         title="Chapter Director"
         description="Lead city chapters and activate meaningful local ecosystems."
       />
 
       <GridItem
         area="md:[grid-area:3/1/4/13] xl:[grid-area:2/8/3/13]"
-        icon={<Handshake className="h-4 w-4 text-slate-700" />}
+        icon={<Handshake className="h-10 w-10 text-slate-700" />}
         title="Venture Partner"
         description="Unlock strategic intros with founders, operators, and investors."
       />
@@ -67,7 +67,7 @@ const GridItem = ({ area, icon, title, description }: GridItemProps) => {
         />
         <div className="border-0.75 relative flex h-full flex-col justify-between gap-6 overflow-hidden rounded-[inherit] border border-slate-200 bg-gradient-to-b from-white to-slate-50 p-6 md:p-6">
           <div className="relative flex flex-1 flex-col justify-between gap-3">
-            <div className="w-fit rounded-lg border border-slate-300 bg-white p-2">
+            <div className="w-fit rounded-xl border border-slate-300 bg-white p-3 shadow-sm">
               {icon}
             </div>
             <div className="space-y-3">

@@ -92,6 +92,7 @@ const HeroSlider = ({ className }: { className?: string }) => {
                 alt={currentSlide.alt}
                 width={1600}
                 height={900}
+                fetchPriority={current === 0 ? "high" : "auto"}
                 initial={{ opacity: 0, scale: 1.05 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0 }}
