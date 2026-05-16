@@ -79,7 +79,7 @@ const HeroSlider = ({ className }: { className?: string }) => {
   return (
     <section className={`relative pt-16 ${className}`}>
       <div className="container mx-auto px-4 py-8">
-        <div className="relative rounded-2xl overflow-hidden h-[520px] md:h-[640px]">
+        <div className="relative rounded-2xl overflow-hidden h-[360px] md:h-[460px]">
           <Link
             to={currentSlide.link}
             aria-label={`Open ${currentSlide.highlight}`}
