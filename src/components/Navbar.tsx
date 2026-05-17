@@ -73,7 +73,7 @@ const Navbar = () => {
     const navEl = navRef.current;
     if (!navEl) return null;
 
-    gsap.set(navEl, { height: 72, overflow: "visible" });
+    gsap.set(navEl, { height: 80, overflow: "visible" });
     gsap.set(contentRef.current, { opacity: 0, y: -8, pointerEvents: "none" });
     gsap.set(cardsRef.current, { y: 20, opacity: 0 });
 
@@ -151,7 +151,7 @@ const Navbar = () => {
         ref={navRef}
         className="mx-auto w-full max-w-[920px] border border-white/20 bg-white/90 shadow-[0_14px_40px_rgba(15,23,42,0.14)] backdrop-blur-xl"
       >
-        <div className="relative flex h-16 sm:h-[72px] items-center justify-between px-3 sm:px-4 md:px-5 gap-2">
+        <div className="relative flex h-16 sm:h-20 items-center justify-between px-3 sm:px-4 md:px-5 gap-2">
           <button
             type="button"
             className="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center text-slate-800 transition-colors hover:bg-slate-100 flex-shrink-0"
@@ -168,13 +168,47 @@ const Navbar = () => {
             to={authed ? "/dashboard" : "/"}
             className="absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 items-center gap-2 hidden sm:flex"
           >
-            <span className="bg-purple-700 px-3 py-1 text-xs sm:text-sm font-semibold tracking-wide text-white whitespace-nowrap">
-              Founders Connect
-            </span>
+            <img
+              src="/founders_connect_global_logo.jpg"
+              alt="Founders Connect Logo"
+              className="h-10 sm:h-19 w-auto object-contain bg-transparent mix-blend-multiply"
+            />
           </Link>
 
-          <Button asChild className="h-9 sm:h-10 bg-purple-600 px-3 sm:px-4 text-xs sm:text-sm font-semibold text-white hover:bg-purple-700 transition-colors flex-shrink-0">
-            <Link to={topButtonTo}>{topButtonLabel}</Link>
+          <Button asChild className="group relative inline-flex items-center justify-center overflow-hidden rounded-full bg-slate-950 px-6 py-2 tracking-tighter text-white transition-all duration-300 hover:scale-[1.05] active:scale-95 flex-shrink-0 border border-white/10 shadow-[0_4px_15px_rgba(0,0,0,0.15)]">
+            <Link to={topButtonTo}>
+              <span className="absolute h-0 w-0 rounded-full bg-purple-600 transition-all duration-500 ease-out group-hover:h-56 group-hover:w-56"></span>
+              <span className="absolute bottom-0 left-0 -ml-2 h-full pointer-events-none">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="object-stretch h-full w-auto opacity-100"
+                  viewBox="0 0 487 487"
+                >
+                  <path
+                    fillOpacity=".1"
+                    fillRule="nonzero"
+                    fill="#FFF"
+                    d="M0 .3c67 2.1 134.1 4.3 186.3 37 52.2 32.7 89.6 95.8 112.8 150.6 23.2 54.8 32.3 101.4 61.2 149.9 28.9 48.4 77.7 98.8 126.4 149.2H0V.3z"
+                  ></path>
+                </svg>
+              </span>
+              <span className="absolute top-0 right-0 -mr-3 h-full w-12 pointer-events-none">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-full w-full object-cover"
+                  viewBox="0 0 487 487"
+                >
+                  <path
+                    fillOpacity=".1"
+                    fillRule="nonzero"
+                    fill="#FFF"
+                    d="M487 486.7c-66.1-3.6-132.3-7.3-186.3-37s-95.9-85.3-126.2-137.2c-30.4-51.8-49.3-99.9-76.5-151.4C70.9 109.6 35.6 54.8.3 0H487v486.7z"
+                  ></path>
+                </svg>
+              </span>
+              <span className="absolute inset-0 -mt-1 h-full w-full rounded-full bg-gradient-to-b from-transparent via-transparent to-gray-200 opacity-20 pointer-events-none"></span>
+              <span className="relative text-xs sm:text-sm font-bold z-10">{topButtonLabel}</span>
+            </Link>
           </Button>
         </div>
 

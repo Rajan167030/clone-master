@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, CheckCircle2, Crown, Diamond, ShieldCheck } from "lucide-react";
 import Navbar from "@/components/Navbar";
@@ -59,6 +60,12 @@ const membershipTiers: MembershipTier[] = [
 ];
 
 const Membership = () => {
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
   // SEO Hook
   useSEO({
     title: "Membership Plans | Founders Connect",
@@ -86,15 +93,57 @@ const Membership = () => {
             </p>
           </div>
 
-          <div className="mt-8 grid gap-5 lg:grid-cols-3">
-            {membershipTiers.map((tier) => (
+          {/* Shimmer sweep effect styles */}
+          <style>{`
+            .card-shimmer {
+              position: relative;
+            }
+            .card-shimmer::after {
+              content: '';
+              position: absolute;
+              top: 0;
+              left: 0;
+              width: 200%;
+              height: 200%;
+              background: linear-gradient(
+                135deg,
+                rgba(255, 255, 255, 0) 30%,
+                rgba(255, 255, 255, 0.25) 50%,
+                rgba(255, 255, 255, 0) 70%
+              );
+              transform: translate(-100%, -100%) rotate(45deg);
+              transition: all 0.6s ease;
+              pointer-events: none;
+            }
+            .group:hover .card-shimmer::after {
+              animation: shimmerSweep 1s cubic-bezier(0.16, 1, 0.3, 1);
+            }
+            @keyframes shimmerSweep {
+              0% {
+                transform: translate(-100%, -100%) rotate(45deg);
+              }
+              100% {
+                transform: translate(100%, 100%) rotate(45deg);
+              }
+            }
+          `}</style>
+
+          <div className="mt-8 grid gap-5 lg:grid-cols-3" style={{ perspective: "1500px" }}>
+            {membershipTiers.map((tier, index) => (
               <Card
                 key={tier.name}
-                className={`relative flex flex-col overflow-hidden rounded-[32px] border border-slate-200 bg-white transition-all duration-300 ${
+                style={{
+                  transitionDelay: `${index * 150}ms`,
+                  opacity: isMounted ? 1 : 0,
+                  transform: isMounted 
+                    ? "translateY(0) scale(1) rotateX(0) rotateY(0)" 
+                    : "translateY(120px) scale(0.88) rotateX(15deg) rotateY(-5deg)",
+                }}
+                className={`card-shimmer relative flex flex-col overflow-hidden rounded-[32px] border border-slate-200 bg-white transition-all duration-[1200ms] ease-out ${
                   tier.highlighted
-                    ? "border-violet-200 bg-violet-50/35 shadow-[0_25px_60px_-35px_rgba(168,85,247,0.55)]"
+                    ? "border-violet-200 bg-violet-50/35 shadow-[0_25px_60px_-35px_rgba(168,85,247,0.55)] animate-float"
                     : "shadow-[0_18px_50px_-35px_rgba(15,23,42,0.14)]"
-                } hover:-translate-y-2 hover:border-violet-300 hover:shadow-[0_28px_70px_-30px_rgba(168,85,247,0.38)] group`}
+                } hover:-translate-y-3 hover:scale-[1.02] hover:border-violet-400 hover:shadow-[0_30px_70px_-15px_rgba(168,85,247,0.45)] group`}
               >
                 <CardHeader className="items-center px-6 pt-10 text-center transition-transform duration-300 group-hover:-translate-y-0.5">
                   <div className="flex items-center gap-2">

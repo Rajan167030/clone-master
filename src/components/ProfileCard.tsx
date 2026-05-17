@@ -23,16 +23,16 @@ interface ProfileCardProps {
 
 const roleLabels: Record<string, string> = {
   user: "Community Member",
-  investor: "Investor",
-  founder: "Founder",
-  admin: "Admin",
+  investor: "Premium Investor",
+  founder: "Elite Founder",
+  admin: "FC Admin",
 };
 
 const roleColors: Record<string, string> = {
-  user: "bg-blue-600",
-  investor: "bg-green-600",
-  founder: "bg-purple-600",
-  admin: "bg-red-600",
+  user: "bg-blue-500/10 border border-blue-500/30 text-blue-300",
+  investor: "bg-emerald-500/10 border border-emerald-500/30 text-emerald-300",
+  founder: "bg-purple-500/10 border border-purple-500/30 text-purple-300",
+  admin: "bg-rose-500/10 border border-rose-500/30 text-rose-300",
 };
 
 export const ProfileCard = ({
@@ -58,10 +58,10 @@ export const ProfileCard = ({
   }, []);
 
   const colors = {
-    primary: cardColors?.primary || "#667eea",
-    secondary: cardColors?.secondary || "#764ba2",
+    primary: cardColors?.primary || "#a855f7",
+    secondary: cardColors?.secondary || "#6366f1",
     accent: cardColors?.accent || "#ffffff",
-    backgroundColor: cardColors?.backgroundColor || "#ffffff",
+    backgroundColor: cardColors?.backgroundColor || "rgba(255,255,255,0.03)",
   };
 
   const downloadCard = async () => {
@@ -69,9 +69,10 @@ export const ProfileCard = ({
 
     try {
       const canvas = await html2canvas(cardRef.current, {
-        backgroundColor: "#ffffff",
+        backgroundColor: "#0b071e",
         scale: 2,
-        quality: 95,
+        useCORS: true,
+        allowTaint: true,
       });
 
       const link = document.createElement("a");
@@ -97,7 +98,6 @@ export const ProfileCard = ({
         console.error("Share failed:", error);
       }
     } else {
-      // Fallback: Copy to clipboard
       navigator.clipboard.writeText(profileUrl);
       alert("Profile link copied to clipboard!");
     }
@@ -127,8 +127,6 @@ export const ProfileCard = ({
   };
 
   const orderPhysicalCard = () => {
-    // Placeholder for physical card ordering
-    // In production, this would integrate with a printing service like Printful or Vistaprint
     alert(
       "Physical card ordering coming soon! We'll help you print professional business cards with your profile."
     );
@@ -138,100 +136,107 @@ export const ProfileCard = ({
     <div className="space-y-4">
       <div
         ref={cardRef}
-        className="mx-auto w-full max-w-sm rounded-2xl bg-white p-6 shadow-2xl"
+        className="mx-auto w-full max-w-sm rounded-3xl p-[1px] shadow-[0_20px_50px_rgba(168,85,247,0.25)] relative overflow-hidden"
         style={{
-          backgroundImage: `linear-gradient(135deg, ${colors.primary} 0%, ${colors.secondary} 100%)`,
+          background: `linear-gradient(135deg, ${colors.primary} 0%, ${colors.secondary} 100%)`,
         }}
       >
-        {/* Card Header - Founders Connect Branding */}
-        <div className="mb-6 text-center">
-          <h3
-            className="text-lg font-bold"
-            style={{ color: colors.accent }}
-          >
-            Founders Connect
-          </h3>
-          <p
-            className="text-sm"
-            style={{ color: `${colors.accent}dd` }}
-          >
-            Professional Network Card
-          </p>
-        </div>
+        {/* Luxury radial glow overlay */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(255,255,255,0.15),transparent_70%)] pointer-events-none" />
 
-        {/* Profile Section */}
-        <div
-          className="mb-6 rounded-xl p-4 shadow-md"
-          style={{ backgroundColor: colors.backgroundColor }}
-        >
-          {/* Profile Photo */}
-          <div className="mb-4 flex justify-center">
-            {profilePhoto ? (
-              <img
-                src={profilePhoto}
-                alt={fullName}
-                className="h-20 w-20 rounded-full object-cover border-4"
-                style={{ borderColor: colors.primary }}
-              />
-            ) : (
-              <div
-                className="flex h-20 w-20 items-center justify-center rounded-full text-2xl font-bold text-white border-4"
-                style={{
-                  backgroundColor: colors.primary,
-                  borderColor: colors.primary,
-                }}
-              >
-                {fullName.charAt(0).toUpperCase()}
-              </div>
-            )}
-          </div>
-
-          {/* Name */}
-          <h2 className="text-center text-xl font-bold text-gray-800 mb-1">
-            {fullName}
-          </h2>
-
-          {/* Role Badge */}
-          <div className="mb-3 flex justify-center">
-            <span
-              className={`${roleColors[role]} rounded-full px-3 py-1 text-xs font-semibold text-white`}
+        <div className="rounded-[23px] bg-slate-950/90 backdrop-blur-xl p-6 relative overflow-hidden">
+          
+          {/* Card Header - Founders Connect Premium Branding */}
+          <div className="mb-6 text-center">
+            <h3
+              className="text-lg font-black uppercase tracking-[0.25em] bg-clip-text text-transparent bg-gradient-to-r from-white via-purple-200 to-white"
             >
-              {roleLabels[role]}
-            </span>
-          </div>
-
-          {/* Headline */}
-          {headline && (
-            <p className="text-center text-sm text-gray-600 italic mb-2">
-              "{headline}"
+              Founders Connect
+            </h3>
+            <p
+              className="text-[9px] uppercase tracking-[0.3em] text-slate-400 mt-1"
+            >
+              Digital Identity Pass
             </p>
-          )}
-
-          {/* Location */}
-          <div className="text-center text-sm text-gray-500 mb-4">
-            📍 {city}
           </div>
 
-          {/* QR Code Section */}
-          <div className="flex justify-center mb-3">
-            <div className="rounded-lg bg-gray-100 p-2">
-              <QRCode
-                value={profileUrl}
-                size={120}
-                level="H"
-                includeMargin={true}
-              />
+          {/* Premium Glassmorphic Card Container */}
+          <div
+            className="mb-2 rounded-2xl p-5 border border-white/5 bg-white/[0.03] backdrop-blur-md shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)] relative overflow-hidden"
+          >
+            {/* Glossy overlay sheen */}
+            <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/[0.02] to-transparent pointer-events-none" />
+
+            {/* Profile Photo */}
+            <div className="mb-4 flex justify-center">
+              {profilePhoto ? (
+                <div className="relative rounded-full p-[2px] bg-gradient-to-tr from-purple-500 to-indigo-500 shadow-[0_0_15px_rgba(168,85,247,0.4)]">
+                  <img
+                    src={profilePhoto}
+                    alt={fullName}
+                    className="h-20 w-20 rounded-full object-cover"
+                  />
+                </div>
+              ) : (
+                <div
+                  className="flex h-20 w-20 items-center justify-center rounded-full text-2xl font-black text-white shadow-[0_0_20px_rgba(168,85,247,0.4)] border border-purple-500/30"
+                  style={{
+                    background: `linear-gradient(135deg, ${colors.primary} 0%, ${colors.secondary} 100%)`,
+                  }}
+                >
+                  {fullName.charAt(0).toUpperCase()}
+                </div>
+              )}
             </div>
-          </div>
 
-          {/* Branding Footer */}
-          <div className="border-t border-gray-200 pt-3 text-center">
-            <p className="text-xs font-semibold text-gray-700">
-              Scan to connect
-            </p>
-            <p className="text-xs text-gray-500 mt-1">
-              www.foundersconnect.in
-            </p>
+            {/* Full Name */}
+            <h2 className="text-center text-xl font-extrabold tracking-tight text-white mb-2 bg-clip-text text-transparent bg-gradient-to-b from-white to-purple-100">
+              {fullName}
+            </h2>
+
+            {/* Role Badge */}
+            <div className="mb-4 flex justify-center">
+              <span
+                className={`${roleColors[role]} rounded-full px-3 py-1 text-[9px] font-extrabold uppercase tracking-widest`}
+              >
+                {roleLabels[role]}
+              </span>
+            </div>
+
+            {/* Headline */}
+            {headline && (
+              <p className="text-center text-xs text-slate-300 italic mb-4 leading-relaxed font-light px-2">
+                "{headline}"
+              </p>
+            )}
+
+            {/* Location */}
+            <div className="text-center text-xs font-semibold text-slate-400 mb-5 flex items-center justify-center gap-1">
+              <span className="text-purple-400 text-sm">📍</span> {city}
+            </div>
+
+            {/* QR Code Section */}
+            <div className="flex justify-center mb-4">
+              <div className="rounded-2xl bg-white p-3 shadow-[0_10px_30px_-10px_rgba(0,0,0,0.5)] border border-white/10 hover:scale-[1.03] transition-transform duration-300">
+                <QRCode
+                  value={profileUrl}
+                  size={120}
+                  level="H"
+                  includeMargin={false}
+                  fgColor="#090514"
+                />
+              </div>
+            </div>
+
+            {/* Branding Footer */}
+            <div className="border-t border-white/5 pt-4 text-center">
+              <p className="text-[9px] uppercase tracking-[0.2em] font-semibold text-purple-300">
+                Scan to Connect
+              </p>
+              <p className="text-[10px] font-medium text-slate-500 mt-1 hover:text-purple-400 transition-colors duration-300">
+                foundersconnect.co.in
+              </p>
+            </div>
           </div>
         </div>
       </div>

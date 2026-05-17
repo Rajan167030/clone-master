@@ -83,6 +83,15 @@ const Dashboard = () => {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const isMobile = useIsMobile();
+  const [copiedLink, setCopiedLink] = useState(false);
+
+  const handleCopyLink = () => {
+    const code = currentUser.referralCode || "N/A";
+    const link = `https://foundersconnect.co.in/join-us?ref=${code}`;
+    navigator.clipboard.writeText(link);
+    setCopiedLink(true);
+    setTimeout(() => setCopiedLink(false), 2000);
+  };
 
   useEffect(() => {
     if (!token) {
@@ -219,42 +228,105 @@ const Dashboard = () => {
             ))}
           </div>
 
-          {/* Profile Card Section */}
-          <div className="mb-6 xl:mb-8">
-            <div className="mb-4">
-              <h2 className="text-xl font-semibold text-slate-900">Your Founders Connect Card</h2>
-              <p className="text-sm text-slate-500">Share your professional network card with QR code</p>
+          {/* Card & Referral Grid */}
+          <div className="mb-6 grid grid-cols-1 gap-6 xl:mb-8 lg:grid-cols-2">
+            <div>
+              <div className="mb-4">
+                <h2 className="text-xl font-bold text-slate-900">Your Founders Connect Card</h2>
+                <p className="text-sm text-slate-500">Share your professional network card with QR code</p>
+              </div>
+              {currentUser && currentUser.email && (
+                <>
+                  <ProfileCard
+                    fullName={currentUser.fullName || "Founder"}
+                    role={role}
+                    city={currentUser.city || "India"}
+                    headline={role === "founder" && currentUser.roleDetails?.startupName
+                      ? `${currentUser.roleDetails.startupName} | ${currentUser.headline || "Building the future"}`
+                      : currentUser.headline}
+                    profilePhoto={currentUser.profilePhoto}
+                    profileId={currentUser.profileId}
+                    cardColors={currentUser.cardColors}
+                    onEdit={() => setIsEditModalOpen(true)}
+                    isEditable={true}
+                  />
+                  <EditProfileModal
+                    isOpen={isEditModalOpen}
+                    onClose={() => setIsEditModalOpen(false)}
+                    onSuccess={() => {
+                      window.location.reload();
+                    }}
+                    initialData={{
+                      headline: currentUser.headline,
+                      profilePhoto: currentUser.profilePhoto,
+                      cardColors: currentUser.cardColors,
+                    }}
+                  />
+                </>
+              )}
             </div>
-            {currentUser && currentUser.email && (
-              <>
-                <ProfileCard
-                  fullName={currentUser.fullName || "Founder"}
-                  role={role}
-                  city={currentUser.city || "India"}
-                  headline={role === "founder" && currentUser.roleDetails?.startupName
-                    ? `${currentUser.roleDetails.startupName} | ${currentUser.headline || "Building the future"}`
-                    : currentUser.headline}
-                  profilePhoto={currentUser.profilePhoto}
-                  profileId={currentUser.profileId}
-                  cardColors={currentUser.cardColors}
-                  onEdit={() => setIsEditModalOpen(true)}
-                  isEditable={true}
-                />
-                <EditProfileModal
-                  isOpen={isEditModalOpen}
-                  onClose={() => setIsEditModalOpen(false)}
-                  onSuccess={() => {
-                    // Reload dashboard data
-                    window.location.reload();
-                  }}
-                  initialData={{
-                    headline: currentUser.headline,
-                    profilePhoto: currentUser.profilePhoto,
-                    cardColors: currentUser.cardColors,
-                  }}
-                />
-              </>
-            )}
+
+            {/* Referral Hub column */}
+            <div>
+              <div className="mb-4">
+                <h2 className="text-xl font-bold text-slate-900">Referral Center</h2>
+                <p className="text-sm text-slate-500">Invite new members and grow the network</p>
+              </div>
+
+              <div className="rounded-3xl border border-violet-100 bg-white p-6 shadow-[0_10px_30px_-5px_rgba(124,58,237,0.08)] h-[calc(100%-2.5rem)] flex flex-col justify-between">
+                <div>
+                  <div className="mb-5 flex items-center gap-3">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-violet-50 text-violet-600 shadow-[inset_0_2px_4px_rgba(124,58,237,0.06)] border border-violet-100">
+                      <Sparkles size={20} />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-bold text-slate-800">Your Referral Hub</h3>
+                      <p className="text-xs text-slate-500">Earn exclusive member perks for successful invites</p>
+                    </div>
+                  </div>
+
+                  <p className="text-sm text-slate-600 leading-relaxed mb-6">
+                    Help us onboard elite founders, active investors, and world-class builders. 
+                    Share your personalized registration link below to directly credit your account.
+                  </p>
+
+                  {/* Sleek inline Vercel-style purple capsule */}
+                  <div className="relative mb-6 rounded-2xl bg-slate-950 p-[1px] shadow-[0_4px_20px_-2px_rgba(124,58,237,0.15)] overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-r from-violet-500 via-fuchsia-500 to-indigo-500 animate-pulse pointer-events-none opacity-45" />
+                    
+                    <div className="relative flex items-center justify-between rounded-[15px] bg-slate-900/95 py-2 pl-4 pr-2">
+                      <input 
+                        type="text" 
+                        readOnly 
+                        value={`https://foundersconnect.co.in/join-us?ref=${referralCode}`}
+                        className="w-full bg-transparent text-sm font-medium text-slate-200 border-none outline-none focus:ring-0 truncate" 
+                      />
+                      
+                      <button
+                        onClick={handleCopyLink}
+                        className={`ml-2 inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-xs font-bold transition-all duration-300 ${copiedLink ? "bg-emerald-500 text-white shadow-[0_0_12px_rgba(16,185,129,0.3)]" : "bg-white text-slate-900 hover:bg-slate-100 hover:scale-[1.02]"}`}
+                      >
+                        {copiedLink ? "Copied! 🎉" : "Copy Link"}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4 border-t border-slate-100 pt-5">
+                  <div className="rounded-2xl border border-slate-100 bg-slate-50/50 p-4">
+                    <p className="text-[10px] uppercase font-semibold tracking-wider text-slate-400">Your Referral Code</p>
+                    <p className="mt-1 text-lg font-bold text-violet-700 tracking-wider uppercase">{referralCode}</p>
+                  </div>
+                  
+                  <div className="rounded-2xl border border-slate-100 bg-slate-50/50 p-4">
+                    <p className="text-[10px] uppercase font-semibold tracking-wider text-slate-400">Total referred</p>
+                    <p className="mt-1 text-lg font-bold text-slate-800">
+                      {dashboard?.kpis?.find(k => k.key === "referred_signups" || k.key === "referred_members")?.value || "0"}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Founder Startup Info Section */}

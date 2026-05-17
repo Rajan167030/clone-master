@@ -1,4 +1,5 @@
-import { useId, useState, type ChangeEvent, type FormEvent } from "react";
+import { useId, useState, useEffect, useRef, type ChangeEvent, type FormEvent } from "react";
+import { useSearchParams } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,6 +9,10 @@ import { Button } from "@/components/ui/button";
 import { submitJoinRequestApi } from "@/lib/api";
 import { useSEO } from "@/hooks/useSEO";
 import { countryCodes, getPhoneValidationError, isValidWebsite } from "@/lib/formValidation";
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+gsap.registerPlugin(ScrollTrigger);
 
 const WHATSAPP_GROUP_URL = "https://chat.whatsapp.com/Hm4ZKUpvxsy9u2L7SqcfV3";
 
@@ -125,10 +130,10 @@ function GridPattern({ width, height, x, y, squares, ...props }: any) {
       <rect width="100%" height="100%" strokeWidth={0} fill={`url(#${patternId})`} />
       {squares && (
         <svg x={x} y={y} className="overflow-visible">
-          {squares.map(([gridX, gridY]: any) => (
+          {squares.map(([gridX, gridY]: any, idx: number) => (
             <rect
               strokeWidth="0"
-              key={`${gridX}-${gridY}`}
+              key={`${gridX}-${gridY}-${idx}`}
               width={width + 1}
               height={height + 1}
               x={gridX * width}
@@ -142,6 +147,8 @@ function GridPattern({ width, height, x, y, squares, ...props }: any) {
 }
 
 const JoinUs = () => {
+  const containerRef = useRef<HTMLDivElement>(null);
+
   // SEO Hook
   useSEO({
     title: "Join Founders Connect Community",
@@ -150,7 +157,63 @@ const JoinUs = () => {
     ogType: "website",
     canonicalUrl: "https://founders.connect/join-us",
   });
+
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      gsap.to(".reveal-word-join-page", {
+        y: "0%",
+        opacity: 1,
+        rotate: 0,
+        duration: 1.2,
+        ease: "power4.out",
+        stagger: 0.05,
+        scrollTrigger: {
+          trigger: containerRef.current,
+          start: "top 85%",
+          toggleActions: "play none none none",
+        }
+      });
+
+      gsap.fromTo(".reveal-benefit-card",
+        {
+          y: 40,
+          opacity: 0,
+        },
+        {
+          y: 0,
+          opacity: 1,
+          duration: 0.8,
+          ease: "power3.out",
+          stagger: 0.12,
+          scrollTrigger: {
+            trigger: ".reveal-benefits-container",
+            start: "top 85%",
+            toggleActions: "play none none none",
+          }
+        }
+      );
+    }, containerRef);
+
+    return () => ctx.revert();
+  }, []);
+
+  const headingText = "Build With India's Most Ambitious Founder Network";
+  const headingWords = headingText.split(" ");
+
+  const [searchParams] = useSearchParams();
+  const refCode = searchParams.get("ref");
+
   const [formData, setFormData] = useState(initialFormData);
+
+  useEffect(() => {
+    if (refCode) {
+      setFormData((prev) => ({
+        ...prev,
+        referralSource: refCode,
+      }));
+    }
+  }, [refCode]);
+
   const [submitting, setSubmitting] = useState(false);
   const [copyMessage, setCopyMessage] = useState("");
   const [emailVerificationToken, setEmailVerificationToken] = useState("");
@@ -284,7 +347,7 @@ const JoinUs = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background" ref={containerRef}>
       <Navbar />
 
       <section className="relative overflow-hidden pt-24 pb-20">
@@ -295,8 +358,14 @@ const JoinUs = () => {
         <div className="container mx-auto px-4">
           <div className="mx-auto mb-10 max-w-5xl rounded-3xl border border-border/70 bg-white/80 p-6 shadow-xl backdrop-blur-sm md:p-10">
             <p className="mb-3 text-center text-xs font-semibold uppercase tracking-[0.28em] text-primary md:text-sm">Join Our Community</p>
-            <h1 className="text-center font-heading text-4xl font-extrabold leading-tight md:text-6xl">
-              Build With India&apos;s Most Ambitious Founder Network
+            <h1 className="text-center font-heading text-4xl font-extrabold leading-tight md:text-6xl flex flex-wrap justify-center gap-x-3 overflow-hidden py-2">
+              {headingWords.map((word, i) => (
+                <span key={i} className="inline-block overflow-hidden pb-2">
+                  <span className="reveal-word-join-page inline-block translate-y-[110%] opacity-0 rotate-[4deg] transition-transform duration-75">
+                    {word}
+                  </span>
+                </span>
+              ))}
             </h1>
             <p className="mx-auto mt-5 max-w-3xl text-center text-base text-muted-foreground md:text-lg">
               From first-time builders to experienced operators, Founders Connect is where serious people meet,
@@ -332,9 +401,9 @@ const JoinUs = () => {
 
           {copyMessage && <p className="mt-3 text-center text-sm text-muted-foreground">{copyMessage}</p>}
 
-          <div className="mx-auto my-14 grid max-w-7xl grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+          <div className="reveal-benefits-container mx-auto my-14 grid max-w-7xl grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
             {benefits.map(({ icon: Icon, title, description }) => (
-              <Card key={title} className="group relative w-full overflow-hidden rounded-2xl border border-border/60 bg-gradient-to-b from-neutral-100 to-white px-5 py-5 shadow-lg transition-all duration-300 hover:-translate-y-2 hover:scale-[1.02] hover:border-primary/40 hover:shadow-2xl dark:from-neutral-900 dark:to-neutral-950">
+              <Card key={title} className="reveal-benefit-card opacity-0 group relative w-full overflow-hidden rounded-2xl border border-border/60 bg-gradient-to-b from-neutral-100 to-white px-5 py-5 shadow-lg transition-all duration-300 hover:-translate-y-2 hover:scale-[1.02] hover:border-primary/40 hover:shadow-2xl dark:from-neutral-900 dark:to-neutral-950">
                 <Grid size={14} />
                 <CardHeader className="relative z-10 flex-row items-start gap-4 p-0 pt-4">
                   <div className="mt-1 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-primary text-primary-foreground shadow-md transition-transform duration-300 group-hover:scale-110">

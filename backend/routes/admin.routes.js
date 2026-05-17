@@ -2,6 +2,8 @@ import { Router } from "express";
 import {
   getCloudinaryUploadSignature,
   listAdminMembers,
+  createAdminMember,
+  deleteAdminMember,
 } from "../controllers/admin.controller.js";
 import {
   createAdminPartnerLogo,
@@ -74,6 +76,8 @@ const adminRouter = Router();
 adminRouter.use(requireAuth, requireAdmin);
 
 adminRouter.get("/members", listAdminMembers);
+adminRouter.post("/members", createAdminMember);
+adminRouter.delete("/members/:id", deleteAdminMember);
 adminRouter.post("/cloudinary/sign-upload", getCloudinaryUploadSignature);
 
 adminRouter.get("/events", listAdminEvents);

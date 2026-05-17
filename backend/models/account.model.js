@@ -47,6 +47,7 @@ const BaseAccountSchema = new Schema(
       index: true,
     },
     referralCode: { type: String, trim: true, index: true },
+    referredBy: { type: String, default: "", trim: true, index: true },
     roleDetails: { type: Schema.Types.Mixed, default: {} },
     dashboard: {
       stats: { type: [DashboardStatSchema], default: [] },

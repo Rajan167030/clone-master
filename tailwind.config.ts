@@ -13,6 +13,9 @@ export default {
       },
     },
     extend: {
+      spacing: {
+        19: "4.75rem",
+      },
       fontFamily: {
         heading: ['"Space Grotesk"', 'sans-serif'],
         body: ['"Plus Jakarta Sans"', 'sans-serif'],

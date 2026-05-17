@@ -22,14 +22,16 @@ const PortfolioMarquee = ({ className }: { className?: string }) => {
   }, []);
 
   const partnerItems = partners.length
-    ? partners.map((partner) => ({
-        key: partner._id,
-        name: partner.name,
-        logoUrl: partner.logoUrl,
-        websiteUrl: partner.websiteUrl,
-        logoWidth: partner.logoWidth,
-        logoHeight: partner.logoHeight,
-      }))
+    ? partners
+        .filter((partner) => partner.category !== "sponsor")
+        .map((partner) => ({
+            key: partner._id,
+            name: partner.name,
+            logoUrl: partner.logoUrl,
+            websiteUrl: partner.websiteUrl,
+            logoWidth: partner.logoWidth,
+            logoHeight: partner.logoHeight,
+          }))
     : companies.map((name) => ({ key: name, name, logoUrl: "", websiteUrl: "", logoWidth: "auto", logoHeight: "auto" }));
 
   return (

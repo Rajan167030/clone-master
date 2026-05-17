@@ -3,46 +3,66 @@ import Footer from "@/components/Footer";
 import PixelTransition from "@/components/ui/PixelTransition";
 import { useSEO } from "@/hooks/useSEO";
 
+const Linkedin = ({ className, size = 16 }: { className?: string; size?: number }) => (
+  <svg 
+    viewBox="0 0 24 24" 
+    fill="currentColor" 
+    className={className} 
+    style={{ width: size, height: size }}
+    aria-hidden="true"
+  >
+    <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.779-1.75-1.75s.784-1.75 1.75-1.75 1.75.779 1.75 1.75-.784 1.75-1.75 1.75zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
+  </svg>
+);
+
 const teamMembers = [
   {
     name: "Ashish Shah",
     role: "Visionary Leader",
     imageUrl: "https://images.unsplash.com/photo-1557862921-37829c790f19?q=80&w=300&h=300&fit=crop",
+    linkedinUrl: "https://linkedin.com/in/ashishshah",
   },
   {
     name: "Piyush Kanth",
     role: "Tech Guru",
     imageUrl: "https://images.unsplash.com/photo-1568602471122-7832951cc4c5?q=80&w=300&h=300&fit=crop",
+    linkedinUrl: "https://linkedin.com/in/piyushkanth",
   },
   {
     name: "Rajan Jha",
     role: "Creative Head",
     imageUrl: "https://images.unsplash.com/photo-1564564321837-a57b7070ac5c?q=80&w=300&h=300&fit=crop",
+    linkedinUrl: "https://linkedin.com/in/rajanjha",
   },
   {
     name: "Kedarnath",
     role: "Marketing Maestro",
     imageUrl: "https://images.unsplash.com/photo-1615109398623-88346a601842?q=80&w=300&h=300&fit=crop",
+    linkedinUrl: "https://linkedin.com/in/kedarnath",
   },
   {
     name: "Unnati Verma",
     role: "Product Lead",
     imageUrl: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=300&h=300&fit=crop",
+    linkedinUrl: "https://linkedin.com/in/unnativerma",
   },
   {
     name: "Shalni",
     role: "Design Expert",
     imageUrl: "https://images.unsplash.com/photo-1580489944761-15a19d654956?q=80&w=300&h=300&fit=crop",
+    linkedinUrl: "https://linkedin.com/in/shalni",
   },
   {
     name: "Tushar",
     role: "Frontend Wizard",
     imageUrl: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=300&h=300&fit=crop",
+    linkedinUrl: "https://linkedin.com/in/tushar",
   },
   {
     name: "Shivansh",
     role: "Backend Rockstar",
     imageUrl: "https://images.unsplash.com/photo-1548142813-c348350df52b?q=80&w=300&h=300&fit=crop",
+    linkedinUrl: "https://linkedin.com/in/shivansh",
   },
 ];
 
@@ -73,9 +93,21 @@ const OurTeam = () => {
                 <img src={member.imageUrl} alt={member.name} className="w-full h-full object-cover" />
               }
               secondContent={
-                <div className="w-full h-full flex flex-col items-center justify-center bg-purple-900 bg-opacity-75 p-4">
+                <div className="w-full h-full flex flex-col items-center justify-center bg-purple-950 bg-opacity-80 p-4 text-center">
                   <h3 className="font-heading text-2xl font-bold text-white">{member.name}</h3>
-                  <p className="text-lg text-purple-200">{member.role}</p>
+                  <p className="text-sm text-purple-200 mt-1">{member.role}</p>
+                  {member.linkedinUrl && (
+                    <a
+                      href={member.linkedinUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-4 p-2.5 rounded-full bg-white bg-opacity-10 hover:bg-opacity-25 text-white hover:text-blue-400 transition-all duration-300 transform hover:scale-110 shadow-sm"
+                      title={`Connect with ${member.name} on LinkedIn`}
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <Linkedin className="fill-current" size={20} />
+                    </a>
+                  )}
                 </div>
               }
               pixelColor="#8b5cf6"

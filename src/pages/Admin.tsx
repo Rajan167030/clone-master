@@ -11,6 +11,8 @@ import {
   getAdminEventInterestsApi,
   getAdminEventsApi,
   getAdminMembersApi,
+  createAdminMemberApi,
+  deleteAdminMemberApi,
   updateAdminBlogApi,
   updateAdminEventApi,
   type AdminEventInterest,
@@ -134,6 +136,16 @@ const Admin = () => {
   const [eventImageMode, setEventImageMode] = useState<ImageInputMode>("url");
   const [blogImageMode, setBlogImageMode] = useState<ImageInputMode>("url");
   const [searchMembers, setSearchMembers] = useState("");
+  const [showMemberForm, setShowMemberForm] = useState(false);
+  const [memberForm, setMemberForm] = useState({
+    fullName: "",
+    email: "",
+    password: "",
+    phone: "",
+    city: "",
+    role: "user",
+  });
+  const [savingMember, setSavingMember] = useState(false);
   const [searchEvents, setSearchEvents] = useState("");
   const [searchBlogs, setSearchBlogs] = useState("");
   const [searchInterests, setSearchInterests] = useState("");
@@ -368,6 +380,57 @@ const Admin = () => {
       })
       .catch((error) => {
         window.alert(error instanceof Error ? error.message : "Unable to save blog post.");
+      });
+  };
+
+  const handleSaveMember = () => {
+    const { fullName, email, password, phone, city, role } = memberForm;
+    if (!fullName.trim() || !email.trim() || !password.trim() || !phone.trim() || !city.trim()) {
+      window.alert("Please fill all required fields to add a member.");
+      return;
+    }
+
+    setSavingMember(true);
+    createAdminMemberApi(token, {
+      fullName,
+      email,
+      password,
+      phone,
+      city,
+      role,
+    })
+      .then((response) => {
+        window.alert(response.message);
+        setMemberForm({
+          fullName: "",
+          email: "",
+          password: "",
+          phone: "",
+          city: "",
+          role: "user",
+        });
+        setShowMemberForm(false);
+        loadAdminData();
+      })
+      .catch((error) => {
+        window.alert(error instanceof Error ? error.message : "Unable to save member.");
+      })
+      .finally(() => {
+        setSavingMember(false);
+      });
+  };
+
+  const handleDeleteMember = (id: string, name: string) => {
+    const confirmed = window.confirm(`Are you absolutely sure you want to delete member "${name}"? This action is permanent and will delete their dashboard as well.`);
+    if (!confirmed) return;
+
+    deleteAdminMemberApi(token, id)
+      .then((response) => {
+        window.alert(response.message);
+        loadAdminData();
+      })
+      .catch((error) => {
+        window.alert(error instanceof Error ? error.message : "Unable to delete member.");
       });
   };
 
@@ -820,6 +883,110 @@ const Admin = () => {
           </Card>
         </div>
 
+        {showMemberForm && (
+          <Card className="mb-8 border-2 border-violet-200 bg-violet-50">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+              <div>
+                <CardTitle>Add New Ecosystem Member</CardTitle>
+                <CardDescription>Register a new builder, founder, or investor manually.</CardDescription>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setShowMemberForm(false);
+                  setMemberForm({
+                    fullName: "",
+                    email: "",
+                    password: "",
+                    phone: "",
+                    city: "",
+                    role: "user",
+                  });
+                }}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </CardHeader>
+            <CardContent className="space-y-4 bg-white rounded-b-lg p-4">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Input
+                  type="text"
+                  placeholder="Full Name *"
+                  value={memberForm.fullName}
+                  onChange={(e) => setMemberForm((c) => ({ ...c, fullName: e.target.value }))}
+                  required
+                />
+                <Input
+                  type="email"
+                  placeholder="Email Address *"
+                  value={memberForm.email}
+                  onChange={(e) => setMemberForm((c) => ({ ...c, email: e.target.value }))}
+                  required
+                />
+              </div>
+              <div className="grid gap-4 sm:grid-cols-3">
+                <Input
+                  type="password"
+                  placeholder="Password *"
+                  value={memberForm.password}
+                  onChange={(e) => setMemberForm((c) => ({ ...c, password: e.target.value }))}
+                  required
+                />
+                <Input
+                  type="tel"
+                  placeholder="Phone Number *"
+                  value={memberForm.phone}
+                  onChange={(e) => setMemberForm((c) => ({ ...c, phone: e.target.value }))}
+                  required
+                />
+                <Input
+                  type="text"
+                  placeholder="City *"
+                  value={memberForm.city}
+                  onChange={(e) => setMemberForm((c) => ({ ...c, city: e.target.value }))}
+                  required
+                />
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-semibold uppercase text-muted-foreground">Ecosystem Role</label>
+                  <select
+                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                    value={memberForm.role}
+                    onChange={(e) => setMemberForm((c) => ({ ...c, role: e.target.value }))}
+                  >
+                    <option value="user">General User / Builder</option>
+                    <option value="founder">Founder</option>
+                    <option value="investor">Investor</option>
+                  </select>
+                </div>
+              </div>
+              <div className="flex justify-end gap-3 mt-4 pt-4 border-t border-slate-100">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setShowMemberForm(false);
+                    setMemberForm({
+                      fullName: "",
+                      email: "",
+                      password: "",
+                      phone: "",
+                      city: "",
+                      role: "user",
+                    });
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button onClick={handleSaveMember} disabled={savingMember}>
+                  {savingMember ? "Saving..." : "Save Ecosystem Member"}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         <div className="mt-8 grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
           <Card className="shadow-sm">
             <CardHeader>
@@ -829,6 +996,14 @@ const Admin = () => {
                   <CardDescription>View member role, location, login activity, and metadata.</CardDescription>
                 </div>
                 <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    onClick={() => setShowMemberForm(true)}
+                    className="gap-2"
+                  >
+                    <Plus className="h-4 w-4" />
+                    Add Member
+                  </Button>
                   <Button
                     type="button"
                     variant="outline"
@@ -868,9 +1043,22 @@ const Admin = () => {
                         <p className="font-semibold text-slate-900">{member.fullName}</p>
                         <p className="text-sm text-slate-500">{member.email}</p>
                       </div>
-                      <div className="flex flex-wrap gap-2 text-xs">
-                        <span className="rounded-full bg-violet-50 px-3 py-1 font-medium text-violet-800">{member.role}</span>
-                        <span className="rounded-full bg-slate-100 px-3 py-1 font-medium text-slate-700">{member.city}</span>
+                      <div className="flex items-center gap-3">
+                        <div className="flex flex-wrap gap-2 text-xs">
+                          <span className="rounded-full bg-violet-50 px-3 py-1 font-medium text-violet-800">{member.role}</span>
+                          <span className="rounded-full bg-slate-100 px-3 py-1 font-medium text-slate-700">{member.city}</span>
+                        </div>
+                        {member.role !== "admin" && member.role !== "super-admin" && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleDeleteMember(member._id, member.fullName)}
+                            className="text-red-500 hover:text-red-700 hover:bg-red-50 h-8 w-8"
+                            title="Delete Member"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        )}
                       </div>
                     </div>
                     <p className="mt-3 text-xs text-slate-500">

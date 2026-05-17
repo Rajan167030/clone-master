@@ -39,7 +39,7 @@ export const PhysicalCardOrdering = ({
   const handleOrderWithVistaprint = () => {
     // Vistaprint custom card design link
     const vistaprintUrl = new URL(
-      "https://www.vistaprint.com/business-cards"
+      "https://www.foundersconnect.co.in/"
     );
     vistaprintUrl.searchParams.set("cm_mmc", "email-edi-upsell");
     window.open(vistaprintUrl.toString(), "_blank");

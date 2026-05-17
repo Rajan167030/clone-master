@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { useSEO } from "@/hooks/useSEO";
@@ -6,6 +6,22 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ArrowRight } from "lucide-react";
 import { getPublicSpeakerInvestorProfilesApi, type SpeakerInvestorProfile } from "@/lib/api";
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+gsap.registerPlugin(ScrollTrigger);
+
+const Linkedin = ({ className, size = 16 }: { className?: string; size?: number }) => (
+  <svg 
+    viewBox="0 0 24 24" 
+    fill="currentColor" 
+    className={className} 
+    style={{ width: size, height: size }}
+    aria-hidden="true"
+  >
+    <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.779-1.75-1.75s.784-1.75 1.75-1.75 1.75.779 1.75 1.75-.784 1.75-1.75 1.75zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
+  </svg>
+);
 
 const RANDOM_AVATARS = [
   "https://i.pravatar.cc/300?img=1",
@@ -51,6 +67,7 @@ const PastSpeakersInvestors = () => {
   const [profiles, setProfiles]     = useState<SpeakerInvestorProfile[]>([]);
   const [loading, setLoading]       = useState(true);
   const [loadError, setLoadError]   = useState("");
+  const containerRef                = useRef<HTMLDivElement>(null);
 
   useSEO({
     title: "Past Speakers & Investors | Founders Connect",
@@ -67,6 +84,52 @@ const PastSpeakersInvestors = () => {
       .finally(() => setLoading(false));
   }, []);
 
+  useEffect(() => {
+    if (loading) return;
+
+    const ctx = gsap.context(() => {
+      gsap.fromTo(".reveal-speaker-card", 
+        {
+          y: 40,
+          opacity: 0,
+        },
+        {
+          y: 0,
+          opacity: 1,
+          duration: 0.8,
+          ease: "power3.out",
+          stagger: 0.1,
+          scrollTrigger: {
+            trigger: ".reveal-speakers-container",
+            start: "top 85%",
+            toggleActions: "play none none none",
+          }
+        }
+      );
+
+      gsap.fromTo(".reveal-investor-card", 
+        {
+          y: 40,
+          opacity: 0,
+        },
+        {
+          y: 0,
+          opacity: 1,
+          duration: 0.8,
+          ease: "power3.out",
+          stagger: 0.1,
+          scrollTrigger: {
+            trigger: ".reveal-investors-container",
+            start: "top 85%",
+            toggleActions: "play none none none",
+          }
+        }
+      );
+    }, containerRef);
+
+    return () => ctx.revert();
+  }, [loading]);
+
   const speakerProfiles  = useMemo(() => profiles.filter((p) => p.category === "speaker").sort((a, b) => a.order - b.order),  [profiles]);
   const investorProfiles = useMemo(() => profiles.filter((p) => p.category === "investor").sort((a, b) => a.order - b.order), [profiles]);
 
@@ -74,7 +137,7 @@ const PastSpeakersInvestors = () => {
   const displayInvestors = investorProfiles.length > 0 ? investorProfiles : (!loading ? DEMO_INVESTORS as SpeakerInvestorProfile[] : []);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background" ref={containerRef}>
       <Navbar />
 
       {/* ── Hero ── */}
@@ -136,7 +199,7 @@ const PastSpeakersInvestors = () => {
             ) : displaySpeakers.length === 0 ? (
               <EmptyState message="No speaker profiles have been added yet." />
             ) : (
-              <div className="grid grid-cols-1 justify-items-center gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3">
+              <div className="reveal-speakers-container grid grid-cols-1 justify-items-center gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3">
                 {displaySpeakers.map((speaker, i) => (
                   <PremiumSpeakerCard
                     key={speaker.slug}
@@ -146,6 +209,7 @@ const PastSpeakersInvestors = () => {
                     photoUrl={speaker.photoUrl || getRandomAvatar(i)}
                     photoAlt={speaker.photoAlt || speaker.name}
                     affiliationBadge={speaker.company ? getCompanyBadge(speaker.company) : undefined}
+                    linkedinUrl={speaker.linkedinUrl}
                   />
                 ))}
               </div>
@@ -181,7 +245,7 @@ const PastSpeakersInvestors = () => {
             ) : displayInvestors.length === 0 ? (
               <EmptyState message="No investor profiles have been added yet." />
             ) : (
-              <div className="grid grid-cols-1 justify-items-center gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+              <div className="reveal-investors-container grid grid-cols-1 justify-items-center gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
                 {displayInvestors.map((investor, i) => (
                   <PremiumInvestorCard
                     key={investor.slug}
@@ -191,6 +255,7 @@ const PastSpeakersInvestors = () => {
                     photoUrl={investor.photoUrl || getRandomAvatar(i + 6)}
                     photoAlt={investor.photoAlt || investor.name}
                     companyLogo={investor.company ? getCompanyBadge(investor.company) : undefined}
+                    linkedinUrl={investor.linkedinUrl}
                   />
                 ))}
               </div>
@@ -356,6 +421,7 @@ const PremiumInvestorCard = ({
   photoUrl,
   photoAlt,
   companyLogo,
+  linkedinUrl,
 }: {
   name: string;
   designation: string;
@@ -363,45 +429,62 @@ const PremiumInvestorCard = ({
   photoUrl: string;
   photoAlt: string;
   companyLogo?: string;
-}) => (
-  <article className="group flex h-full w-full max-w-[260px] flex-col overflow-hidden rounded-[24px] border border-slate-200 bg-white shadow-[0_12px_32px_-24px_rgba(15,23,42,0.3)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_50px_-26px_rgba(15,23,42,0.28)] sm:max-w-[280px] md:max-w-[300px]">
-    <div className="relative aspect-[3/4] overflow-hidden bg-slate-100">
-      <img
-        src={photoUrl}
-        alt={photoAlt}
-        className="h-full w-full object-cover object-top transition-transform duration-700 group-hover:scale-105"
-        loading="lazy"
-      />
-      <div className="absolute inset-0 bg-gradient-to-t from-slate-950/12 via-transparent to-transparent" />
-    </div>
+  linkedinUrl?: string;
+}) => {
+  const url = linkedinUrl || `https://www.linkedin.com/search/results/all/?keywords=${encodeURIComponent(name)}`;
 
-    <div className="flex flex-1 flex-col gap-3 p-4 sm:p-5">
-      <div>
-        <h3 className="text-[clamp(1rem,1.6vw,1.2rem)] font-extrabold tracking-tight text-black">
-          {name}
-        </h3>
-        <p className="mt-1 text-xs font-semibold text-indigo-600 sm:text-sm">
-          {designation}
-        </p>
+  return (
+    <article className="reveal-investor-card opacity-0 group flex h-full w-full max-w-[260px] flex-col overflow-hidden rounded-[24px] border border-slate-200 bg-white shadow-[0_12px_32px_-24px_rgba(15,23,42,0.3)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_50px_-26px_rgba(15,23,42,0.28)] sm:max-w-[280px] md:max-w-[300px]">
+      <div className="relative aspect-[3/4] overflow-hidden bg-slate-100">
+        <img
+          src={photoUrl}
+          alt={photoAlt}
+          className="h-full w-full object-cover object-top transition-transform duration-700 group-hover:scale-105"
+          loading="lazy"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/12 via-transparent to-transparent" />
+        
+        {/* Floating LinkedIn Badge */}
+        <a 
+          href={url} 
+          target="_blank" 
+          rel="noreferrer" 
+          className="absolute top-4 right-4 z-20 flex h-8 w-8 items-center justify-center rounded-full bg-white/80 border border-white/20 text-[#0077b5] backdrop-blur-md shadow-md transition-all duration-300 hover:scale-110 hover:bg-[#0077b5] hover:text-white"
+          title={`Connect with ${name} on LinkedIn`}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <Linkedin size={15} className="fill-current stroke-[1.5]" />
+        </a>
       </div>
 
-      <div className="mt-auto flex items-end justify-between gap-3 border-t border-slate-200 pt-3">
+      <div className="flex flex-1 flex-col gap-3 p-4 sm:p-5">
         <div>
-          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">
-            Company
-          </p>
-          <p className="mt-1 text-xs font-medium text-slate-500 sm:text-sm">
-            {company || "Independent Investor"}
+          <h3 className="text-[clamp(1rem,1.6vw,1.2rem)] font-extrabold tracking-tight text-black">
+            {name}
+          </h3>
+          <p className="mt-1 text-xs font-semibold text-indigo-600 sm:text-sm">
+            {designation}
           </p>
         </div>
 
-        <div className="flex-shrink-0 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">
-          {companyLogo || "VC"}
+        <div className="mt-auto flex items-end justify-between gap-3 border-t border-slate-200 pt-3">
+          <div>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">
+              Company
+            </p>
+            <p className="mt-1 text-xs font-medium text-slate-500 sm:text-sm">
+              {company || "Independent Investor"}
+            </p>
+          </div>
+
+          <div className="flex-shrink-0 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+            {companyLogo || "VC"}
+          </div>
         </div>
       </div>
-    </div>
-  </article>
-);
+    </article>
+  );
+};
 
 /* ─────────────────────────────────────────────────────────────────────────
    Premium speaker card (same visual language as investors)
@@ -413,6 +496,7 @@ function PremiumSpeakerCard({
   photoUrl,
   photoAlt,
   affiliationBadge,
+  linkedinUrl,
 }: {
   name: string;
   designation: string;
@@ -420,9 +504,12 @@ function PremiumSpeakerCard({
   photoUrl: string;
   photoAlt: string;
   affiliationBadge?: string;
+  linkedinUrl?: string;
 }) {
+  const url = linkedinUrl || `https://www.linkedin.com/search/results/all/?keywords=${encodeURIComponent(name)}`;
+
   return (
-    <article className="group flex h-full w-full max-w-[260px] flex-col overflow-hidden rounded-[24px] border border-slate-200 bg-white shadow-[0_12px_32px_-24px_rgba(15,23,42,0.3)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_50px_-26px_rgba(15,23,42,0.28)] sm:max-w-[280px] md:max-w-[300px]">
+    <article className="reveal-speaker-card opacity-0 group flex h-full w-full max-w-[260px] flex-col overflow-hidden rounded-[24px] border border-slate-200 bg-white shadow-[0_12px_32px_-24px_rgba(15,23,42,0.3)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_50px_-26px_rgba(15,23,42,0.28)] sm:max-w-[280px] md:max-w-[300px]">
       <div className="relative aspect-[3/4] overflow-hidden bg-slate-100">
         <img
           src={photoUrl}
@@ -431,6 +518,18 @@ function PremiumSpeakerCard({
           loading="lazy"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-slate-950/12 via-transparent to-transparent" />
+
+        {/* Floating LinkedIn Badge */}
+        <a 
+          href={url} 
+          target="_blank" 
+          rel="noreferrer" 
+          className="absolute top-4 right-4 z-20 flex h-8 w-8 items-center justify-center rounded-full bg-white/80 border border-white/20 text-[#0077b5] backdrop-blur-md shadow-md transition-all duration-300 hover:scale-110 hover:bg-[#0077b5] hover:text-white"
+          title={`Connect with ${name} on LinkedIn`}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <Linkedin size={15} className="fill-current stroke-[1.5]" />
+        </a>
       </div>
 
       <div className="flex flex-1 flex-col gap-3 p-4 sm:p-5">

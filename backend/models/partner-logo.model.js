@@ -5,7 +5,7 @@ const { Schema } = mongoose;
 const PartnerLogoSchema = new Schema(
   {
     name: { type: String, required: true, trim: true },
-    category: { type: String, default: "general", enum: ["general", "college", "ecell"], trim: true },
+    category: { type: String, default: "general", enum: ["general", "college", "ecell", "sponsor"], trim: true },
     logoUrl: { type: String, default: "", trim: true },
     websiteUrl: { type: String, default: "", trim: true },
     logoWidth: { type: String, default: "auto", trim: true },

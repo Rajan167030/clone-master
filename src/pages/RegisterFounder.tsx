@@ -1,6 +1,6 @@
-import { useRef, useState, type FormEvent } from "react";
+import { useRef, useState, useEffect, type FormEvent } from "react";
 import { Rocket, CheckCircle2, ArrowRight, ChevronLeft } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -22,6 +22,9 @@ import { countryCodes, getPhoneValidationError, isValidWebsite } from "@/lib/for
 const RegisterFounder = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [searchParams] = useSearchParams();
+  const referredBy = searchParams.get("ref") || "";
+
   const [isLoading, setIsLoading] = useState(false);
   const [selectedStage, setSelectedStage] = useState<string>("");
   const [agreedToTerms, setAgreedToTerms] = useState(false);
@@ -232,6 +235,7 @@ const RegisterFounder = () => {
         startupWebsite,
       },
       emailVerificationToken,
+      referredBy,
     })
       .then((response) => {
         toast({

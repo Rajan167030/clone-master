@@ -17,6 +17,8 @@ import {
   getAdminEventsApi,
   getAdminGalleryApi,
   getAdminMembersApi,
+  createAdminMemberApi,
+  deleteAdminMemberApi,
   getAdminNewsletterSubscribersApi,
   getAdminTemplatesApi,
   getAdminJoinRequestsApi,
@@ -289,6 +291,17 @@ const AdminDashboard = () => {
   const [savingPartner, setSavingPartner] = useState(false);
   const [savingGallery, setSavingGallery] = useState(false);
   const [savingTestimonial, setSavingTestimonial] = useState(false);
+  const [showMemberForm, setShowMemberForm] = useState(false);
+  const [memberForm, setMemberForm] = useState({
+    fullName: "",
+    email: "",
+    password: "",
+    phone: "",
+    city: "",
+    role: "user",
+  });
+  const [savingMember, setSavingMember] = useState(false);
+  const [searchMembers, setSearchMembers] = useState("");
   const [showMobileNav, setShowMobileNav] = useState(false);
   const [selectedEventSlug, setSelectedEventSlug] = useState("");
   const [selectedBlogSlug, setSelectedBlogSlug] = useState("");
@@ -340,6 +353,18 @@ const AdminDashboard = () => {
     a.click();
     window.URL.revokeObjectURL(url);
   };
+
+  const filteredMembers = useMemo(() => {
+    const query = searchMembers.toLowerCase().trim();
+    if (!query) return members;
+    return members.filter(
+      (m) =>
+        m.fullName.toLowerCase().includes(query) ||
+        m.email.toLowerCase().includes(query) ||
+        m.city.toLowerCase().includes(query) ||
+        m.role.toLowerCase().includes(query)
+    );
+  }, [members, searchMembers]);
 
   const newsletterRecipientCounts = useMemo(() => {
     const subscriberEmails = new Set(
@@ -536,6 +561,57 @@ const AdminDashboard = () => {
       })
       .catch((error) => {
         window.alert(error instanceof Error ? error.message : "Unable to save site notice.");
+      });
+  };
+
+  const handleSaveMember = () => {
+    const { fullName, email, password, phone, city, role } = memberForm;
+    if (!fullName.trim() || !email.trim() || !password.trim() || !phone.trim() || !city.trim()) {
+      window.alert("Please fill all required fields to add a member.");
+      return;
+    }
+
+    setSavingMember(true);
+    createAdminMemberApi(token, {
+      fullName,
+      email,
+      password,
+      phone,
+      city,
+      role,
+    })
+      .then((response) => {
+        window.alert(response.message);
+        setMemberForm({
+          fullName: "",
+          email: "",
+          password: "",
+          phone: "",
+          city: "",
+          role: "user",
+        });
+        setShowMemberForm(false);
+        loadAdminData();
+      })
+      .catch((error) => {
+        window.alert(error instanceof Error ? error.message : "Unable to save member.");
+      })
+      .finally(() => {
+        setSavingMember(false);
+      });
+  };
+
+  const handleDeleteMember = (id: string, name: string) => {
+    const confirmed = window.confirm(`Are you absolutely sure you want to delete member "${name}"? This action is permanent and will delete their dashboard as well.`);
+    if (!confirmed) return;
+
+    deleteAdminMemberApi(token, id)
+      .then((response) => {
+        window.alert(response.message);
+        loadAdminData();
+      })
+      .catch((error) => {
+        window.alert(error instanceof Error ? error.message : "Unable to delete member.");
       });
   };
 
@@ -839,7 +915,7 @@ const AdminDashboard = () => {
 
     const payload: Pick<PartnerLogo, "name" | "category" | "logoUrl" | "websiteUrl" | "logoWidth" | "logoHeight" | "order" | "isActive"> = {
       name: partnerForm.name.trim(),
-      category: (partnerForm.category.trim().toLowerCase() as "general" | "college" | "ecell"),
+      category: (partnerForm.category.trim().toLowerCase() as "general" | "college" | "ecell" | "sponsor"),
       logoUrl: partnerForm.logoUrl.trim(),
       websiteUrl: partnerForm.websiteUrl.trim(),
       logoWidth: partnerForm.logoWidth.trim() || "auto",
@@ -1828,18 +1904,138 @@ const AdminDashboard = () => {
                 <p className="text-slate-600 mt-1">Manage members and guest event requests</p>
               </div>
 
+              {showMemberForm && (
+                <Card className="border-2 border-violet-200 bg-violet-50">
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+                    <div>
+                      <CardTitle>Add New Member</CardTitle>
+                      <CardDescription>Enter details to manually register a new member in the ecosystem.</CardDescription>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setShowMemberForm(false);
+                        setMemberForm({
+                          fullName: "",
+                          email: "",
+                          password: "",
+                          phone: "",
+                          city: "",
+                          role: "user",
+                        });
+                      }}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </CardHeader>
+                  <CardContent className="space-y-4 bg-white rounded-b-lg p-4">
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <Input
+                        type="text"
+                        placeholder="Full Name *"
+                        value={memberForm.fullName}
+                        onChange={(e) => setMemberForm((c) => ({ ...c, fullName: e.target.value }))}
+                        required
+                      />
+                      <Input
+                        type="email"
+                        placeholder="Email Address *"
+                        value={memberForm.email}
+                        onChange={(e) => setMemberForm((c) => ({ ...c, email: e.target.value }))}
+                        required
+                      />
+                    </div>
+                    <div className="grid gap-4 sm:grid-cols-3">
+                      <Input
+                        type="password"
+                        placeholder="Password *"
+                        value={memberForm.password}
+                        onChange={(e) => setMemberForm((c) => ({ ...c, password: e.target.value }))}
+                        required
+                      />
+                      <Input
+                        type="tel"
+                        placeholder="Phone Number *"
+                        value={memberForm.phone}
+                        onChange={(e) => setMemberForm((c) => ({ ...c, phone: e.target.value }))}
+                        required
+                      />
+                      <Input
+                        type="text"
+                        placeholder="City *"
+                        value={memberForm.city}
+                        onChange={(e) => setMemberForm((c) => ({ ...c, city: e.target.value }))}
+                        required
+                      />
+                    </div>
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-xs font-semibold uppercase text-muted-foreground">Ecosystem Role</label>
+                        <select
+                          className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                          value={memberForm.role}
+                          onChange={(e) => setMemberForm((c) => ({ ...c, role: e.target.value }))}
+                        >
+                          <option value="user">General User / Builder</option>
+                          <option value="founder">Founder</option>
+                          <option value="investor">Investor</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div className="flex justify-end gap-3 mt-4 pt-4 border-t border-slate-100">
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          setShowMemberForm(false);
+                          setMemberForm({
+                            fullName: "",
+                            email: "",
+                            password: "",
+                            phone: "",
+                            city: "",
+                            role: "user",
+                          });
+                        }}
+                      >
+                        Cancel
+                      </Button>
+                      <Button onClick={handleSaveMember} disabled={savingMember}>
+                        {savingMember ? "Saving Member..." : "Save Member"}
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
               <div className="grid gap-6 lg:grid-cols-3">
                 <div className="lg:col-span-2">
                   <Card>
                     <CardHeader>
-                      <CardTitle>Members List</CardTitle>
-                      <CardDescription>All registered members and their details</CardDescription>
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                        <div>
+                          <CardTitle>Members List</CardTitle>
+                          <CardDescription>All registered members and their details</CardDescription>
+                        </div>
+                        <Button onClick={() => setShowMemberForm(true)} className="gap-2 self-start sm:self-auto">
+                          <Plus className="h-4 w-4" />
+                          Add Member
+                        </Button>
+                      </div>
+                      <div className="mt-4 flex items-center gap-2">
+                        <Input
+                          placeholder="Search members by name, email, city or role..."
+                          value={searchMembers}
+                          onChange={(e) => setSearchMembers(e.target.value)}
+                          className="h-9 w-full"
+                        />
+                      </div>
                     </CardHeader>
                     <CardContent className="space-y-3">
-                      {members.length === 0 ? (
-                        <p className="text-center text-slate-500 py-8">No members yet</p>
+                      {filteredMembers.length === 0 ? (
+                        <p className="text-center text-slate-500 py-8">No members found matching your search</p>
                       ) : (
-                        members.map((member) => (
+                        filteredMembers.map((member) => (
                           <div key={member._id} className="border border-slate-200 rounded-lg p-4 hover:bg-slate-50 transition">
                             <div className="flex items-start justify-between gap-4">
                               <div className="flex-1">
@@ -1850,13 +2046,26 @@ const AdminDashboard = () => {
                                   <Badge variant="outline">{member.city}</Badge>
                                 </div>
                               </div>
-                              <div className="text-right">
-                                <p className="text-xs text-slate-500">
-                                  {new Date(member.createdAt).toLocaleDateString()}
-                                </p>
-                                <p className="text-xs text-slate-400 mt-1">
-                                  Login: {member.lastLoginAt ? new Date(member.lastLoginAt).toLocaleDateString() : "Never"}
-                                </p>
+                              <div className="flex flex-col items-end justify-between min-h-[4.5rem]">
+                                <div className="text-right">
+                                  <p className="text-xs text-slate-500">
+                                    {new Date(member.createdAt).toLocaleDateString()}
+                                  </p>
+                                  <p className="text-xs text-slate-400 mt-1">
+                                    Login: {member.lastLoginAt ? new Date(member.lastLoginAt).toLocaleDateString() : "Never"}
+                                  </p>
+                                </div>
+                                {member.role !== "admin" && member.role !== "super-admin" && (
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => handleDeleteMember(member._id, member.fullName)}
+                                    className="text-red-500 hover:text-red-700 hover:bg-red-50 h-8 w-8 mt-2"
+                                    title="Delete Member"
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                )}
                               </div>
                             </div>
                           </div>
@@ -2108,6 +2317,7 @@ const AdminDashboard = () => {
                         <option value="general">General Partner</option>
                         <option value="college">College Partner</option>
                         <option value="ecell">E-Cell Partner</option>
+                        <option value="sponsor">Sponsor / Supporter</option>
                       </select>
                     </div>
                     <div className="grid gap-4 sm:grid-cols-1">
@@ -2218,6 +2428,9 @@ const AdminDashboard = () => {
                                 <h3 className="font-bold text-slate-900">{partner.name}</h3>
                                 <Badge variant={partner.isActive ? "default" : "secondary"}>
                                   {partner.isActive ? "Active" : "Inactive"}
+                                </Badge>
+                                <Badge variant="outline" className="capitalize text-[10px]">
+                                  {partner.category || "general"}
                                 </Badge>
                               </div>
                               <p className="text-xs text-slate-500">Order: {partner.order ?? 0}</p>

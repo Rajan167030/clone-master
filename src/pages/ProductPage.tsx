@@ -103,28 +103,51 @@ const ProductPage = () => {
                 We're putting the finishing touches on our next big thing. Join our early access list to be notified when we launch and get exclusive early access.
               </p>
             </div>
-            <form
-              onSubmit={handleSubmit}
-              className="mt-10 mx-auto max-w-md flex flex-col sm:flex-row gap-4 gsap-form relative"
-            >
-              <Input
-                type="email"
-                placeholder="Enter your email"
-                className="flex-grow text-center sm:text-left bg-background/80 backdrop-blur-sm"
-                aria-label="Email address"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-              <Button type="submit" size="lg" className="w-full sm:w-auto min-w-[140px]" disabled={loading}>
-                {loading ? "Sending..." : "Get Early Access"}
-              </Button>
-            </form>
-            {message && (
-              <p className="mt-4 text-sm font-medium animate-fade-in text-primary gsap-form">
-                {message}
-              </p>
-            )}
+            <div className="relative mx-auto mt-10 max-w-lg gsap-form">
+              {/* Ultra-subtle luxury ambient glow behind the input */}
+              <div className="absolute -inset-1 rounded-full bg-gradient-to-r from-purple-600 to-indigo-600 opacity-25 blur-xl pointer-events-none" />
+
+              <form 
+                onSubmit={handleSubmit} 
+                className="relative flex items-center p-1.5 rounded-full border border-white/12 bg-black/80 backdrop-blur-2xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] focus-within:border-purple-500/40 focus-within:ring-2 focus-within:ring-purple-500/20 transition-all duration-300"
+              >
+                {/* Sleek Mail SVG Icon */}
+                <div className="pl-4 text-white/35 shrink-0 pointer-events-none">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.8" stroke="currentColor" className="w-5 h-5">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25H4.5a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5H4.5a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
+                  </svg>
+                </div>
+
+                {/* Blended Borderless Input */}
+                <input
+                  type="email"
+                  placeholder="Enter your email address"
+                  className="w-full bg-transparent border-0 text-white placeholder-white/35 pl-3 pr-2 focus:ring-0 focus:outline-none text-base outline-none"
+                  aria-label="Email address"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+
+                {/* Nested Premium White Pill Button */}
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="shrink-0 h-11 px-6 rounded-full bg-white text-black font-semibold hover:bg-white/92 active:scale-95 transition-all duration-200 shadow-[0_4px_12px_rgba(255,255,255,0.25)] flex items-center justify-center gap-1.5 text-sm"
+                >
+                  {loading ? "Adding..." : "Get Access"}
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2.5" stroke="currentColor" className="w-3.5 h-3.5 mt-[1px]">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                  </svg>
+                </button>
+              </form>
+              
+              {message && (
+                <p className="mt-4 text-sm font-semibold animate-fade-in text-purple-400">
+                  {message}
+                </p>
+              )}
+            </div>
 
             {/* Waitlist Avatars */}
             <div className="mt-10 flex items-center justify-center gap-3 gsap-form bg-background/30 backdrop-blur-md w-fit mx-auto px-5 py-2.5 rounded-full border border-border/50 shadow-sm">

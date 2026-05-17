@@ -16,9 +16,28 @@ const normalizePurpose = (purpose) => String(purpose || "").trim().toLowerCase()
 const generateCode = () => String(crypto.randomInt(100000, 1000000));
 
 const buildCodeEmail = (code) => `
-  <p>Your Founders Connect email verification code is:</p>
-  <p style="font-size:28px;font-weight:700;letter-spacing:6px;margin:20px 0;">${code}</p>
-  <p>This code expires in 10 minutes. If you did not request this, you can ignore this email.</p>
+  <div style="background-color: #0b071e; padding: 40px 20px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; text-align: center; color: #ffffff;">
+    <div style="max-width: 500px; margin: 0 auto; background: linear-gradient(135deg, #130f35 0%, #0a0524 100%); border: 1px solid rgba(255,255,255,0.08); border-radius: 24px; padding: 40px 30px; box-shadow: 0 20px 40px rgba(0,0,0,0.45); text-align: center;">
+      <!-- Logo Header -->
+      <div style="margin-bottom: 30px;">
+        <span style="font-size: 20px; font-weight: 800; letter-spacing: 2px; color: #a855f7; text-transform: uppercase;">Founders Connect</span>
+      </div>
+      
+      <h2 style="font-size: 24px; font-weight: 700; margin-top: 0; color: #ffffff; letter-spacing: -0.5px;">Verify your email</h2>
+      <p style="font-size: 15px; color: #b4acc9; line-height: 1.6; margin-bottom: 30px;">Welcome to Founders Connect! Please use the following 6-digit verification code to complete your process.</p>
+      
+      <!-- Code box -->
+      <div style="background: rgba(168, 85, 247, 0.1); border: 1px solid rgba(168, 85, 247, 0.25); border-radius: 16px; padding: 18px; margin-bottom: 30px; display: inline-block; width: 80%;">
+        <span style="font-size: 32px; font-weight: 800; letter-spacing: 8px; color: #c084fc; font-family: monospace; display: block; text-shadow: 0 0 10px rgba(168, 85, 247, 0.45); text-align: center; margin-left: 8px;">${code}</span>
+      </div>
+      
+      <p style="font-size: 13px; color: #8e85aa; line-height: 1.5; margin-bottom: 0;">This code is valid for 10 minutes. If you did not request this verification, you can safely ignore this email.</p>
+    </div>
+    <div style="margin-top: 20px; font-size: 12px; color: #5a5275; text-align: center;">
+      © ${new Date().getFullYear()} Founders Connect. All rights reserved.<br/>
+      <a href="https://foundersconnect.co.in" style="color: #a855f7; text-decoration: none; font-weight: 600;">foundersconnect.co.in</a>
+    </div>
+  </div>
 `;
 
 export const sendEmailVerificationCode = async (req, res) => {

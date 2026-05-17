@@ -34,14 +34,14 @@ const SubscribeForm = () => {
   };
 
   return (
-    <form onSubmit={submit} className="mt-6 max-w-md space-y-2">
-      <div className="flex flex-col gap-2 sm:flex-row">
+    <form onSubmit={submit} className="mt-2 w-full space-y-3">
+      <div className="flex flex-col gap-2.5 sm:flex-row">
         <input
           type="text"
           placeholder="Name"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="min-w-0 flex-1 rounded-md border border-border bg-transparent px-3 py-2 text-sm placeholder:text-muted-foreground"
+          className="min-w-0 flex-1 rounded-lg border border-slate-300/80 dark:border-slate-700 bg-white dark:bg-slate-900 px-3.5 py-2.5 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all shadow-sm"
           autoComplete="name"
           maxLength={80}
         />
@@ -50,21 +50,21 @@ const SubscribeForm = () => {
           placeholder="Email address"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="min-w-0 flex-1 rounded-md border border-border bg-transparent px-3 py-2 text-sm placeholder:text-muted-foreground"
+          className="min-w-0 flex-1 rounded-lg border border-slate-300/80 dark:border-slate-700 bg-white dark:bg-slate-900 px-3.5 py-2.5 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all shadow-sm"
           autoComplete="email"
           required
         />
       </div>
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+      <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center">
         <button
           type="submit"
           disabled={loading}
-          className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-95 disabled:opacity-60"
+          className="inline-flex items-center justify-center rounded-lg bg-primary hover:bg-primary/95 text-sm font-bold text-white shadow-md shadow-primary/20 transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-60 px-5 py-2.5"
         >
           {loading ? "Subscribing..." : "Subscribe"}
         </button>
         {message && (
-          <p className={`text-sm ${isError ? "text-destructive" : "text-muted-foreground"}`} aria-live="polite">
+          <p className={`text-sm font-medium ${isError ? "text-red-500" : "text-emerald-500 dark:text-emerald-400"}`} aria-live="polite">
             {message}
           </p>
         )}

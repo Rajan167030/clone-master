@@ -46,6 +46,7 @@ export type RegisterPayload = {
   role: "user" | "investor" | "founder";
   roleDetails: Record<string, unknown>;
   emailVerificationToken?: string;
+  referredBy?: string;
 };
 
 export type EmailVerificationPurpose =
@@ -238,7 +239,7 @@ export type SiteNotice = {
 export type PartnerLogo = {
   _id: string;
   name: string;
-  category?: "general" | "college" | "ecell";
+  category?: "general" | "college" | "ecell" | "sponsor";
   logoUrl: string;
   websiteUrl: string;
   logoWidth?: string;
@@ -882,6 +883,26 @@ export const getAdminMembersApi = (token: string) =>
   request<{ members: AdminMember[] }>("/admin/members", {
     method: "GET",
     headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const createAdminMemberApi = (
+  token: string,
+  payload: { fullName: string; email: string; password?: string; phone?: string; city: string; role: string; roleDetails?: Record<string, unknown> },
+) =>
+  request<{ message: string; member: AdminMember }>("/admin/members", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(payload),
+  });
+
+export const deleteAdminMemberApi = (token: string, id: string) =>
+  request<{ message: string }>(`/admin/members/${id}`, {
+    method: "DELETE",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
   });
 
 export const getAdminEventInterestsApi = (token: string) =>

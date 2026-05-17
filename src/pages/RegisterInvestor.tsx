@@ -1,6 +1,6 @@
-import { useRef, useState, type FormEvent } from "react";
+import { useRef, useState, useEffect, type FormEvent } from "react";
 import { TrendingUp, CheckCircle2, ArrowRight, ChevronLeft } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -15,6 +15,9 @@ import { countryCodes, getPhoneValidationError } from "@/lib/formValidation";
 const RegisterInvestor = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [searchParams] = useSearchParams();
+  const referredBy = searchParams.get("ref") || "";
+
   const [isLoading, setIsLoading] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [emailForVerification, setEmailForVerification] = useState("");
@@ -191,6 +194,7 @@ const RegisterInvestor = () => {
         investorId,
       },
       emailVerificationToken,
+      referredBy,
     })
       .then((response) => {
         toast({

@@ -4,7 +4,7 @@ import SubscribeForm from "@/components/SubscribeForm";
 const socials = [
   {
     name: "Instagram",
-    href: "https://instagram.com",
+    href: "https://www.instagram.com/foundersconnectindia/",
     icon: (
       <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" className="h-6 w-6">
         <rect x="3.5" y="3.5" width="17" height="17" rx="5" stroke="currentColor" strokeWidth="1.8" />
@@ -15,7 +15,7 @@ const socials = [
   },
   {
     name: "LinkedIn",
-    href: "https://linkedin.com",
+    href: "https://www.linkedin.com/company/founders-connect-global/",
     icon: (
       <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" className="h-6 w-6">
         <rect x="3.5" y="3.5" width="17" height="17" rx="4" stroke="currentColor" strokeWidth="1.8" />
@@ -37,18 +37,7 @@ const socials = [
       </svg>
     ),
   },
-  {
-    name: "Slack",
-    href: "https://slack.com",
-    icon: (
-      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" className="h-6 w-6">
-        <path d="M7.2 2.9a2.1 2.1 0 1 1 4.2 0v5.1H9.3A2.1 2.1 0 0 1 7.2 5.9V2.9Z" fill="currentColor" />
-        <path d="M21.1 7.2a2.1 2.1 0 1 1 0 4.2H16V9.3a2.1 2.1 0 0 1 2.1-2.1h3Z" fill="currentColor" />
-        <path d="M16.8 21.1a2.1 2.1 0 1 1-4.2 0V16h2.1a2.1 2.1 0 0 1 2.1 2.1v3Z" fill="currentColor" />
-        <path d="M2.9 16.8a2.1 2.1 0 1 1 0-4.2H8v2.1a2.1 2.1 0 0 1-2.1 2.1h-3Z" fill="currentColor" />
-      </svg>
-    ),
-  },
+ 
 ];
 
 const Footer = () => {
@@ -64,15 +53,15 @@ const Footer = () => {
   };
 
   return (
-    <footer className="relative pt-3 overflow-hidden bg-background">
+    <footer className="relative pt-2 overflow-hidden bg-background">
       <div className="relative px-4 sm:px-6 lg:px-8">
         <div className="pointer-events-none absolute inset-0 -top-24 bg-gradient-to-b from-transparent to-secondary/20" />
-        <div className="mx-auto w-full max-w-[95%] rounded-[2rem] border border-border/70 bg-secondary/35 px-6 py-12 shadow-[0_20px_50px_-25px_hsl(var(--primary)/0.4),0_25px_60px_-20px_hsl(var(--foreground)/0.25)] backdrop-blur-md sm:px-8 lg:px-10 relative overflow-hidden">
+        <div className="mx-auto w-full max-w-[95%] rounded-[2rem] border border-border/70 bg-secondary/35 px-6 py-5 shadow-[0_20px_50px_-25px_hsl(var(--primary)/0.4),0_25px_60px_-20px_hsl(var(--foreground)/0.25)] backdrop-blur-md sm:px-8 lg:px-10 relative overflow-hidden">
           {/* Purple Glow Effects */}
           <div className="pointer-events-none absolute -top-40 -right-40 h-[40rem] w-[40rem] rounded-full bg-primary/20 blur-[120px]" />
           <div className="pointer-events-none absolute -bottom-40 -left-40 h-[40rem] w-[40rem] rounded-full bg-purple-600/20 blur-[120px]" />
           
-          <div className="grid grid-cols-2 gap-8 mb-12 md:grid-cols-5 relative z-10">
+          <div className="grid grid-cols-2 gap-8 mb-4 md:grid-cols-5 relative z-10">
             <div className="col-span-2">
               <div className="flex items-center gap-3 mb-4">
                 {/* Founders Connect Logo */}
@@ -80,14 +69,14 @@ const Footer = () => {
                   <img 
                     src="/founders_connect_global_logo.jpg" 
                     alt="Founders Connect" 
-                    className="h-24 md:h-28 w-auto object-contain rounded-xl"
+                    className="h-20 md:h-24 w-auto object-contain rounded-xl"
                   />
                 </div>
               </div>
               <p className="text-sm text-muted-foreground max-w-xs leading-relaxed">
                 A curated ecosystem where founders, builders, and investors meet with intent. We create high-signal events and membership experiences for startups.
               </p>
-              <div className="flex items-center gap-3 mt-6">
+              <div className="flex items-center gap-3 mt-4">
                 {socials.map(({ name, href, icon }) => (
                   <a
                     key={name}
@@ -103,8 +92,9 @@ const Footer = () => {
               </div>
 
               {/* Newsletter subscribe form */}
-              <div className="mt-6">
-                {/* Lazy import component to keep bundle small if needed */}
+              <div className="mt-4 pt-4 border-t border-border/40 max-w-sm">
+                <h4 className="text-xs font-bold uppercase tracking-[0.2em] text-foreground mb-1">Subscribe to our newsletter</h4>
+                <p className="text-xs text-muted-foreground mb-2 leading-relaxed">Get exclusive invites to founder events and growth insights.</p>
                 {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
                 {/* @ts-ignore */}
                 <SubscribeForm />
@@ -112,8 +102,8 @@ const Footer = () => {
             </div>
 
             <div>
-              <div className="font-heading font-semibold text-foreground mb-4">Explore</div>
-              <ul className="space-y-2.5 text-sm text-muted-foreground">
+              <div className="font-heading font-semibold text-foreground mb-3">Explore</div>
+              <ul className="space-y-2 text-sm text-muted-foreground">
                 <li><a href="/events" className="hover:text-primary transition-colors">Events</a></li>
                 <li><a href="/membership" className="hover:text-primary transition-colors">Membership</a></li>
                 <li><a href="/blog" className="hover:text-primary transition-colors">Blog</a></li>
@@ -122,8 +112,8 @@ const Footer = () => {
             </div>
 
             <div>
-              <div className="font-heading font-semibold text-foreground mb-4">Community</div>
-              <ul className="space-y-2.5 text-sm text-muted-foreground">
+              <div className="font-heading font-semibold text-foreground mb-3">Community</div>
+              <ul className="space-y-2 text-sm text-muted-foreground">
                 <li><a href="#" className="hover:text-primary transition-colors">Founders</a></li>
                 <li><a href="#" className="hover:text-primary transition-colors">Investors</a></li>
                 <li><a href="#" className="hover:text-primary transition-colors">Partners</a></li>
@@ -132,8 +122,8 @@ const Footer = () => {
             </div>
 
             <div>
-              <div className="font-heading font-semibold text-foreground mb-4">About</div>
-              <ul className="space-y-2.5 text-sm text-muted-foreground">
+              <div className="font-heading font-semibold text-foreground mb-3">About</div>
+              <ul className="space-y-2 text-sm text-muted-foreground">
                 <li><a href="/about" className="hover:text-primary transition-colors">About Us</a></li>
                 <li><a href="#" className="hover:text-primary transition-colors">Press</a></li>
                 <li><a href="#" className="hover:text-primary transition-colors">Careers</a></li>
@@ -142,24 +132,7 @@ const Footer = () => {
             </div>
           </div>
 
-          <div className="py-6 border-y border-border/80 relative z-10">
-            <div className="grid grid-cols-2 gap-6 md:grid-cols-3">
-              <div>
-                <h4 className="text-xs font-semibold uppercase text-muted-foreground mb-2"></h4>
-                <p className="text-sm text-muted-foreground"> </p>
-              </div>
-              <div>
-                <h4 className="text-xs font-semibold uppercase text-muted-foreground mb-2"></h4>
-                <p className="text-sm text-muted-foreground">  </p>
-              </div>
-              <div>
-                <h4 className="text-xs font-semibold uppercase text-muted-foreground mb-2"> </h4>
-                <p className="text-sm text-muted-foreground"> </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="pt-12 flex flex-col md:flex-row items-center justify-between gap-4 relative z-10">
+          <div className="pt-4 border-t border-border/40 flex flex-col md:flex-row items-center justify-between gap-4 relative z-10">
             <p className="text-sm text-muted-foreground">
               © {new Date().getFullYear()} Founders Connect. All rights reserved.
             </p>
@@ -176,7 +149,7 @@ const Footer = () => {
       <div 
         ref={textRef}
         onMouseMove={handleMouseMove}
-        className="mt-8 flex w-full flex-col items-center justify-center font-heading select-none pb-8 relative z-10 overflow-hidden"
+        className="mt-2 flex w-full flex-col items-center justify-center font-heading select-none pb-2 relative z-10 overflow-hidden"
         style={{ '--cursor-x': '50%', '--cursor-y': '50%' } as React.CSSProperties}
       >
         {/* Spotlight layer */}
@@ -190,7 +163,7 @@ const Footer = () => {
         <div className="flex w-full justify-center leading-[0.80] relative">
           <span className="text-[13vw] font-black uppercase text-transparent" 
                 style={{ 
-                  WebkitTextStroke: '2px rgba(150, 150, 150, 0.5)',
+                  WebkitTextStroke: '2px rgb(97, 19, 216)',
                   backgroundImage: 'radial-gradient(circle 500px at var(--cursor-x) var(--cursor-y), rgba(255,255,255,1), transparent 80%)',
                   WebkitBackgroundClip: 'text',
                 }}>
@@ -200,7 +173,7 @@ const Footer = () => {
         <div className="flex w-full justify-center leading-[0.80] -mt-2 relative">
           <span className="text-[13vw] font-black uppercase"
                 style={{
-                  backgroundImage: 'radial-gradient(circle 500px at var(--cursor-x) var(--cursor-y), rgba(255,255,255,1), rgba(150,150,150,0.4) 80%)',
+                  backgroundImage: 'radial-gradient(circle 500px at var(--cursor-x) var(--cursor-y), rgba(255,255,255,1),  rgb(97, 19, 216) 80%)',
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
                 }}>

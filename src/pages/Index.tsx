@@ -4,6 +4,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Navbar from "@/components/Navbar";
 import { useSEO, useStructuredData } from "@/hooks/useSEO";
 import HeroSlider from "@/components/HeroSlider";
+import SponsorsSection from "@/components/SponsorsSection";
 import GallerySection from "@/components/GallerySection";
 import StatsSection from "@/components/StatsSection";
 import PortfolioMarquee from "@/components/PortfolioMarquee";
@@ -120,6 +121,7 @@ const Index = () => {
       <PortfolioMarquee className="gsap-section" />
       <ExploreNetwork className="gsap-section" />
       <JourneySection className="gsap-section" />
+      <SponsorsSection className="gsap-section" />
       <GallerySection className="gsap-section" />
       <Testimonials className="gsap-section" />
       <JoinUsSection showSocial={true} className="gsap-section" />

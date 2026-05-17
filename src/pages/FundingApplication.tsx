@@ -228,8 +228,56 @@ export default function FundingApplication() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50/50">
+    <div className="min-h-screen bg-slate-50/50 overflow-hidden">
       <Navbar />
+
+      {/* Premium Step and Card Transition Styles */}
+      <style>{`
+        .animate-reveal-left {
+          animation: pageRevealLeft 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+          opacity: 0;
+        }
+        .animate-reveal-right {
+          animation: pageRevealRight 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+          opacity: 0;
+        }
+        .animate-step-reveal {
+          animation: stepReveal 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+          opacity: 0;
+        }
+        @keyframes pageRevealLeft {
+          0% {
+            opacity: 0;
+            transform: translateX(-40px) scale(0.97);
+          }
+          100% {
+            opacity: 1;
+            transform: translateX(0) scale(1);
+          }
+        }
+        @keyframes pageRevealRight {
+          0% {
+            opacity: 0;
+            transform: translateX(40px) scale(0.97);
+          }
+          100% {
+            opacity: 1;
+            transform: translateX(0) scale(1);
+          }
+        }
+        @keyframes stepReveal {
+          0% {
+            opacity: 0;
+            transform: translateY(20px) scale(0.99);
+            filter: blur(2px);
+          }
+          100% {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            filter: blur(0);
+          }
+        }
+      `}</style>
 
       <section className="pt-32 pb-24">
         <div className="container mx-auto px-4">
@@ -238,7 +286,7 @@ export default function FundingApplication() {
           </Link>
           
           <div className="grid gap-12 lg:grid-cols-[1fr_1.8fr]">
-            <div className="space-y-8">
+            <div className="space-y-8 animate-reveal-left" style={{ animationDelay: "150ms" }}>
               <div className="rounded-3xl bg-white p-8 shadow-sm border border-slate-100">
                 <h1 className="font-heading text-3xl font-bold">Apply for Funding</h1>
                 <p className="mt-4 text-muted-foreground leading-relaxed">
@@ -273,7 +321,7 @@ export default function FundingApplication() {
               </div>
             </div>
 
-            <Card className="border-none shadow-2xl shadow-slate-200/50 lg:px-6">
+            <Card className="border-none shadow-2xl shadow-slate-200/50 lg:px-6 animate-reveal-right" style={{ animationDelay: "300ms" }}>
               <CardHeader className="pb-8">
                 <div className="flex items-center gap-2 mb-2">
                   <Badge variant="outline" className="text-primary border-primary/20 bg-primary/5">Application Form</Badge>
@@ -296,7 +344,7 @@ export default function FundingApplication() {
                   </div>
                 </div>
 
-                <form onSubmit={handleSubmit} className="grid gap-6 md:grid-cols-2">
+                <form onSubmit={handleSubmit} key={currentStep} className="grid gap-6 md:grid-cols-2 animate-step-reveal">
                   {currentStep === 1 && (
                     <>
                       <div className="md:col-span-2 space-y-2">
