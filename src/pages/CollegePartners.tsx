@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import BackButton from "@/components/BackButton";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -46,6 +47,8 @@ const CollegePartners = () => {
         <div className="pointer-events-none absolute -left-20 top-10 h-64 w-64 rounded-full bg-primary/5 blur-3xl" />
         <div className="pointer-events-none absolute -right-20 top-40 h-72 w-72 rounded-full bg-primary/5 blur-3xl" />
         
+        <BackButton className="mb-6 animate-reveal-left" />
+
         <div className="container relative mx-auto px-4 text-center">
           <Badge variant="outline" className="mb-4 gap-1 px-4 py-1 text-primary border-primary/20 bg-primary/5">
             <Sparkles size={14} /> Ecosystem Partners

@@ -3,6 +3,7 @@ import { useSearchParams, Link } from "react-router-dom";
 import { Search, Calendar, Users, BookOpen, MapPin } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import BackButton from "@/components/BackButton";
 import { useSEO } from "@/hooks/useSEO";
 
 interface SearchResult {
@@ -147,6 +148,7 @@ const Search = () => {
 
       <div className="pt-24 pb-12">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <BackButton className="px-0 mx-0 max-w-none mb-6 animate-reveal-left" />
           {/* Search Header */}
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-slate-900 mb-2">

@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { ArrowRight, CheckCircle2, Crown, Diamond, ShieldCheck } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import BackButton from "@/components/BackButton";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -80,6 +81,7 @@ const Membership = () => {
       <Navbar />
 
       <main className="px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
+        <BackButton className="mb-6 px-0 max-w-[1400px] animate-reveal-left" />
         <section className="mx-auto max-w-[1400px] rounded-[28px] border border-slate-200 bg-white p-4 shadow-[0_20px_80px_-35px_rgba(15,23,42,0.18)] sm:p-6 lg:p-8">
           <div className="mx-auto max-w-4xl text-center">
             <p className="text-sm font-semibold uppercase tracking-[0.22em] text-violet-500">

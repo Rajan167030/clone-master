@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { ArrowLeft } from "lucide-react";
 import { gsap } from "gsap";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -8,6 +10,7 @@ import { useSEO } from "@/hooks/useSEO";
 import Ballpit from "@/components/Ballpit";
 
 const ProductPage = () => {
+  const navigate = useNavigate();
   useSEO({
     title: "Our Product | Coming Soon",
     description: "We're building something amazing. Sign up for early access and be the first to know when we launch.",
@@ -94,7 +97,18 @@ const ProductPage = () => {
       <div className="relative z-10 flex flex-col min-h-screen">
         <Navbar />
         <main className="flex-grow py-20 sm:py-24">
-          <div className="mx-auto max-w-7xl px-6 lg:px-8 text-center pt-10">
+          {/* Back Button */}
+          <div className="mx-auto max-w-7xl px-6 lg:px-8 mb-4 text-left pt-10">
+            <button
+              onClick={() => navigate(-1)}
+              className="group inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/45 px-4 py-2 text-xs font-bold uppercase tracking-wider text-zinc-100 backdrop-blur-md shadow-md transition-all duration-300 hover:bg-white/10 hover:border-white/20 active:scale-95"
+            >
+              <ArrowLeft size={14} className="transition-transform duration-300 group-hover:-translate-x-1" />
+              Go Back
+            </button>
+          </div>
+
+          <div className="mx-auto max-w-7xl px-6 lg:px-8 text-center">
             <div className="mx-auto max-w-2xl gsap-header">
               <h1 className="font-heading text-4xl font-bold tracking-tight text-foreground sm:text-6xl">
                 A new way to build is coming

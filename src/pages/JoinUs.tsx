@@ -1,9 +1,10 @@
 import { useId, useState, useEffect, useRef, type ChangeEvent, type FormEvent } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, Link } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import BackButton from "@/components/BackButton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, Zap, Target, TrendingUp, Copy, CheckCircle, MessageCircle, ArrowRight, ShieldCheck, Clock3, ChevronLeft } from "lucide-react";
+import { Copy, CheckCircle, MessageCircle, ArrowRight, ShieldCheck, Clock3, ChevronLeft } from "lucide-react";
 import EmailVerificationBox from "@/components/EmailVerificationBox";
 import { Button } from "@/components/ui/button";
 import { submitJoinRequestApi } from "@/lib/api";
@@ -43,28 +44,7 @@ const occupationOptions = [
   { value: "Other", label: "Other" },
 ];
 
-const benefits = [
-  {
-    icon: Users,
-    title: "Network with Top Founders",
-    description: "Connect with India's most ambitious founders, investors, and builders. Build relationships that drive growth.",
-  },
-  {
-    icon: Zap,
-    title: "Access Exclusive Events",
-    description: "Attend curated founder meetups, investor networking nights, and exclusive sessions tailored for growth.",
-  },
-  {
-    icon: Target,
-    title: "Find Opportunities",
-    description: "Discover partnerships, fundraising connections, talent, and strategic growth opportunities.",
-  },
-  {
-    icon: TrendingUp,
-    title: "Accelerate Your Growth",
-    description: "Learn from experienced founders, get mentorship, and accelerate your startup's journey to success.",
-  },
-];
+
 
 const joiningFlow = [
   {
@@ -174,24 +154,7 @@ const JoinUs = () => {
         }
       });
 
-      gsap.fromTo(".reveal-benefit-card",
-        {
-          y: 40,
-          opacity: 0,
-        },
-        {
-          y: 0,
-          opacity: 1,
-          duration: 0.8,
-          ease: "power3.out",
-          stagger: 0.12,
-          scrollTrigger: {
-            trigger: ".reveal-benefits-container",
-            start: "top 85%",
-            toggleActions: "play none none none",
-          }
-        }
-      );
+
     }, containerRef);
 
     return () => ctx.revert();
@@ -355,6 +318,8 @@ const JoinUs = () => {
         <div className="pointer-events-none absolute right-0 top-32 h-80 w-80 rounded-full bg-blob" />
         <div className="pointer-events-none absolute inset-x-0 top-0 h-72 bg-[radial-gradient(circle_at_top,rgba(124,58,237,0.14),transparent_60%)]" />
 
+        <BackButton className="mb-6 animate-reveal-left" />
+
         <div className="container mx-auto px-4">
           <div className="mx-auto mb-10 max-w-5xl rounded-3xl border border-border/70 bg-white/80 p-6 shadow-xl backdrop-blur-sm md:p-10">
             <p className="mb-3 text-center text-xs font-semibold uppercase tracking-[0.28em] text-primary md:text-sm">Join Our Community</p>
@@ -367,10 +332,7 @@ const JoinUs = () => {
                 </span>
               ))}
             </h1>
-            <p className="mx-auto mt-5 max-w-3xl text-center text-base text-muted-foreground md:text-lg">
-              From first-time builders to experienced operators, Founders Connect is where serious people meet,
-              collaborate, and launch faster.
-            </p>
+
 
             <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
               <Button type="button" variant="outline" onClick={handleCopyLink} className="gap-2">
@@ -401,24 +363,7 @@ const JoinUs = () => {
 
           {copyMessage && <p className="mt-3 text-center text-sm text-muted-foreground">{copyMessage}</p>}
 
-          <div className="reveal-benefits-container mx-auto my-14 grid max-w-7xl grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-            {benefits.map(({ icon: Icon, title, description }) => (
-              <Card key={title} className="reveal-benefit-card opacity-0 group relative w-full overflow-hidden rounded-2xl border border-border/60 bg-gradient-to-b from-neutral-100 to-white px-5 py-5 shadow-lg transition-all duration-300 hover:-translate-y-2 hover:scale-[1.02] hover:border-primary/40 hover:shadow-2xl dark:from-neutral-900 dark:to-neutral-950">
-                <Grid size={14} />
-                <CardHeader className="relative z-10 flex-row items-start gap-4 p-0 pt-4">
-                  <div className="mt-1 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-primary text-primary-foreground shadow-md transition-transform duration-300 group-hover:scale-110">
-                    <Icon size={20} />
-                  </div>
-                  <div className="space-y-1">
-                    <CardTitle className="text-base leading-snug transition-colors duration-300 group-hover:text-primary">{title}</CardTitle>
-                    <CardContent className="relative z-10 p-0 text-sm leading-relaxed text-muted-foreground transition-colors duration-300 group-hover:text-foreground/80">
-                      {description}
-                    </CardContent>
-                  </div>
-                </CardHeader>
-              </Card>
-            ))}
-          </div>
+
 
           <div className="mx-auto grid max-w-7xl gap-6 lg:grid-cols-[1.1fr_0.75fr]">
             <Card className="border-2 border-dashed border-muted-foreground/30 bg-white shadow-xl">
@@ -650,6 +595,38 @@ const JoinUs = () => {
             <p className="mx-auto mb-8 max-w-2xl text-muted-foreground">
               Fill out the detailed form above. Once submitted, your request is stored in database and reviewed by our team.
             </p>
+          </div>
+
+          <div className="relative w-full overflow-hidden border-y border-neutral-800 bg-black py-5 my-10 shadow-lg">
+            <style>{`
+              @keyframes marquee-right {
+                0% {
+                  transform: translateX(-50%);
+                }
+                100% {
+                  transform: translateX(0);
+                }
+              }
+              .animate-marquee-right {
+                display: flex;
+                width: max-content;
+                animation: marquee-right 25s linear infinite;
+              }
+            `}</style>
+            <div className="animate-marquee-right flex gap-16 whitespace-nowrap text-sm font-extrabold tracking-[0.2em] uppercase text-zinc-100">
+              {[...Array(12)].map((_, i) => (
+                <div key={i} className="flex items-center gap-16">
+                  <Link to="/get-funding" className="hover:text-primary transition-all duration-300 cursor-pointer">
+                    Get Funding
+                  </Link>
+                  <span className="text-zinc-500 font-normal">•</span>
+                  <Link to="/partner-with-us" className="hover:text-primary transition-all duration-300 cursor-pointer">
+                    Partner with us
+                  </Link>
+                  <span className="text-zinc-500 font-normal">•</span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>

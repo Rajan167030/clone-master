@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { CalendarDays, FileText, Sparkles } from "lucide-react";
+import { CalendarDays, FileText, Sparkles, X } from "lucide-react";
 import StatCard from "@/components/StatCard";
 import PortfolioTable from "@/components/PortfolioTable";
 import ProfileCard from "@/components/ProfileCard";
@@ -84,6 +84,16 @@ const Dashboard = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const isMobile = useIsMobile();
   const [copiedLink, setCopiedLink] = useState(false);
+  
+  // Custom Dynamic Stats for Founder
+  const [isMetricsModalOpen, setIsMetricsModalOpen] = useState(false);
+  const [customStats, setCustomStats] = useState<DashboardStat[]>([]);
+  const [metricsForm, setMetricsForm] = useState({
+    pitchViews: "",
+    interestedInvestors: "",
+    fundingTarget: "",
+    raisedSoFar: "",
+  });
 
   const handleCopyLink = () => {
     const code = currentUser.referralCode || "N/A";
@@ -91,6 +101,34 @@ const Dashboard = () => {
     navigator.clipboard.writeText(link);
     setCopiedLink(true);
     setTimeout(() => setCopiedLink(false), 2000);
+  };
+
+  const openMetricsModal = () => {
+    const views = customStats.find(s => s.title === "Pitch Views")?.value || "0";
+    const investors = customStats.find(s => s.title === "Interested Investors")?.value || "0";
+    const target = customStats.find(s => s.title === "Funding Target")?.value || "INR 0";
+    const raised = customStats.find(s => s.title === "Raised So Far")?.value || "INR 0";
+    
+    setMetricsForm({
+      pitchViews: views,
+      interestedInvestors: investors,
+      fundingTarget: target,
+      raisedSoFar: raised,
+    });
+    setIsMetricsModalOpen(true);
+  };
+
+  const handleSaveMetrics = (e: React.FormEvent) => {
+    e.preventDefault();
+    const updated: DashboardStat[] = [
+      { title: "Pitch Views", value: metricsForm.pitchViews, color: "blue" },
+      { title: "Interested Investors", value: metricsForm.interestedInvestors, color: "green" },
+      { title: "Funding Target", value: metricsForm.fundingTarget, color: "purple" },
+      { title: "Raised So Far", value: metricsForm.raisedSoFar, color: "amber" },
+    ];
+    setCustomStats(updated);
+    localStorage.setItem(`founder_stats_${currentUser.email}`, JSON.stringify(updated));
+    setIsMetricsModalOpen(false);
   };
 
   useEffect(() => {
@@ -121,13 +159,55 @@ const Dashboard = () => {
   const role = toRole(currentUser.role);
   const roleTitle = roleLabels[role];
 
-  const stats = dashboard?.kpis?.length
-    ? dashboard.kpis.map((item) => ({
-        title: item.title,
-        value: item.value,
-        color: item.color as any,
-      }))
-    : fallbackStats[role];
+  // Initialize Founder stats dynamically based on startup details
+  useEffect(() => {
+    if (role === "founder" && currentUser.email) {
+      const stored = localStorage.getItem(`founder_stats_${currentUser.email}`);
+      if (stored) {
+        setCustomStats(JSON.parse(stored));
+      } else {
+        const stage = currentUser.roleDetails?.startupStage || "idea";
+        const teamSize = Number(currentUser.roleDetails?.teamSize || 1);
+        
+        let target = "INR 10,00,000";
+        let raised = "INR 0";
+        let investors = "2";
+        let views = String(teamSize * 24 + 15);
+        
+        if (stage.includes("mvp")) {
+          target = "INR 25,00,000";
+          raised = "INR 5,00,000";
+          investors = "5";
+        } else if (stage.includes("seed")) {
+          target = "INR 1,00,00,000";
+          raised = "INR 35,00,000";
+          investors = "9";
+        } else if (stage.includes("growth")) {
+          target = "INR 5,00,00,000";
+          raised = "INR 1,50,00,000";
+          investors = "18";
+        }
+        
+        const initialFounderStats: DashboardStat[] = [
+          { title: "Pitch Views", value: views, color: "blue" },
+          { title: "Interested Investors", value: investors, color: "green" },
+          { title: "Funding Target", value: target, color: "purple" },
+          { title: "Raised So Far", value: raised, color: "amber" },
+        ];
+        setCustomStats(initialFounderStats);
+      }
+    }
+  }, [role, currentUser]);
+
+  const stats = role === "founder" && customStats.length
+    ? customStats
+    : dashboard?.kpis?.length
+      ? dashboard.kpis.map((item) => ({
+          title: item.title,
+          value: item.value,
+          color: item.color as any,
+        }))
+      : fallbackStats[role];
 
   const commitmentPortfolio: PortfolioItem[] =
     dashboard?.tables?.commitmentPortfolio?.map((item) => ({
@@ -205,6 +285,16 @@ const Dashboard = () => {
             </div>
 
             <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+              {role === "founder" && (
+                <button
+                  type="button"
+                  onClick={openMetricsModal}
+                  className="inline-flex items-center justify-center gap-2 rounded-xl border border-purple-200 bg-purple-50 px-4 py-3 text-sm font-bold text-purple-700 shadow-sm transition-all hover:bg-purple-100/70 hover:scale-[1.02] active:scale-95"
+                >
+                  <Sparkles size={16} />
+                  Update Metrics
+                </button>
+              )}
               <Link
                 to="/events"
                 className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-100"
@@ -379,6 +469,89 @@ const Dashboard = () => {
           </section>
         </main>
       </div>
+
+      {/* Dynamic Founder Metrics Modal */}
+      {isMetricsModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
+          <div className="w-full max-w-md rounded-3xl border border-violet-100 bg-white p-6 shadow-[0_20px_50px_rgba(109,40,217,0.15)] animate-scale-up sm:p-8">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-extrabold text-slate-900 font-heading">Update Founder Metrics</h2>
+              <button 
+                onClick={() => setIsMetricsModalOpen(false)}
+                className="rounded-full p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition-colors"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            
+            <form onSubmit={handleSaveMetrics} className="space-y-4">
+              <div className="space-y-1.5">
+                <label className="text-sm font-semibold text-slate-700">Pitch Views</label>
+                <input
+                  type="text"
+                  value={metricsForm.pitchViews}
+                  onChange={(e) => setMetricsForm(prev => ({ ...prev, pitchViews: e.target.value }))}
+                  placeholder="e.g. 150"
+                  className="w-full h-12 px-4 rounded-xl border border-slate-200 bg-white text-slate-900 focus:border-violet-500 focus:ring-violet-500/20 text-sm outline-none transition-all"
+                  required
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-sm font-semibold text-slate-700">Interested Investors</label>
+                <input
+                  type="text"
+                  value={metricsForm.interestedInvestors}
+                  onChange={(e) => setMetricsForm(prev => ({ ...prev, interestedInvestors: e.target.value }))}
+                  placeholder="e.g. 8"
+                  className="w-full h-12 px-4 rounded-xl border border-slate-200 bg-white text-slate-900 focus:border-violet-500 focus:ring-violet-500/20 text-sm outline-none transition-all"
+                  required
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-sm font-semibold text-slate-700">Funding Target</label>
+                <input
+                  type="text"
+                  value={metricsForm.fundingTarget}
+                  onChange={(e) => setMetricsForm(prev => ({ ...prev, fundingTarget: e.target.value }))}
+                  placeholder="e.g. INR 50,00,000"
+                  className="w-full h-12 px-4 rounded-xl border border-slate-200 bg-white text-slate-900 focus:border-violet-500 focus:ring-violet-500/20 text-sm outline-none transition-all"
+                  required
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-sm font-semibold text-slate-700">Raised So Far</label>
+                <input
+                  type="text"
+                  value={metricsForm.raisedSoFar}
+                  onChange={(e) => setMetricsForm(prev => ({ ...prev, raisedSoFar: e.target.value }))}
+                  placeholder="e.g. INR 15,00,000"
+                  className="w-full h-12 px-4 rounded-xl border border-slate-200 bg-white text-slate-900 focus:border-violet-500 focus:ring-violet-500/20 text-sm outline-none transition-all"
+                  required
+                />
+              </div>
+
+              <div className="flex gap-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setIsMetricsModalOpen(false)}
+                  className="flex-1 h-12 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 transition-all font-semibold"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 h-12 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white hover:from-violet-500 hover:to-indigo-500 shadow-lg shadow-violet-500/20 transition-all font-bold"
+                >
+                  Save Metrics
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

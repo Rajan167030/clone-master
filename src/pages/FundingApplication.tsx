@@ -1,6 +1,7 @@
 import { useState, type ChangeEvent, type FormEvent } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import BackButton from "@/components/BackButton";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -125,7 +126,14 @@ export default function FundingApplication() {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    const err = validate();
+    let err = null;
+    for (let i = 1; i <= totalSteps; i++) {
+      const stepErr = validateStep(i);
+      if (stepErr) {
+        err = stepErr;
+        break;
+      }
+    }
     if (err) {
       window.alert(err);
       return;
@@ -281,9 +289,7 @@ export default function FundingApplication() {
 
       <section className="pt-32 pb-24">
         <div className="container mx-auto px-4">
-          <Link to="/get-funding" className="mb-6 inline-flex items-center gap-2 text-sm font-semibold text-primary hover:underline">
-            <ArrowLeft size={16} /> Back to Get Funding
-          </Link>
+          <BackButton className="px-0 mx-0 max-w-none mb-6 animate-reveal-left" />
           
           <div className="grid gap-12 lg:grid-cols-[1fr_1.8fr]">
             <div className="space-y-8 animate-reveal-left" style={{ animationDelay: "150ms" }}>

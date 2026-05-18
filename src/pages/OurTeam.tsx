@@ -1,5 +1,6 @@
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import BackButton from "@/components/BackButton";
 import PixelTransition from "@/components/ui/PixelTransition";
 import { useSEO } from "@/hooks/useSEO";
 
@@ -76,6 +77,7 @@ const OurTeam = () => {
     <div className="min-h-screen bg-background font-body text-foreground">
       <Navbar />
       <main className="container mx-auto px-4 py-24">
+        <BackButton className="px-0 mx-0 max-w-none mb-6 animate-reveal-left" />
         <div className="text-center max-w-2xl mx-auto mb-16">
           <h1 className="font-heading font-bold text-4xl md:text-5xl text-foreground tracking-tight">
             Meet Our Team

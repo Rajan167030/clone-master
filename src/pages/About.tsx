@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import BackButton from "@/components/BackButton";
 import JoinUsSection from "@/components/JoinUsSection";
 import { useSEO } from "@/hooks/useSEO";
 import { cn } from "@/lib/utils";
@@ -91,6 +92,8 @@ const About = () => {
       <section className="relative pt-24 pb-16">
         <div className="pointer-events-none absolute -left-20 top-12 h-64 w-64 rounded-full bg-blob" />
         <div className="pointer-events-none absolute right-0 top-32 h-80 w-80 rounded-full bg-blob" />
+
+        <BackButton className="mb-6 animate-reveal-left" />
 
         <div className="container mx-auto px-4">
           <div className="mx-auto max-w-4xl text-center">

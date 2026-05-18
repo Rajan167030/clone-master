@@ -133,7 +133,7 @@ const JoinUsSection = ({ showSocial = true, className }: { showSocial?: boolean,
 
   if (!showSocial) return null;
 
-  const headingText = "join our vibrant founders community";
+  const headingText = "founders community";
   const headingWords = headingText.split(" ");
 
   return (
@@ -171,7 +171,7 @@ const JoinUsSection = ({ showSocial = true, className }: { showSocial?: boolean,
                 to="/join-us"
                 className="inline-flex items-center gap-3 rounded-full bg-white px-9 py-4 text-lg font-medium text-black shadow-[0_10px_30px_rgba(255,255,255,0.18)] transition-transform duration-300 hover:-translate-y-0.5 hover:shadow-[0_16px_40px_rgba(255,255,255,0.24)]"
               >
-                Join our community
+                Join us
                 <span aria-hidden="true" className="text-xl leading-none">
                   →
                 </span>

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState, useRef } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import BackButton from "@/components/BackButton";
 import { useSEO } from "@/hooks/useSEO";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -171,6 +172,7 @@ const PastSpeakersInvestors = () => {
         </div>
 
         <div className="container relative z-10 mx-auto px-4 py-8 sm:py-12 md:py-16">
+          <BackButton className="mb-6 px-0 animate-reveal-left" />
           <div className="mx-auto max-w-3xl text-center">
             
             <p className="mt-3 text-sm text-muted-foreground sm:mt-4 sm:text-base md:text-lg">

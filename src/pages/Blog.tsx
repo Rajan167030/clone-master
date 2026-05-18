@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { ArrowRight, Clock3 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import BackButton from "@/components/BackButton";
 import { getPublicBlogsApi, type DynamicBlogPost } from "@/lib/api";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -36,6 +37,7 @@ const Blog = () => {
       <Navbar />
       <section className="pt-24 pb-16">
         <div className="container mx-auto px-4">
+          <BackButton className="px-0 mx-0 max-w-none mb-6 animate-reveal-left" />
           <div className="mx-auto mb-10 max-w-3xl text-center">
             <p className="mb-3 text-sm font-semibold uppercase tracking-[0.2em] text-primary">Founders Connect Blog</p>
             <h1 className="font-heading text-4xl font-extrabold md:text-5xl">Insights for founders who execute.</h1>

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import BackButton from "@/components/BackButton";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -41,6 +42,9 @@ export default function GetFunding() {
           className="absolute inset-0 h-full w-full object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-r from-background via-background/80 to-transparent" />
+        
+        <BackButton className="absolute left-0 right-0 top-24 z-20 animate-reveal-left" />
+
         <div className="container relative mx-auto flex h-full flex-col justify-center px-4">
           <Badge 
             style={{
@@ -85,9 +89,7 @@ export default function GetFunding() {
                 Apply Now <ArrowRight size={20} />
               </Link>
             </Button>
-            <Button variant="outline" size="lg" className="h-14 px-8 text-lg font-bold backdrop-blur-sm hover:bg-white/10 transition-colors">
-              View Portfolio
-            </Button>
+            
           </div>
         </div>
       </section>
@@ -112,7 +114,7 @@ export default function GetFunding() {
               <p className="text-xl text-slate-300 mb-12">Applications for the Summer 2026 Funding Cohort are now open. Don't miss out on strategic capital.</p>
               <Button asChild size="lg" className="h-16 px-12 text-xl font-black rounded-2xl bg-white text-slate-900 hover:bg-slate-100 hover:scale-[1.02] active:scale-95 transition-all shadow-2xl shadow-white/10">
                 <Link to="/funding-application">
-                  SUBMIT YOUR PITCH NOW
+                  SUBMIT PITCH
                 </Link>
               </Button>
             </div>

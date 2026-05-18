@@ -119,9 +119,9 @@ const Index = () => {
       <HeroSlider className="gsap-section" />
       <StatsSection className="gsap-section" />
       <PortfolioMarquee className="gsap-section" />
+      <SponsorsSection className="gsap-section" />
       <ExploreNetwork className="gsap-section" />
       <JourneySection className="gsap-section" />
-      <SponsorsSection className="gsap-section" />
       <GallerySection className="gsap-section" />
       <Testimonials className="gsap-section" />
       <JoinUsSection showSocial={true} className="gsap-section" />
