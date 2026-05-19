@@ -40,9 +40,11 @@ const steps = [
   },
 ];
 
+// first card will render a full SVG visual; other steps render normal cards
+
 const JourneySection = ({ className }: { className?: string }) => (
-  <section className={`relative mx-3 overflow-hidden rounded-[2.25rem] border border-border/60 bg-gradient-to-b from-[#2b2d2f] via-[#232528] to-[#202224] py-24 ${className}`}>
-    <div className="pointer-events-none absolute inset-0 opacity-40 [background:radial-gradient(circle_at_top,_rgba(45,212,191,0.12),_transparent_58%)]" />
+  <section className={`relative mx-3 overflow-hidden rounded-[2.25rem] border border-white/10 bg-gradient-to-b from-[#111113] via-[#09090b] to-[#020202] py-24 ${className}`}>
+    <div className="pointer-events-none absolute inset-0 opacity-40 [background:radial-gradient(circle_at_top,_rgba(45,212,191,0.08),_transparent_60%)]" />
     <div className="container relative mx-auto px-4">
       <div className="mx-auto mb-14 max-w-2xl text-center">
         <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-violet-100/40 bg-violet-50 px-4 py-1.5">
