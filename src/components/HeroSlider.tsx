@@ -12,6 +12,13 @@ const cloudinaryImages = {
 
 const fallbackSlides = [
   {
+    title: "Founders Connect",
+    highlight: "Startup Meetup 2026",
+    link: "/events/founders-connect-dehradun-edition-v1",
+    image: cloudinaryImages.slide1,
+    alt: "Founders Connect startup meetup event",
+  },
+  {
     title: "",
     highlight: "",
     link: "/joinus",
@@ -19,18 +26,11 @@ const fallbackSlides = [
     alt: "Join Founders Connect",
   },
   {
-    title: "Founders Connect",
-    highlight: "Investor Networking Night",
-    link: "/events/founders-connect-investor-networking-night",
-    image: cloudinaryImages.slide2,
-    alt: "Founders Connect investor networking event",
-  },
-  {
-    title: "Join the",
-    highlight: "Founders Connect Membership",
-    link: "/membership",
-    image: cloudinaryImages.slide3,
-    alt: "Founders Connect membership community",
+    title: "",
+    highlight: "",
+    link: "/joinus",
+    image: "/Screenshot 2026-04-23 004018.png",
+    alt: "Join Founders Connect",
   },
 ];
 

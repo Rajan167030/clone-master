@@ -1,5 +1,72 @@
 import { motion } from "framer-motion";
 import { TrendingUp, Building2, Users, DollarSign } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+
+const useCountingEffect = (value: string | number, duration: number = 2000) => {
+  const [displayValue, setDisplayValue] = useState(value);
+  const hasStarted = useRef(false);
+
+  useEffect(() => {
+    // Extract numeric value from string (handles "1.5cr", "50", "₹315Cr", "1,000+")
+    const extractNumber = (val: string | number) => {
+      const str = String(val).toLowerCase();
+      const match = str.match(/\d+\.?\d*/);
+      return match ? parseFloat(match[0]) : 0;
+    };
+
+    // Get original format details
+    const originalStr = String(value);
+    const numericValue = extractNumber(originalStr);
+    const hasComma = originalStr.includes(",");
+    const hasCr = originalStr.includes("cr");
+    const hasRupee = originalStr.includes("₹");
+    const hasPlus = originalStr.includes("+");
+    const hasDecimal = originalStr.includes(".");
+
+    if (numericValue === 0 || hasStarted.current) return;
+
+    hasStarted.current = true;
+
+    const startTime = Date.now();
+
+    const animate = () => {
+      const elapsed = Date.now() - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      const easeOutQuad = 1 - (1 - progress) * (1 - progress); // Ease-out effect
+      const currentValue = Math.floor(numericValue * easeOutQuad);
+
+      let formatted = String(currentValue);
+
+      if (hasDecimal) {
+        formatted = (numericValue * easeOutQuad).toFixed(1);
+      }
+
+      if (hasComma && currentValue >= 1000) {
+        formatted = currentValue.toLocaleString();
+      }
+
+      if (hasCr) {
+        formatted += "cr";
+      }
+      if (hasRupee) {
+        formatted = "₹" + formatted;
+      }
+      if (hasPlus && progress === 1) {
+        formatted += "+";
+      }
+
+      setDisplayValue(formatted);
+
+      if (progress < 1) {
+        requestAnimationFrame(animate);
+      }
+    };
+
+    requestAnimationFrame(animate);
+  }, [value, duration]);
+
+  return displayValue;
+};
 
 const stats = [
   { value: "1.5cr", label: "Raised in VC", icon: DollarSign },
@@ -7,6 +74,30 @@ const stats = [
   { value: "₹315Cr", label: "Angel Capital", icon: TrendingUp },
   { value: "1,000+", label: "Angel Investors", icon: Users },
 ];
+
+const StatCard = ({ stat, delay }: { stat: typeof stats[0]; delay: number }) => {
+  const countedValue = useCountingEffect(stat.value, 2500);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ delay }}
+      className="group relative card-gradient border border-border rounded-2xl p-6 hover:border-primary/40 hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
+    >
+      <div className="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
+        <stat.icon size={20} className="text-primary" />
+      </div>
+      <div className="font-heading font-bold text-3xl md:text-4xl text-foreground tabular-nums">
+        {countedValue}
+      </div>
+      <div className="text-xs text-muted-foreground mt-1 uppercase tracking-wider font-medium">
+        {stat.label}
+      </div>
+    </motion.div>
+  );
+};
 
 const StatsSection = ({ className }: { className?: string }) => (
   <section id="stats" className={`py-24 relative ${className}`}>
@@ -27,24 +118,7 @@ const StatsSection = ({ className }: { className?: string }) => (
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
         {stats.map((stat, i) => (
-          <motion.div
-            key={stat.label}
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: i * 0.08 }}
-            className="group relative card-gradient border border-border rounded-2xl p-6 hover:border-primary/40 hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
-          >
-            <div className="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
-              <stat.icon size={20} className="text-primary" />
-            </div>
-            <div className="font-heading font-bold text-3xl md:text-4xl text-foreground tabular-nums">
-              {stat.value}
-            </div>
-            <div className="text-xs text-muted-foreground mt-1 uppercase tracking-wider font-medium">
-              {stat.label}
-            </div>
-          </motion.div>
+          <StatCard key={stat.label} stat={stat} delay={i * 0.08} />
         ))}
       </div>
     </div>
