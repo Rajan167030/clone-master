@@ -22,16 +22,14 @@ const PortfolioMarquee = ({ className }: { className?: string }) => {
   }, []);
 
   const partnerItems = partners.length
-    ? partners
-        .filter((partner) => partner.category !== "sponsor")
-        .map((partner) => ({
-            key: partner._id,
-            name: partner.name,
-            logoUrl: partner.logoUrl,
-            websiteUrl: partner.websiteUrl,
-            logoWidth: partner.logoWidth,
-            logoHeight: partner.logoHeight,
-          }))
+    ? partners.map((partner) => ({
+        key: partner._id,
+        name: partner.name,
+        logoUrl: partner.logoUrl,
+        websiteUrl: partner.websiteUrl,
+        logoWidth: partner.logoWidth,
+        logoHeight: partner.logoHeight,
+      }))
     : companies.map((name) => ({ key: name, name, logoUrl: "", websiteUrl: "", logoWidth: "auto", logoHeight: "auto" }));
 
   return (
@@ -59,21 +57,19 @@ const PortfolioMarquee = ({ className }: { className?: string }) => {
         <div className="animate-marquee-reverse flex whitespace-nowrap" style={{ width: '200%' }}>
           {[...partnerItems, ...partnerItems].map((partner, i) => {
             const content = (
-              <div className="inline-flex items-center justify-center mx-6 px-4 py-2 min-w-[200px]">
+              <div className="inline-flex items-center justify-center mx-6 px-4 py-2 min-w-[150px]">
                 {partner.logoUrl ? (
                   <img 
                     src={partner.logoUrl} 
                     alt={partner.name} 
-                    loading="lazy"
-                    decoding="async"
                     style={{
                       width: partner.logoWidth || "auto",
                       height: partner.logoHeight || "auto",
                     }}
-                    className="max-h-24 object-contain"
+                    className="max-h-16 object-contain"
                   />
                 ) : (
-                  <span className="text-xl md:text-2xl font-medium text-foreground">{partner.name}</span>
+                  <span className="text-sm md:text-base font-medium text-foreground">{partner.name}</span>
                 )}
               </div>
             );
@@ -96,21 +92,19 @@ const PortfolioMarquee = ({ className }: { className?: string }) => {
         <div className="animate-marquee flex whitespace-nowrap" style={{ width: '200%' }}>
           {[...partnerItems, ...partnerItems].reverse().map((partner, i) => {
             const content = (
-              <div className="inline-flex items-center justify-center mx-6 px-4 py-2 min-w-[200px]">
+              <div className="inline-flex items-center justify-center mx-6 px-4 py-2 min-w-[150px]">
                 {partner.logoUrl ? (
                   <img 
                     src={partner.logoUrl} 
                     alt={partner.name} 
-                    loading="lazy"
-                    decoding="async"
                     style={{
                       width: partner.logoWidth || "auto",
                       height: partner.logoHeight || "auto",
                     }}
-                    className="max-h-24 object-contain"
+                    className="max-h-16 object-contain"
                   />
                 ) : (
-                  <span className="text-xl md:text-2xl font-medium text-foreground">{partner.name}</span>
+                  <span className="text-sm md:text-base font-medium text-foreground">{partner.name}</span>
                 )}
               </div>
             );

@@ -8,84 +8,84 @@ const testimonials = [
     role: "Angel Investor & Founder",
     initials: "GS",
     profileImage: "https://randomuser.me/api/portraits/men/1.jpg",
-    quote: "This platform connected me with 15+ promising startups in just 3 months. The deal quality is exceptional.",
+    quote: "This platform connected me with 15+ promising startups in just 3 months. The deal quality is exceptional and the founders here are genuinely solving real problems. I've invested in 3 startups already and all of them are scaling beautifully. The curator's eye for quality is what sets this apart from other networks.",
   },
   {
     name: "Kaushik Banerjee",
     role: "Founder, FinTech Startup",
     initials: "KB",
     profileImage: "https://randomuser.me/api/portraits/men/2.jpg",
-    quote: "Raised 2 Crore Series A through this network. Their investor connections are unmatched in India.",
+    quote: "Raised 2 Crore Series A through this network. Their investor connections are unmatched in India. Not only did we get funding, but we also got mentors who understood the Indian market deeply. The founder community here pushes us to think bigger every single day. This is where magic happens.",
   },
   {
     name: "Gaurav Dua",
     role: "Founder, AI Solutions",
     initials: "GD",
     profileImage: "https://randomuser.me/api/portraits/men/3.jpg",
-    quote: "The ecosystem here helped us scale from 0 to 10 team members. Best decision for early-stage growth.",
+    quote: "The ecosystem here helped us scale from 0 to 10 team members. Best decision for early-stage growth. We attended events, got feedback from customers, and met our first enterprise client through this platform. The support system is incredible - everyone wants to see each other succeed.",
   },
   {
     name: "Priya Nair",
     role: "Co-Founder, EdTech",
     initials: "PN",
     profileImage: "https://randomuser.me/api/portraits/women/1.jpg",
-    quote: "Connected with 3 VCs who believed in our vision. This platform is a game-changer for women founders.",
+    quote: "Connected with 3 VCs who believed in our vision. This platform is a game-changer for women founders. I met mentors who are women CEOs and angels who understood the EdTech space intimately. The support and encouragement I received boosted my confidence tremendously.",
   },
   {
     name: "Siddharth Joshi",
     role: "Founder & CEO, SaaS",
     initials: "SJ",
     profileImage: "https://randomuser.me/api/portraits/men/4.jpg",
-    quote: "Started as a bootstrapped side project. Now we're a 50-person team thanks to investors I met here.",
+    quote: "Started as a bootstrapped side project. Now we're a 50-person team thanks to investors I met here. The product-market fit journey was guided by feedback from the community. Every milestone felt like a community celebration, not just a personal victory.",
   },
   {
     name: "Sneha Gupta",
     role: "Co-Founder, D2C Brand",
     initials: "SG",
     profileImage: "https://randomuser.me/api/portraits/women/2.jpg",
-    quote: "The mentorship from senior founders here was invaluable. Grew our revenue by 5x in one year.",
+    quote: "The mentorship from senior founders here was invaluable. Grew our revenue by 5x in one year. We got strategic advice on supply chain, marketing, and fundraising all from founders who have walked this path before. The community is generous with knowledge.",
   },
   {
     name: "Rajiv Menon",
     role: "Founder, Logistics Startup",
     initials: "RM",
     profileImage: "https://randomuser.me/api/portraits/men/5.jpg",
-    quote: "Helped us navigate the complex Indian startup ecosystem. Got angel checks within weeks.",
+    quote: "Helped us navigate the complex Indian startup ecosystem. Got angel checks within weeks. The founders here understood logistics challenges and could spot the opportunity immediately. This platform accelerated our journey by at least 18 months. It's not just a network, it's a launchpad.",
   },
   {
     name: "Ritika Agarwal",
     role: "Founder, Fashion Tech",
     initials: "RA",
     profileImage: "https://randomuser.me/api/portraits/women/3.jpg",
-    quote: "This community taught me everything about pitching and investor relations. Absolutely brilliant.",
+    quote: "This community taught me everything about pitching and investor relations. Absolutely brilliant. I went from being nervous about pitches to confidently presenting to VCs. The feedback sessions were brutally honest and incredibly helpful. Everyone genuinely wants to help you succeed.",
   },
   {
     name: "Ananya Sharma",
     role: "Co-Founder, HealthTech",
     initials: "AS",
     profileImage: "https://randomuser.me/api/portraits/women/4.jpg",
-    quote: "Secured pre-Series B funding in 6 months. The investor network here is incredibly strong.",
+    quote: "Secured pre-Series B funding in 6 months. The investor network here is incredibly strong. We had meetings with tier-1 VCs, got term sheets from multiple firms, and chose the partner who believed in our vision. The quality of introductions made all the difference.",
   },
   {
     name: "Meera Iyer",
     role: "Founder, Design Studio",
     initials: "MI",
     profileImage: "https://randomuser.me/api/portraits/women/5.jpg",
-    quote: "Built a 30-person agency from this platform's connections. They believed in me when nobody did.",
+    quote: "Built a 30-person agency from this platform's connections. They believed in me when nobody did. I started with just one designer and myself. Through this network, I met potential clients, found talented designers, and built an incredible team. It's a supportive community.",
   },
   {
     name: "Aditya Kumar",
     role: "Serial Entrepreneur & Investor",
     initials: "AK",
     profileImage: "https://randomuser.me/api/portraits/men/6.jpg",
-    quote: "Now investing in 10+ startups from here. This platform produces the best founders I know.",
+    quote: "Now investing in 10+ startups from here. This platform produces the best founders I know. The quality of founders is exceptional. They're scrappy, ambitious, and deeply committed to solving real problems. As an investor, I've found some of my best deals here.",
   },
   {
     name: "Neha Verma",
     role: "Founder, HR Tech",
     initials: "NV",
     profileImage: "https://randomuser.me/api/portraits/women/6.jpg",
-    quote: "Got my first million-dollar cheque from an investor I met here. Dreams do come true!",
+    quote: "Got my first million-dollar cheque from an investor I met here. Dreams do come true! I attended an event, connected with an investor interested in HR Tech, had coffee, and within 2 months, we had a term sheet. This platform made the impossible possible for me.",
   },
 ];
 
@@ -129,7 +129,7 @@ const Testimonials = ({ className }: { className?: string }) => {
   // Masonry heights (responsive and different for visual interest)
   const getCardHeight = (index: number) => {
     const heightSets = [
-      ["h-64 md:h-80", "h-72 md:h-96", "h-60 md:h-72"],
+      ["h-56 md:h-64", "h-64 md:h-72", "h-56 md:h-64"],
     ];
     return heightSets[0][index % 3];
   };
@@ -170,7 +170,7 @@ const Testimonials = ({ className }: { className?: string }) => {
           >
             {/* FRONT - Quote */}
             <div
-              className="absolute w-full h-full rounded-2xl md:rounded-3xl border border-border bg-gradient-to-br from-background/60 via-background/50 to-background/40 p-3 md:p-5 shadow-md overflow-hidden transition-all duration-300 group-hover:shadow-lg group-hover:shadow-primary/40 group-hover:scale-105 group-hover:border-primary/60"
+              className="absolute w-full h-full rounded-2xl md:rounded-3xl border border-border bg-gradient-to-br from-background/60 via-background/50 to-background/40 p-4 md:p-6 shadow-md overflow-hidden transition-all duration-300 group-hover:shadow-lg group-hover:shadow-primary/40 group-hover:scale-105 group-hover:border-primary/60 flex flex-col"
               style={{ backfaceVisibility: "hidden" }}
             >
               {/* Glow effect on hover */}
@@ -178,34 +178,34 @@ const Testimonials = ({ className }: { className?: string }) => {
 
               <div className="relative z-10 h-full flex flex-col">
                 {/* Quote icon and stars */}
-                <div className="flex items-start justify-between mb-2 md:mb-3">
-                  <Quote size={16} className="md:size-[20px] text-primary/30 flex-shrink-0" />
-                  <div className="flex gap-0.5">
+                <div className="flex items-start justify-between mb-3 md:mb-4">
+                  <Quote size={18} className="md:size-[24px] text-primary/40 flex-shrink-0" />
+                  <div className="flex gap-1">
                     {[1, 2, 3, 4, 5].map((s) => (
-                      <Star key={s} size={9} className="md:size-[11px] fill-primary text-primary" />
+                      <Star key={s} size={11} className="md:size-[13px] fill-primary text-primary" />
                     ))}
                   </div>
                 </div>
 
                 {/* Quote text */}
-                <p className="flex-1 leading-relaxed text-foreground/75 text-xs md:text-sm mb-2 md:mb-3 line-clamp-4">
+                <p className="flex-1 leading-relaxed text-foreground/75 text-xs md:text-sm mb-1.5 md:mb-2 line-clamp-[12] text-left break-words">
                   "{tt.quote}"
                 </p>
 
                 {/* Avatar and info */}
-                <div className="mt-auto flex items-center gap-2 md:gap-2.5 border-t border-border/40 pt-2 md:pt-3">
+                <div className="mt-auto flex items-center gap-3 border-t border-border/50 pt-1.5 md:pt-2">
                   {tt.profileImage || tt.avatarUrl ? (
                     <img
                       src={tt.profileImage || tt.avatarUrl}
                       alt={tt.name}
-                      className="h-8 md:h-10 w-8 md:w-10 rounded-full object-cover flex-shrink-0"
+                      className="h-10 md:h-12 w-10 md:w-12 rounded-full object-cover flex-shrink-0 border border-primary/20"
                     />
                   ) : (
-                    <div className="flex h-8 md:h-10 w-8 md:w-10 items-center justify-center rounded-full bg-gradient-to-br from-primary to-primary/70 text-xs font-bold font-heading text-primary-foreground flex-shrink-0">
+                    <div className="flex h-10 md:h-12 w-10 md:w-12 items-center justify-center rounded-full bg-gradient-to-br from-primary to-primary/70 text-xs md:text-sm font-bold font-heading text-primary-foreground flex-shrink-0 border border-primary/20">
                       {tt.initials || tt.name.slice(0, 2).toUpperCase()}
                     </div>
                   )}
-                  <div className="min-w-0">
+                  <div className="min-w-0 flex-1">
                     <div className="font-heading text-xs md:text-sm font-semibold text-foreground truncate">
                       {tt.name}
                     </div>
@@ -214,51 +214,51 @@ const Testimonials = ({ className }: { className?: string }) => {
                 </div>
 
                 {/* Click hint */}
-                <div className="absolute bottom-2 right-2 text-xs text-primary/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  Click to flip
+                <div className="text-xs text-primary/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 mt-1.5">
+                  ✦ Click to flip
                 </div>
               </div>
             </div>
 
             {/* BACK - Profile */}
             <div
-              className="absolute w-full h-full rounded-2xl md:rounded-3xl border border-border bg-gradient-to-br from-primary/20 via-primary/10 to-background/40 p-3 md:p-5 shadow-md overflow-hidden flex flex-col items-center justify-center text-center"
+              className="absolute w-full h-full rounded-2xl md:rounded-3xl border border-border bg-gradient-to-br from-primary/25 via-primary/15 to-background/40 p-4 md:p-6 shadow-md overflow-hidden flex flex-col items-center justify-center text-center"
               style={{
                 backfaceVisibility: "hidden",
                 transform: "rotateY(180deg)",
               }}
             >
               {/* Profile avatar - larger */}
-              <div className="mb-3 md:mb-4">
+              <div className="mb-4 md:mb-5">
                 {tt.profileImage || tt.avatarUrl ? (
                   <img
                     src={tt.profileImage || tt.avatarUrl}
                     alt={tt.name}
-                    className="h-14 md:h-20 w-14 md:w-20 rounded-full object-cover border-2 border-primary/30"
+                    className="h-16 md:h-24 w-16 md:w-24 rounded-full object-cover border-3 border-primary/40"
                   />
                 ) : (
-                  <div className="flex h-14 md:h-20 w-14 md:w-20 items-center justify-center rounded-full bg-gradient-to-br from-primary to-primary/70 text-lg md:text-2xl font-bold font-heading text-primary-foreground border-2 border-primary/30">
+                  <div className="flex h-16 md:h-24 w-16 md:w-24 items-center justify-center rounded-full bg-gradient-to-br from-primary to-primary/70 text-2xl md:text-3xl font-bold font-heading text-primary-foreground border-3 border-primary/40">
                     {tt.initials || tt.name.slice(0, 2).toUpperCase()}
                   </div>
                 )}
               </div>
 
               {/* Name */}
-              <div className="font-heading text-sm md:text-lg font-bold text-foreground mb-1">
+              <div className="font-heading text-sm md:text-xl font-bold text-foreground mb-1 px-2">
                 {tt.name}
               </div>
 
               {/* Role */}
-              <div className="text-xs md:text-xs text-primary/80 mb-2 md:mb-3 line-clamp-2 px-1">
+              <div className="text-xs md:text-sm text-primary/80 mb-3 md:mb-4 line-clamp-2 px-2 font-medium">
                 {tt.role}
               </div>
 
               {/* Divider */}
-              <div className="h-px w-6 md:w-8 bg-primary/40 mb-2 md:mb-3" />
+              <div className="h-px w-8 md:w-10 bg-primary/50 mb-3 md:mb-4" />
 
               {/* Click hint */}
               <div className="text-xs text-muted-foreground mt-auto">
-                Click to flip back
+                ✦ Click to flip back
               </div>
             </div>
           </div>

@@ -1,10 +1,10 @@
-
-import { useMemo, useState, FormEvent } from "react";
+import { useMemo, useState, type FormEvent } from "react";
 import { BarChart3, Rocket, User } from "lucide-react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import BackButton from "@/components/BackButton";
 import { registerApi } from "@/lib/api";
 import { setSession } from "@/lib/session";
 import { useToast } from "@/hooks/use-toast";
@@ -26,7 +26,6 @@ const Register = () => {
     return "user";
   }, [routeRole]);
 
-  // FIX 1: FormEvent is now properly imported above (was missing before)
   const handleRegister = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
@@ -37,8 +36,6 @@ const Register = () => {
     const confirmPassword = getFieldValue(formData, "confirmPassword");
     const phoneCountryCode = getFieldValue(formData, "phoneCountryCode");
     const phoneNumber = getFieldValue(formData, "phoneNumber");
-    // FIX 2: bio is now extracted from formData and passed to registerApi
-    const bio = getFieldValue(formData, "bio");
 
     if (!fullName || !email || !password) {
       toast({
@@ -123,7 +120,6 @@ const Register = () => {
     if (role === "founder") {
       const startupName = getFieldValue(formData, "startupName");
       const startupStage = getFieldValue(formData, "startupStage").toLowerCase().replace(/\s+/g, "-");
-      // FIX 3: teamSize field now uses type="number" in JSX (see below), so Number() parses correctly
       const teamSize = Number(getFieldValue(formData, "teamSize"));
       const startupWebsite = getFieldValue(formData, "startupWebsite");
 
@@ -167,7 +163,6 @@ const Register = () => {
       phone: `${phoneCountryCode} ${phoneNumber}`,
       city: getFieldValue(formData, "city"),
       role,
-      // FIX 2 (continued): bio is now passed to the API
       roleDetails,
     })
       .then((response) => {
@@ -198,6 +193,7 @@ const Register = () => {
 
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,_#dff4ff_0%,_#f7fbff_45%,_#ffffff_75%)] px-4 py-8 sm:px-6 lg:px-10">
+      <BackButton className="mb-6 px-0 max-w-6xl animate-reveal-left" />
       <div className="mx-auto grid min-h-[calc(100vh-4rem)] w-full max-w-6xl items-center gap-10 lg:grid-cols-2">
         <section className="space-y-6">
           <div className="inline-flex items-center gap-3 rounded-xl border border-violet-100 bg-white/90 px-4 py-3 shadow-[0_20px_50px_-35px_rgba(139,92,246,0.5)] backdrop-blur">
@@ -227,7 +223,7 @@ const Register = () => {
                 role === "user"
                   ? "border-violet-200 bg-violet-50 text-slate-900"
                   : "border-slate-200 bg-white text-slate-600 hover:border-violet-200 hover:text-slate-900"
-              }`}
+              }
             >
               <User className="h-4 w-4 text-violet-600" />
               User
@@ -238,7 +234,7 @@ const Register = () => {
                 role === "investor"
                   ? "border-violet-200 bg-violet-50 text-slate-900"
                   : "border-slate-200 bg-white text-slate-600 hover:border-violet-200 hover:text-slate-900"
-              }`}
+              }
             >
               <BarChart3 className="h-4 w-4 text-violet-600" />
               Investor
@@ -249,7 +245,7 @@ const Register = () => {
                 role === "founder"
                   ? "border-violet-200 bg-violet-50 text-slate-900"
                   : "border-slate-200 bg-white text-slate-600 hover:border-violet-200 hover:text-slate-900"
-              }`}
+              }
             >
               <Rocket className="h-4 w-4 text-violet-600" />
               Founder
@@ -278,12 +274,7 @@ const Register = () => {
                   Phone Number
                 </label>
                 <div className="flex gap-2">
-                  <select
-                    id="phoneCountryCode"
-                    name="phoneCountryCode"
-                    defaultValue="+91"
-                    className="h-12 w-32 rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-700"
-                  >
+                  <select id="phoneCountryCode" name="phoneCountryCode" defaultValue="+91" className="h-12 w-32 rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-700">
                     {countryCodes.map((country) => (
                       <option key={country.code} value={country.code}>
                         {country.code}
@@ -383,8 +374,7 @@ const Register = () => {
                   <label htmlFor="teamSize" className="text-sm font-medium text-slate-700">
                     Team Size
                   </label>
-                  {/* FIX 3: Changed type from missing/text to "number" so Number() parses it correctly */}
-                  <Input id="teamSize" name="teamSize" type="number" placeholder="e.g. 8" className="h-12 border-slate-200" required />
+                  <Input id="teamSize" name="teamSize" placeholder="e.g. 8" className="h-12 border-slate-200" required />
                 </div>
                 <div className="space-y-2">
                   <label htmlFor="startupWebsite" className="text-sm font-medium text-slate-700">

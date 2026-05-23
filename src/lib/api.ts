@@ -259,6 +259,7 @@ export type SpeakerInvestorProfile = {
   company?: string;
   photoUrl?: string;
   photoAlt?: string;
+  introduction?: string;
   summary?: string;
   linkedinUrl?: string;
   websiteUrl?: string;

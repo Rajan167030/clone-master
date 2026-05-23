@@ -1,28 +1,11 @@
-import { useEffect, useMemo, useState, useRef } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import BackButton from "@/components/BackButton";
 import { useSEO } from "@/hooks/useSEO";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, ExternalLink, X, Loader } from "lucide-react";
 import { getPublicSpeakerInvestorProfilesApi, type SpeakerInvestorProfile } from "@/lib/api";
-import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
-
-gsap.registerPlugin(ScrollTrigger);
-
-const Linkedin = ({ className, size = 16 }: { className?: string; size?: number }) => (
-  <svg 
-    viewBox="0 0 24 24" 
-    fill="currentColor" 
-    className={className} 
-    style={{ width: size, height: size }}
-    aria-hidden="true"
-  >
-    <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.779-1.75-1.75s.784-1.75 1.75-1.75 1.75.779 1.75 1.75-.784 1.75-1.75 1.75zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
-  </svg>
-);
 
 const RANDOM_AVATARS = [
   "https://i.pravatar.cc/300?img=1",
@@ -42,24 +25,137 @@ const RANDOM_AVATARS = [
 const getRandomAvatar = (index: number) => RANDOM_AVATARS[index % RANDOM_AVATARS.length];
 
 const DEMO_SPEAKERS: Array<Omit<SpeakerInvestorProfile, "_id" | "isActive" | "createdAt" | "updatedAt">> = [
-  { slug: "harpreet-singh", category: "speaker", name: "Mr. Harpreet Singh",  designation: "Founder & CEO",     company: "F2 Fintech",      order: 1 },
-  { slug: "abhinav-awal",   category: "speaker", name: "Mr. Abhinav Awal",    designation: "Co-Founder & MD",   company: "F2 Fintech",      order: 2 },
-  { slug: "piyush-kumar",   category: "speaker", name: "Mr. Piyush Kumar",    designation: "Founder & CEO",     company: "Insanex Media",   order: 3 },
-  { slug: "shaily-goel",    category: "speaker", name: "Ms. Shaily Goel",     designation: "Lead UX Designer",  company: "",                order: 4 },
-  { slug: "rahul-sharma",   category: "speaker", name: "Mr. Rahul Sharma",    designation: "CTO",               company: "TechVentures",    order: 5 },
-  { slug: "priya-mehta",    category: "speaker", name: "Ms. Priya Mehta",     designation: "VP Product",        company: "GrowthLab",       order: 6 },
-  { slug: "arjun-kapoor",   category: "speaker", name: "Mr. Arjun Kapoor",    designation: "Managing Director", company: "StartupX",        order: 7 },
-  { slug: "neha-joshi",     category: "speaker", name: "Ms. Neha Joshi",      designation: "Angel Investor",    company: "NJ Ventures",     order: 8 },
+  { slug: "harpreet-singh", category: "speaker", name: "Mr. Harpreet Singh",  designation: "Founder & CEO",     company: "F2 Fintech",      order: 1, linkedinUrl: "https://linkedin.com/in/harpreet-singh" },
+  { slug: "abhinav-awal",   category: "speaker", name: "Mr. Abhinav Awal",    designation: "Co-Founder & MD",   company: "F2 Fintech",      order: 2, linkedinUrl: "https://linkedin.com/in/abhinav-awal" },
+  { slug: "piyush-kumar",   category: "speaker", name: "Mr. Piyush Kumar",    designation: "Founder & CEO",     company: "Insanex Media",   order: 3, linkedinUrl: "https://linkedin.com/in/piyush-kumar" },
+  { slug: "shaily-goel",    category: "speaker", name: "Ms. Shaily Goel",     designation: "Lead UX Designer",  company: "",                order: 4, linkedinUrl: "https://linkedin.com/in/shaily-goel" },
+  { slug: "rahul-sharma",   category: "speaker", name: "Mr. Rahul Sharma",    designation: "CTO",               company: "TechVentures",    order: 5, linkedinUrl: "https://linkedin.com/in/rahul-sharma" },
+  { slug: "priya-mehta",    category: "speaker", name: "Ms. Priya Mehta",     designation: "VP Product",        company: "GrowthLab",       order: 6, linkedinUrl: "https://linkedin.com/in/priya-mehta" },
+  { slug: "arjun-kapoor",   category: "speaker", name: "Mr. Arjun Kapoor",    designation: "Managing Director", company: "StartupX",        order: 7, linkedinUrl: "https://linkedin.com/in/arjun-kapoor" },
+  { slug: "neha-joshi",     category: "speaker", name: "Ms. Neha Joshi",      designation: "Angel Investor",    company: "NJ Ventures",     order: 8, linkedinUrl: "https://linkedin.com/in/neha-joshi" },
 ];
 
 const DEMO_INVESTORS: Array<Omit<SpeakerInvestorProfile, "_id" | "isActive" | "createdAt" | "updatedAt">> = [
-  { slug: "vikram-malhotra", category: "investor", name: "Mr. Vikram Malhotra", designation: "Managing Partner",    company: "Sequoia India",   order: 1 },
-  { slug: "sunita-rao",      category: "investor", name: "Ms. Sunita Rao",      designation: "Angel Investor",      company: "100X.VC",         order: 2 },
-  { slug: "rohit-bansal",    category: "investor", name: "Mr. Rohit Bansal",    designation: "Venture Partner",     company: "Kalaari Capital", order: 3 },
-  { slug: "ananya-singh",    category: "investor", name: "Ms. Ananya Singh",    designation: "Principal",           company: "Accel India",     order: 4 },
-  { slug: "deepak-verma",    category: "investor", name: "Mr. Deepak Verma",    designation: "Founder & GP",        company: "Blume Ventures",  order: 5 },
-  { slug: "kavitha-nair",    category: "investor", name: "Ms. Kavitha Nair",    designation: "Investment Director", company: "Nexus VP",        order: 6 },
+  { slug: "vikram-malhotra", category: "investor", name: "Mr. Vikram Malhotra", designation: "Managing Partner",    company: "Sequoia India",   order: 1, linkedinUrl: "https://linkedin.com/in/vikram-malhotra", introduction: "Leading venture investor focused on enterprise SaaS and deep tech startups across India." },
+  { slug: "sunita-rao",      category: "investor", name: "Ms. Sunita Rao",      designation: "Angel Investor",      company: "100X.VC",         order: 2, linkedinUrl: "https://linkedin.com/in/sunita-rao", introduction: "Angel investor and mentor supporting early-stage founders building consumer tech solutions." },
+  { slug: "rohit-bansal",    category: "investor", name: "Mr. Rohit Bansal",    designation: "Venture Partner",     company: "Kalaari Capital", order: 3, linkedinUrl: "https://linkedin.com/in/rohit-bansal", introduction: "Focused on fintech, healthtech, and logistics innovation with expertise in India's startup ecosystem." },
+  { slug: "ananya-singh",    category: "investor", name: "Ms. Ananya Singh",    designation: "Principal",           company: "Accel India",     order: 4, linkedinUrl: "https://linkedin.com/in/ananya-singh", introduction: "Investing in B2B SaaS and climate tech companies creating global impact from India." },
+  { slug: "deepak-verma",    category: "investor", name: "Mr. Deepak Verma",    designation: "Founder & GP",        company: "Blume Ventures",  order: 5, linkedinUrl: "https://linkedin.com/in/deepak-verma", introduction: "Dedicated to supporting early-stage founders with mentorship and capital deployment." },
+  { slug: "kavitha-nair",    category: "investor", name: "Ms. Kavitha Nair",    designation: "Investment Director", company: "Nexus VP",        order: 6, linkedinUrl: "https://linkedin.com/in/kavitha-nair", introduction: "Passionate about diversity and backing women entrepreneurs in the startup space." },
 ];
+
+
+/* ─────────────────────────────────────────────────────────────────────────
+   Detailed Profile Modal
+───────────────────────────────────────────────────────────────────────── */
+const DetailedProfileModal = ({
+  profile,
+  onClose,
+}: {
+  profile: SpeakerInvestorProfile;
+  onClose: () => void;
+}) => {
+  const avatarIndex = Math.abs(profile.slug.charCodeAt(0)) % RANDOM_AVATARS.length;
+  const photoUrl = profile.photoUrl || getRandomAvatar(avatarIndex);
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+      onClick={onClose}
+    >
+      <div
+        className="relative w-full max-w-2xl rounded-3xl bg-white shadow-2xl overflow-hidden"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Close button */}
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 z-10 rounded-full bg-white/90 p-2 hover:bg-white transition-colors"
+          aria-label="Close modal"
+        >
+          <X size={24} className="text-slate-900" />
+        </button>
+
+        <div className="grid gap-0 md:grid-cols-[280px_1fr]">
+          {/* Photo section */}
+          <div className="relative aspect-square overflow-hidden bg-slate-100">
+            <img
+              src={photoUrl}
+              alt={profile.photoAlt || profile.name}
+              className="h-full w-full object-cover object-top"
+              loading="lazy"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/20 via-transparent to-transparent" />
+          </div>
+
+          {/* Details section */}
+          <div className="flex flex-col p-4 sm:p-6">
+            <div className="mb-3">
+              <h2 className="text-2xl font-extrabold tracking-tight text-black">
+                {profile.name}
+              </h2>
+              <p className="mt-1 text-base font-semibold text-indigo-600">
+                {profile.designation}
+              </p>
+              {profile.company && (
+                <p className="mt-1 text-base text-slate-600">
+                  {profile.company}
+                </p>
+              )}
+            </div>
+
+            {profile.introduction && (
+              <div className="mb-4 bg-indigo-50 border border-indigo-200 rounded-lg p-3">
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-indigo-700 mb-2">
+                  Introduction
+                </p>
+                <p className="text-sm leading-6 text-indigo-900">
+                  {profile.introduction}
+                </p>
+              </div>
+            )}
+
+            {profile.summary && (
+              <div className="mb-6 flex-1">
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400 mb-2">
+                  About
+                </p>
+                <p className="text-sm leading-7 text-slate-700">
+                  {profile.summary}
+                </p>
+              </div>
+            )}
+
+            <div className="flex flex-col gap-3 border-t border-slate-200 pt-6">
+              {profile.linkedinUrl && (
+                <a
+                  href={profile.linkedinUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-3 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-slate-700 hover:bg-indigo-50 hover:border-indigo-200 hover:text-indigo-700 transition-colors"
+                >
+                  <ExternalLink size={20} />
+                  <span className="font-semibold">View LinkedIn Profile</span>
+                </a>
+              )}
+              {profile.websiteUrl && (
+                <a
+                  href={profile.websiteUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-3 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-slate-700 hover:bg-blue-50 hover:border-blue-200 hover:text-blue-700 transition-colors"
+                >
+                  <ArrowRight size={20} />
+                  <span className="font-semibold">Visit Website</span>
+                </a>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 /* ─────────────────────────────────────────────────────────────────────────
    Main Page
@@ -68,7 +164,7 @@ const PastSpeakersInvestors = () => {
   const [profiles, setProfiles]     = useState<SpeakerInvestorProfile[]>([]);
   const [loading, setLoading]       = useState(true);
   const [loadError, setLoadError]   = useState("");
-  const containerRef                = useRef<HTMLDivElement>(null);
+  const [selectedProfile, setSelectedProfile] = useState<SpeakerInvestorProfile | null>(null);
 
   useSEO({
     title: "Past Speakers & Investors | Founders Connect",
@@ -85,52 +181,6 @@ const PastSpeakersInvestors = () => {
       .finally(() => setLoading(false));
   }, []);
 
-  useEffect(() => {
-    if (loading) return;
-
-    const ctx = gsap.context(() => {
-      gsap.fromTo(".reveal-speaker-card", 
-        {
-          y: 40,
-          opacity: 0,
-        },
-        {
-          y: 0,
-          opacity: 1,
-          duration: 0.8,
-          ease: "power3.out",
-          stagger: 0.1,
-          scrollTrigger: {
-            trigger: ".reveal-speakers-container",
-            start: "top 85%",
-            toggleActions: "play none none none",
-          }
-        }
-      );
-
-      gsap.fromTo(".reveal-investor-card", 
-        {
-          y: 40,
-          opacity: 0,
-        },
-        {
-          y: 0,
-          opacity: 1,
-          duration: 0.8,
-          ease: "power3.out",
-          stagger: 0.1,
-          scrollTrigger: {
-            trigger: ".reveal-investors-container",
-            start: "top 85%",
-            toggleActions: "play none none none",
-          }
-        }
-      );
-    }, containerRef);
-
-    return () => ctx.revert();
-  }, [loading]);
-
   const speakerProfiles  = useMemo(() => profiles.filter((p) => p.category === "speaker").sort((a, b) => a.order - b.order),  [profiles]);
   const investorProfiles = useMemo(() => profiles.filter((p) => p.category === "investor").sort((a, b) => a.order - b.order), [profiles]);
 
@@ -138,80 +188,48 @@ const PastSpeakersInvestors = () => {
   const displayInvestors = investorProfiles.length > 0 ? investorProfiles : (!loading ? DEMO_INVESTORS as SpeakerInvestorProfile[] : []);
 
   return (
-    <div className="min-h-screen bg-background" ref={containerRef}>
+    <div className="min-h-screen bg-background">
       <Navbar />
 
       {/* ── Hero ── */}
-      <section className="relative overflow-hidden pt-20 sm:pt-24">
-        {/* Radial gradient background */}
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-[480px] bg-[radial-gradient(circle_at_top_left,_rgba(59,130,246,0.18),_transparent_32%),radial-gradient(circle_at_top_right,_rgba(14,165,233,0.15),_transparent_28%)]" />
-
-        {/* ── Decorative corner triangles (matches reference design) ── */}
-        {/* Top-left triangle stack */}
-        <div className="pointer-events-none absolute left-0 top-0" aria-hidden>
-          <svg width="180" height="180" viewBox="0 0 180 180" fill="none" className="w-24 h-24 sm:w-36 sm:h-36 md:w-44 md:h-44">
-            {/* Back triangle (lighter) */}
-            <polygon points="0,0 180,0 0,180" fill="#3b82f6" opacity="0.15" />
-            {/* Front triangle (stronger) */}
-            <polygon points="0,0 110,0 0,110" fill="#2563eb" opacity="0.25" />
-            {/* Accent stripe */}
-            <polygon points="0,0 60,0 0,60"  fill="#1d4ed8" opacity="0.35" />
-          </svg>
-        </div>
-
-        {/* Top-right triangle stack */}
-        <div className="pointer-events-none absolute right-0 top-0" aria-hidden>
-          <svg width="180" height="180" viewBox="0 0 180 180" fill="none" className="w-24 h-24 sm:w-36 sm:h-36 md:w-44 md:h-44">
-            {/* Back triangle (lighter) */}
-            <polygon points="180,0 0,0 180,180" fill="#3b82f6" opacity="0.15" />
-            {/* Front triangle (stronger) */}
-            <polygon points="180,0 70,0 180,110"  fill="#2563eb" opacity="0.25" />
-            {/* Accent stripe */}
-            <polygon points="180,0 120,0 180,60"  fill="#1d4ed8" opacity="0.35" />
-          </svg>
-        </div>
-
-        <div className="container relative z-10 mx-auto px-4 py-8 sm:py-12 md:py-16">
-          <BackButton className="mb-6 px-0 animate-reveal-left" />
-          <div className="mx-auto max-w-3xl text-center">
-            
-            <p className="mt-3 text-sm text-muted-foreground sm:mt-4 sm:text-base md:text-lg">
-              Celebrating the brilliant minds who shaped our community events.
-            </p>
-
-            
-          </div>
-
-          {loadError && (
-            <div className="mx-auto mt-6 max-w-3xl rounded-xl border border-amber-200 bg-amber-50 px-4 py-2 text-xs text-amber-700 sm:mt-8 sm:py-3 sm:text-sm">
-              ⚠️ {loadError} — Showing demo data below.
-            </div>
-          )}
-        </div>
-      </section>
+     
 
       {/* ── Past Speakers ── */}
-      <section id="speakers" className="py-10 sm:py-14 md:py-20">
-        <div className="container mx-auto px-4">
-          <SectionBanner title="Our Past Speakers" accentColor="#0ea5e9" bgClass="bg-teal-600 border-teal-500 shadow-teal-500/20" />
+      <section id="speakers" className="relative overflow-hidden border-y border-slate-200 bg-white py-16 sm:py-20 md:py-24">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(6,182,212,0.08),_transparent_32%),radial-gradient(circle_at_bottom_left,_rgba(34,197,94,0.06),_transparent_28%)]" />
 
-          <div className="mt-4 sm:mt-6">
-              {loading ? (
+        <div className="container relative mx-auto px-4">
+          <div className="mb-8 flex flex-col gap-3 md:mb-12 md:flex-row md:items-end md:justify-between">
+            <div className="max-w-2xl">
+              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-teal-600">Speakers</p>
+              <h2 className="mt-2 font-heading text-3xl font-extrabold tracking-tight text-black sm:text-4xl md:text-5xl">
+                Past Speakers
+              </h2>
+              <p className="mt-3 max-w-xl text-sm leading-7 text-slate-500 sm:text-base">
+                A curated showcase of visionary founders and industry leaders who have inspired our community.
+              </p>
+            </div>
+
+            <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 shadow-sm">
+              Community Leaders
+            </div>
+          </div>
+
+          <div className="mt-6">
+            {loading ? (
               <EmptyState message="Loading speaker profiles…" />
             ) : displaySpeakers.length === 0 ? (
               <EmptyState message="No speaker profiles have been added yet." />
             ) : (
-              <div className="reveal-speakers-container grid grid-cols-1 justify-items-center gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3">
+              <div className="grid grid-cols-1 justify-items-center gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3">
                 {displaySpeakers.map((speaker, i) => (
                   <PremiumSpeakerCard
                     key={speaker.slug}
-                    name={speaker.name}
-                    designation={speaker.designation}
-                    company={speaker.company}
+                    profile={speaker}
                     photoUrl={speaker.photoUrl || getRandomAvatar(i)}
                     photoAlt={speaker.photoAlt || speaker.name}
                     affiliationBadge={speaker.company ? getCompanyBadge(speaker.company) : undefined}
-                    linkedinUrl={speaker.linkedinUrl}
+                    onCardClick={() => setSelectedProfile(speaker)}
                   />
                 ))}
               </div>
@@ -247,17 +265,15 @@ const PastSpeakersInvestors = () => {
             ) : displayInvestors.length === 0 ? (
               <EmptyState message="No investor profiles have been added yet." />
             ) : (
-              <div className="reveal-investors-container grid grid-cols-1 justify-items-center gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+              <div className="grid grid-cols-1 justify-items-center gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
                 {displayInvestors.map((investor, i) => (
                   <PremiumInvestorCard
                     key={investor.slug}
-                    name={investor.name}
-                    designation={investor.designation}
-                    company={investor.company}
+                    profile={investor}
                     photoUrl={investor.photoUrl || getRandomAvatar(i + 6)}
                     photoAlt={investor.photoAlt || investor.name}
                     companyLogo={investor.company ? getCompanyBadge(investor.company) : undefined}
-                    linkedinUrl={investor.linkedinUrl}
+                    onCardClick={() => setSelectedProfile(investor)}
                   />
                 ))}
               </div>
@@ -298,6 +314,11 @@ const PastSpeakersInvestors = () => {
       </section>
 
       <Footer />
+
+      {/* ── Detailed Profile Modal ── */}
+      {selectedProfile && (
+        <DetailedProfileModal profile={selectedProfile} onClose={() => setSelectedProfile(null)} />
+      )}
     </div>
   );
 };
@@ -343,11 +364,22 @@ const SectionBanner = ({
 /* ─────────────────────────────────────────────────────────────────────────
    Empty / loading state
 ───────────────────────────────────────────────────────────────────────── */
-const EmptyState = ({ message }: { message: string }) => (
-  <div className="rounded-[28px] border border-dashed border-slate-200 bg-white p-8 text-center text-sm text-slate-500 shadow-[0_20px_60px_-35px_rgba(15,23,42,0.14)]">
-    {message}
-  </div>
-);
+const EmptyState = ({ message }: { message: string }) => {
+  const isLoading = message.includes("Loading");
+  
+  return (
+    <div className="rounded-[28px] border border-dashed border-slate-200 bg-white p-8 text-center text-sm text-slate-500 shadow-[0_20px_60px_-35px_rgba(15,23,42,0.14)]">
+      {isLoading ? (
+        <div className="flex flex-col items-center justify-center gap-4">
+          <Loader size={40} className="animate-spin text-indigo-600" />
+          <p className="text-slate-600 font-medium">{message}</p>
+        </div>
+      ) : (
+        message
+      )}
+    </div>
+  );
+};
 
 /* ─────────────────────────────────────────────────────────────────────────
    Speaker oval card
@@ -417,102 +449,96 @@ const OvalCard = ({
    Premium investor card
 ───────────────────────────────────────────────────────────────────────── */
 const PremiumInvestorCard = ({
-  name,
-  designation,
-  company,
+  profile,
   photoUrl,
   photoAlt,
   companyLogo,
-  linkedinUrl,
+  onCardClick,
 }: {
-  name: string;
-  designation: string;
-  company?: string;
+  profile: SpeakerInvestorProfile;
   photoUrl: string;
   photoAlt: string;
   companyLogo?: string;
-  linkedinUrl?: string;
-}) => {
-  const url = linkedinUrl || `https://www.linkedin.com/search/results/all/?keywords=${encodeURIComponent(name)}`;
+  onCardClick?: () => void;
+}) => (
+  <article className="group flex h-full w-full max-w-[260px] flex-col overflow-hidden rounded-[24px] border border-slate-200 bg-white shadow-[0_12px_32px_-24px_rgba(15,23,42,0.3)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_50px_-26px_rgba(15,23,42,0.28)] sm:max-w-[280px] md:max-w-[300px]">
+    <div
+      className="relative aspect-[3/4] overflow-hidden bg-slate-100 cursor-pointer"
+      onClick={onCardClick}
+    >
+      <img
+        src={photoUrl}
+        alt={photoAlt}
+        className="h-full w-full object-cover object-top transition-transform duration-700 group-hover:scale-105"
+        loading="lazy"
+      />
+      <div className="absolute inset-0 bg-gradient-to-t from-slate-950/12 via-transparent to-transparent" />
+    </div>
 
-  return (
-    <article className="reveal-investor-card opacity-0 group flex h-full w-full max-w-[260px] flex-col overflow-hidden rounded-[24px] border border-slate-200 bg-white shadow-[0_12px_32px_-24px_rgba(15,23,42,0.3)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_50px_-26px_rgba(15,23,42,0.28)] sm:max-w-[280px] md:max-w-[300px]">
-      <div className="relative aspect-[3/4] overflow-hidden bg-slate-100">
-        <img
-          src={photoUrl}
-          alt={photoAlt}
-          className="h-full w-full object-cover object-top transition-transform duration-700 group-hover:scale-105"
-          loading="lazy"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/12 via-transparent to-transparent" />
-        
-        {/* Floating LinkedIn Badge */}
-        <a 
-          href={url} 
-          target="_blank" 
-          rel="noreferrer" 
-          className="absolute top-4 right-4 z-20 flex h-8 w-8 items-center justify-center rounded-full bg-white/80 border border-white/20 text-[#0077b5] backdrop-blur-md shadow-md transition-all duration-300 hover:scale-110 hover:bg-[#0077b5] hover:text-white"
-          title={`Connect with ${name} on LinkedIn`}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <Linkedin size={15} className="fill-current stroke-[1.5]" />
-        </a>
+    <div className="flex flex-1 flex-col gap-3 p-4 sm:p-5">
+      <div className="cursor-pointer" onClick={onCardClick}>
+        <h3 className="text-[clamp(1rem,1.6vw,1.2rem)] font-extrabold tracking-tight text-black">
+          {profile.name}
+        </h3>
+        <p className="mt-1 text-xs font-semibold text-indigo-600 sm:text-sm">
+          {profile.designation}
+        </p>
       </div>
 
-      <div className="flex flex-1 flex-col gap-3 p-4 sm:p-5">
-        <div>
-          <h3 className="text-[clamp(1rem,1.6vw,1.2rem)] font-extrabold tracking-tight text-black">
-            {name}
-          </h3>
-          <p className="mt-1 text-xs font-semibold text-indigo-600 sm:text-sm">
-            {designation}
+      <div className="mt-auto flex items-end justify-between gap-3 border-t border-slate-200 pt-3">
+        <div className="cursor-pointer flex-1" onClick={onCardClick}>
+          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">
+            Company
+          </p>
+          <p className="mt-1 text-xs font-medium text-slate-500 sm:text-sm">
+            {profile.company || "Independent Investor"}
           </p>
         </div>
 
-        <div className="mt-auto flex items-end justify-between gap-3 border-t border-slate-200 pt-3">
-          <div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">
-              Company
-            </p>
-            <p className="mt-1 text-xs font-medium text-slate-500 sm:text-sm">
-              {company || "Independent Investor"}
-            </p>
-          </div>
-
+        <div className="flex items-center gap-2">
+          {profile.linkedinUrl && (
+            <a
+              href={profile.linkedinUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
+              className="flex-shrink-0 rounded-full border border-slate-200 bg-slate-50 p-1.5 text-slate-500 hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 transition-colors"
+              aria-label="LinkedIn Profile"
+            >
+              <ExternalLink size={16} />
+            </a>
+          )}
           <div className="flex-shrink-0 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">
             {companyLogo || "VC"}
           </div>
         </div>
       </div>
-    </article>
-  );
-};
+    </div>
+  </article>
+);
 
 /* ─────────────────────────────────────────────────────────────────────────
    Premium speaker card (same visual language as investors)
 ───────────────────────────────────────────────────────────────────────── */
 function PremiumSpeakerCard({
-  name,
-  designation,
-  company,
+  profile,
   photoUrl,
   photoAlt,
   affiliationBadge,
-  linkedinUrl,
+  onCardClick,
 }: {
-  name: string;
-  designation: string;
-  company?: string;
+  profile: SpeakerInvestorProfile;
   photoUrl: string;
   photoAlt: string;
   affiliationBadge?: string;
-  linkedinUrl?: string;
+  onCardClick?: () => void;
 }) {
-  const url = linkedinUrl || `https://www.linkedin.com/search/results/all/?keywords=${encodeURIComponent(name)}`;
-
   return (
-    <article className="reveal-speaker-card opacity-0 group flex h-full w-full max-w-[260px] flex-col overflow-hidden rounded-[24px] border border-slate-200 bg-white shadow-[0_12px_32px_-24px_rgba(15,23,42,0.3)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_50px_-26px_rgba(15,23,42,0.28)] sm:max-w-[280px] md:max-w-[300px]">
-      <div className="relative aspect-[3/4] overflow-hidden bg-slate-100">
+    <article className="group flex h-full w-full max-w-[260px] flex-col overflow-hidden rounded-[24px] border border-slate-200 bg-white shadow-[0_12px_32px_-24px_rgba(15,23,42,0.3)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_50px_-26px_rgba(15,23,42,0.28)] sm:max-w-[280px] md:max-w-[300px]">
+      <div
+        className="relative aspect-[3/4] overflow-hidden bg-slate-100 cursor-pointer"
+        onClick={onCardClick}
+      >
         <img
           src={photoUrl}
           alt={photoAlt}
@@ -520,38 +546,40 @@ function PremiumSpeakerCard({
           loading="lazy"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-slate-950/12 via-transparent to-transparent" />
-
-        {/* Floating LinkedIn Badge */}
-        <a 
-          href={url} 
-          target="_blank" 
-          rel="noreferrer" 
-          className="absolute top-4 right-4 z-20 flex h-8 w-8 items-center justify-center rounded-full bg-white/80 border border-white/20 text-[#0077b5] backdrop-blur-md shadow-md transition-all duration-300 hover:scale-110 hover:bg-[#0077b5] hover:text-white"
-          title={`Connect with ${name} on LinkedIn`}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <Linkedin size={15} className="fill-current stroke-[1.5]" />
-        </a>
       </div>
 
       <div className="flex flex-1 flex-col gap-3 p-4 sm:p-5">
-        <div>
+        <div className="cursor-pointer" onClick={onCardClick}>
           <h3 className="text-[clamp(1rem,1.6vw,1.2rem)] font-extrabold tracking-tight text-black">
-            {name}
+            {profile.name}
           </h3>
           <p className="mt-1 text-xs font-semibold text-indigo-600 sm:text-sm">
-            {designation}
+            {profile.designation}
           </p>
         </div>
 
         <div className="mt-auto flex items-end justify-between gap-3 border-t border-slate-200 pt-3">
-          <div>
+          <div className="cursor-pointer flex-1" onClick={onCardClick}>
             <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">Affiliation</p>
-            <p className="mt-1 text-xs font-medium text-slate-500 sm:text-sm">{company || "Independent"}</p>
+            <p className="mt-1 text-xs font-medium text-slate-500 sm:text-sm">{profile.company || "Independent"}</p>
           </div>
 
-          <div className="flex-shrink-0 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">
-            {affiliationBadge || "SPK"}
+          <div className="flex items-center gap-2">
+            {profile.linkedinUrl && (
+              <a
+                href={profile.linkedinUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => e.stopPropagation()}
+                className="flex-shrink-0 rounded-full border border-slate-200 bg-slate-50 p-1.5 text-slate-500 hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 transition-colors"
+                aria-label="LinkedIn Profile"
+              >
+                <ExternalLink size={16} />
+              </a>
+            )}
+            <div className="flex-shrink-0 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+              {affiliationBadge || "SPK"}
+            </div>
           </div>
         </div>
       </div>

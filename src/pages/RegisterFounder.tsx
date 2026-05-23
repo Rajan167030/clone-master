@@ -1,11 +1,12 @@
-import { useRef, useState, useEffect, type FormEvent } from "react";
+import { useRef, useState, type FormEvent } from "react";
 import { Rocket, CheckCircle2, ArrowRight, ChevronLeft } from "lucide-react";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
+import BackButton from "@/components/BackButton";
 import {
   Select,
   SelectContent,
@@ -22,9 +23,6 @@ import { countryCodes, getPhoneValidationError, isValidWebsite } from "@/lib/for
 const RegisterFounder = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [searchParams] = useSearchParams();
-  const referredBy = searchParams.get("ref") || "";
-
   const [isLoading, setIsLoading] = useState(false);
   const [selectedStage, setSelectedStage] = useState<string>("");
   const [agreedToTerms, setAgreedToTerms] = useState(false);
@@ -235,7 +233,6 @@ const RegisterFounder = () => {
         startupWebsite,
       },
       emailVerificationToken,
-      referredBy,
     })
       .then((response) => {
         toast({
@@ -259,6 +256,7 @@ const RegisterFounder = () => {
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-purple-50 via-white to-gray-50">
+      <BackButton className="mb-6 px-0 max-w-6xl animate-reveal-left" />
       <div className="container mx-auto px-4 py-12">
         <div className="grid gap-12 lg:grid-cols-2 items-center max-w-6xl mx-auto">
           <section className="space-y-8">

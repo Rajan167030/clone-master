@@ -6,8 +6,6 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import Index from "./pages/Index.tsx";
 import Login from "./pages/Login.tsx";
-import Register from "./pages/Register.tsx";
-import RegistrationHub from "./pages/RegistrationHub.tsx";
 import RegisterUser from "./pages/RegisterUser.tsx";
 import RegisterInvestor from "./pages/RegisterInvestor.tsx";
 import RegisterFounder from "./pages/RegisterFounder.tsx";
@@ -49,8 +47,10 @@ const App = () => (
         <Suspense fallback={<div className="min-h-screen bg-background" />}>
           <Routes>
             <Route path="/" element={<Index />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<RegistrationHub />} />
+            <Route path="/login" element={<Login role="user" />} />
+            <Route path="/login/user" element={<Login role="user" />} />
+            <Route path="/login/investor" element={<Login role="investor" />} />
+            <Route path="/login/founder" element={<Login role="founder" />} />
             <Route path="/register/user" element={<RegisterUser />} />
             <Route path="/register/investor" element={<RegisterInvestor />} />
             <Route path="/register/founder" element={<RegisterFounder />} />

@@ -10,7 +10,11 @@ import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
 import BackButton from "@/components/BackButton";
 
-const Login = () => {
+interface LoginProps {
+  role?: "user" | "investor" | "founder";
+}
+
+const Login = ({ role = "user" }: LoginProps) => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [searchParams] = useSearchParams();
@@ -175,32 +179,42 @@ const Login = () => {
           
           {view === "login" && (
             <>
-              <h2 className="mb-2 text-center text-3xl font-heading font-extrabold text-slate-900">Secure Access</h2>
-              <p className="mb-6 text-center text-sm text-slate-500">Choose your registration role or sign in below</p>
+              <h2 className="mb-2 text-center text-3xl font-heading font-extrabold text-slate-900">
+                {role === "investor" ? "Investor Login" : role === "founder" ? "Founder Login" : "Member Login"}
+              </h2>
+              <p className="mb-6 text-center text-sm text-slate-500">
+                {role === "investor" 
+                  ? "Access your investor dashboard and portfolio" 
+                  : role === "founder" 
+                  ? "Access your founder dashboard and startup profile"
+                  : "Sign in to your member account"}
+              </p>
 
-              <div className="mb-6 grid grid-cols-3 gap-3">
-                <Link
-                  to="/register/user"
-                  className="flex flex-col items-center justify-center gap-2 rounded-xl border border-violet-200 bg-violet-50 px-3 py-3 text-violet-700 hover:bg-violet-100/70 transition-all shadow-sm"
-                >
-                  <User className="h-4 w-4 text-violet-600" />
-                  <span className="text-xs font-semibold uppercase tracking-wider">User</span>
-                </Link>
-                <Link
-                  to="/register/investor"
-                  className="flex flex-col items-center justify-center gap-2 rounded-xl border border-violet-200 bg-violet-50 px-3 py-3 text-violet-700 hover:bg-violet-100/70 transition-all shadow-sm"
-                >
-                  <BarChart3 className="h-4 w-4 text-violet-600" />
-                  <span className="text-xs font-semibold uppercase tracking-wider">Investor</span>
-                </Link>
-                <Link
-                  to="/register/founder"
-                  className="flex flex-col items-center justify-center gap-2 rounded-xl border border-violet-200 bg-violet-50 px-3 py-3 text-violet-700 hover:bg-violet-100/70 transition-all shadow-sm"
-                >
-                  <Rocket className="h-4 w-4 text-violet-600" />
-                  <span className="text-xs font-semibold uppercase tracking-wider">Founder</span>
-                </Link>
-              </div>
+              {role === "user" && (
+                <div className="mb-6 grid grid-cols-3 gap-3">
+                  <Link
+                    to="/login/user"
+                    className="flex flex-col items-center justify-center gap-2 rounded-xl border border-violet-200 bg-violet-50 px-3 py-3 text-violet-700 hover:bg-violet-100/70 transition-all shadow-sm"
+                  >
+                    <User className="h-4 w-4 text-violet-600" />
+                    <span className="text-xs font-semibold uppercase tracking-wider">User</span>
+                  </Link>
+                  <Link
+                    to="/login/investor"
+                    className="flex flex-col items-center justify-center gap-2 rounded-xl border border-violet-200 bg-violet-50 px-3 py-3 text-violet-700 hover:bg-violet-100/70 transition-all shadow-sm"
+                  >
+                    <BarChart3 className="h-4 w-4 text-violet-600" />
+                    <span className="text-xs font-semibold uppercase tracking-wider">Investor</span>
+                  </Link>
+                  <Link
+                    to="/login/founder"
+                    className="flex flex-col items-center justify-center gap-2 rounded-xl border border-violet-200 bg-violet-50 px-3 py-3 text-violet-700 hover:bg-violet-100/70 transition-all shadow-sm"
+                  >
+                    <Rocket className="h-4 w-4 text-violet-600" />
+                    <span className="text-xs font-semibold uppercase tracking-wider">Founder</span>
+                  </Link>
+                </div>
+              )}
 
               <form className="space-y-4" onSubmit={handleLogin}>
                 <div className="space-y-2">
@@ -259,7 +273,10 @@ const Login = () => {
 
               <p className="mt-6 text-center text-sm text-slate-500">
                 Don&apos;t have an account?{" "}
-                <Link to="/register" className="font-bold text-violet-600 hover:text-violet-500 underline-offset-4 hover:underline">
+                <Link 
+                  to={role === "investor" ? "/register/investor" : role === "founder" ? "/register/founder" : "/register/user"} 
+                  className="font-bold text-violet-600 hover:text-violet-500 underline-offset-4 hover:underline"
+                >
                   Register Now
                 </Link>
               </p>

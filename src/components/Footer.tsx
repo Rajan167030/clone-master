@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React from "react";
 import SubscribeForm from "@/components/SubscribeForm";
 
 const socials = [
@@ -41,17 +41,6 @@ const socials = [
 ];
 
 const Footer = () => {
-  const textRef = useRef<HTMLDivElement>(null);
-
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!textRef.current) return;
-    const rect = textRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    textRef.current.style.setProperty("--cursor-x", `${x}px`);
-    textRef.current.style.setProperty("--cursor-y", `${y}px`);
-  };
-
   return (
     <footer className="relative pt-2 overflow-hidden bg-background">
       <div className="relative px-4 sm:px-6 lg:px-8">
@@ -61,7 +50,7 @@ const Footer = () => {
           <div className="pointer-events-none absolute -top-40 -right-40 h-[40rem] w-[40rem] rounded-full bg-primary/20 blur-[120px]" />
           <div className="pointer-events-none absolute -bottom-40 -left-40 h-[40rem] w-[40rem] rounded-full bg-purple-600/20 blur-[120px]" />
           
-          <div className="grid grid-cols-2 gap-8 mb-4 md:grid-cols-5 relative z-10">
+          <div className="grid grid-cols-2 gap-8 mb-4 md:grid-cols-6 relative z-10">
             <div className="col-span-2">
               <div className="flex items-center gap-3 mb-4">
                 {/* Founders Connect Logo */}
@@ -130,6 +119,39 @@ const Footer = () => {
                 <li><a href="#" className="hover:text-primary transition-colors">Contact</a></li>
               </ul>
             </div>
+
+            <div>
+              <div className="font-heading font-semibold text-foreground mb-3">Contact Info</div>
+              <ul className="space-y-3 text-xs sm:text-sm text-muted-foreground">
+                <li className="flex items-start gap-2">
+                  <span className="text-primary mt-0.5 flex-shrink-0">📧</span>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-foreground mb-0.5">Email:</p>
+                    <a href="mailto:info@foundersconnect.co.in" className="hover:text-primary transition-colors break-all word-break">
+                      info@foundersconnect.co.in
+                    </a>
+                  </div>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-primary mt-0.5 flex-shrink-0">📞</span>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-foreground mb-0.5">Phone:</p>
+                    <a href="tel:+918860573577" className="hover:text-primary transition-colors">
+                      +91 8860 573 577
+                    </a>
+                  </div>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-primary mt-0.5 flex-shrink-0">📍</span>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-foreground mb-0.5">Location:</p>
+                    <span className="leading-relaxed">
+                      Delhi, India
+                    </span>
+                  </div>
+                </li>
+              </ul>
+            </div>
           </div>
 
           <div className="pt-4 border-t border-border/40 flex flex-col md:flex-row items-center justify-between gap-4 relative z-10">
@@ -142,43 +164,6 @@ const Footer = () => {
               <a href="#" className="hover:text-primary transition-colors">Cookie Policy</a>
             </div>
           </div>
-        </div>
-      </div>
-
-      {/* Giant Typography (Below Footer) */}
-      <div 
-        ref={textRef}
-        onMouseMove={handleMouseMove}
-        className="mt-2 flex w-full flex-col items-center justify-center font-heading select-none pb-2 relative z-10 overflow-hidden"
-        style={{ '--cursor-x': '50%', '--cursor-y': '50%' } as React.CSSProperties}
-      >
-        {/* Spotlight layer */}
-        <div 
-          className="pointer-events-none absolute inset-0 -z-10 opacity-70 mix-blend-screen transition-opacity duration-300"
-          style={{
-            background: 'radial-gradient(circle 350px at var(--cursor-x) var(--cursor-y), rgba(139, 92, 246, 0.25), transparent 80%)'
-          }}
-        />
-
-        <div className="flex w-full justify-center leading-[0.80] relative">
-          <span className="text-[13vw] font-black uppercase text-transparent" 
-                style={{ 
-                  WebkitTextStroke: '2px rgb(97, 19, 216)',
-                  backgroundImage: 'radial-gradient(circle 500px at var(--cursor-x) var(--cursor-y), rgba(255,255,255,1), transparent 80%)',
-                  WebkitBackgroundClip: 'text',
-                }}>
-            FOUNDERS
-          </span>
-        </div>
-        <div className="flex w-full justify-center leading-[0.80] -mt-2 relative">
-          <span className="text-[13vw] font-black uppercase"
-                style={{
-                  backgroundImage: 'radial-gradient(circle 500px at var(--cursor-x) var(--cursor-y), rgba(255,255,255,1),  rgb(97, 19, 216) 80%)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                }}>
-            CONNECT
-          </span>
         </div>
       </div>
     </footer>
