@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 
 const useCountingEffect = (value: string | number, duration: number = 2000) => {
   const [displayValue, setDisplayValue] = useState(value);
-  const hasStarted = useRef(false);
+  const animationRef = useRef<number>();
 
   useEffect(() => {
     // Extract numeric value from string (handles "1.5cr", "50", "₹315Cr", "1,000+")
@@ -23,16 +23,17 @@ const useCountingEffect = (value: string | number, duration: number = 2000) => {
     const hasPlus = originalStr.includes("+");
     const hasDecimal = originalStr.includes(".");
 
-    if (numericValue === 0 || hasStarted.current) return;
-
-    hasStarted.current = true;
+    if (numericValue === 0) {
+      setDisplayValue(value);
+      return;
+    }
 
     const startTime = Date.now();
 
     const animate = () => {
       const elapsed = Date.now() - startTime;
       const progress = Math.min(elapsed / duration, 1);
-      const easeOutQuad = 1 - (1 - progress) * (1 - progress); // Ease-out effect
+      const easeOutQuad = 1 - (1 - progress) * (1 - progress);
       const currentValue = Math.floor(numericValue * easeOutQuad);
 
       let formatted = String(currentValue);
@@ -51,6 +52,9 @@ const useCountingEffect = (value: string | number, duration: number = 2000) => {
       if (hasRupee) {
         formatted = "₹" + formatted;
       }
+      if (hasCr) {
+        formatted += "";
+      }
       if (hasPlus && progress === 1) {
         formatted += "+";
       }
@@ -58,11 +62,17 @@ const useCountingEffect = (value: string | number, duration: number = 2000) => {
       setDisplayValue(formatted);
 
       if (progress < 1) {
-        requestAnimationFrame(animate);
+        animationRef.current = requestAnimationFrame(animate);
       }
     };
 
-    requestAnimationFrame(animate);
+    animationRef.current = requestAnimationFrame(animate);
+
+    return () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
+    };
   }, [value, duration]);
 
   return displayValue;
