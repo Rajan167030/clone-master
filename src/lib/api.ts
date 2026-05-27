@@ -164,6 +164,21 @@ export type Testimonial = {
   updatedAt?: string;
 };
 
+export type SliderPromotion = {
+  _id: string;
+  title: string;
+  description: string;
+  imageUrl: string;
+  altText: string;
+  linkUrl: string;
+  buttonLabel: string;
+  order: number;
+  isActive: boolean;
+  createdBy: string;
+  createdAt?: string;
+  updatedAt?: string;
+};
+
 
 
 export type AdminMember = {
@@ -540,6 +555,11 @@ export const submitJoinRequestApi = (payload: JoinRequestPayload) =>
     body: JSON.stringify(payload),
   });
 
+export const getPublicSliderPromotionsApi = () =>
+  request<{ promotions: SliderPromotion[] }>("/content/slider-promotions", {
+    method: "GET",
+  });
+
 export const getAdminNewsletterSubscribersApi = (token: string) =>
   request<{ subscribers: NewsletterSubscriber[] }>("/admin/newsletter/subscribers", {
     method: "GET",
@@ -798,6 +818,39 @@ export const updateAdminTestimonialApi = (
 
 export const deleteAdminTestimonialApi = (token: string, id: string) =>
   request<{ message: string }>(`/admin/testimonials/${id}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const getAdminSliderPromotionsApi = (token: string) =>
+  request<{ promotions: SliderPromotion[] }>("/admin/slider-promotions", {
+    method: "GET",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const createAdminSliderPromotionApi = (
+  token: string,
+  payload: Pick<SliderPromotion, "title" | "description" | "imageUrl" | "altText" | "linkUrl" | "buttonLabel" | "order" | "isActive" | "createdBy">,
+) =>
+  request<{ message: string; promotion: SliderPromotion }>("/admin/slider-promotions", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify(payload),
+  });
+
+export const updateAdminSliderPromotionApi = (
+  token: string,
+  id: string,
+  payload: Pick<SliderPromotion, "title" | "description" | "imageUrl" | "altText" | "linkUrl" | "buttonLabel" | "order" | "isActive" | "createdBy">,
+) =>
+  request<{ message: string; promotion: SliderPromotion }>(`/admin/slider-promotions/${id}`, {
+    method: "PATCH",
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify(payload),
+  });
+
+export const deleteAdminSliderPromotionApi = (token: string, id: string) =>
+  request<{ message: string }>(`/admin/slider-promotions/${id}`, {
     method: "DELETE",
     headers: { Authorization: `Bearer ${token}` },
   });

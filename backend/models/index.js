@@ -18,6 +18,7 @@ export { BlogContent } from "./blog-content.model.js";
 export { GalleryImage } from "./gallery-image.model.js";
 export { QRScanAnalytics } from "./qr-scan-analytics.model.js";
 export { SiteNotice } from "./site-notice.model.js";
+export { SliderPromotion } from "./slider-promotion.model.js";
 export { NewsletterSubscriber } from "./newsletter-subscriber.model.js";
 export { PartnerLogo } from "./partner-logo.model.js";
 export { Testimonial } from "./testimonial.model.js";

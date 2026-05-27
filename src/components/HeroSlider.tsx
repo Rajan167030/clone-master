@@ -2,7 +2,7 @@ import { useMemo, useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
-import { getPublicSliderEventsApi } from "@/lib/api";
+import { getPublicSliderEventsApi, getPublicSliderPromotionsApi } from "@/lib/api";
 
 const cloudinaryImages = {
   slide1: "https://res.cloudinary.com/founders-connect/image/upload/c_fill,q_auto,f_auto/hero/slide1.jpg",
@@ -17,6 +17,7 @@ const fallbackSlides = [
     link: "/events/founders-connect-dehradun-edition-v1",
     image: cloudinaryImages.slide1,
     alt: "Founders Connect startup meetup event",
+    buttonLabel: "Join now",
   },
   {
     title: "",
@@ -24,6 +25,7 @@ const fallbackSlides = [
     link: "/joinus",
     image: "/Screenshot 2026-04-23 004018.png",
     alt: "Join Founders Connect",
+    buttonLabel: "Join now",
   },
   {
     title: "",
@@ -31,6 +33,7 @@ const fallbackSlides = [
     link: "/joinus",
     image: "/Screenshot 2026-04-23 004018.png",
     alt: "Join Founders Connect",
+    buttonLabel: "Join now",
   },
 ];
 
@@ -45,28 +48,64 @@ const HeroSlider = ({ className }: { className?: string }) => {
   }, [currentSlide]);
 
   useEffect(() => {
-    // Fetch featured slider events
-    const fetchSliderEvents = async () => {
+    // Fetch featured slider events and promotions
+    const fetchSliderContent = async () => {
       try {
-        const data = await getPublicSliderEventsApi();
-        if (data?.events && data.events.length > 0) {
-          // Convert events to slides format
-          const eventSlides = data.events.map((event: any) => ({
+        const [eventsResponse, promotionsResponse] = await Promise.all([
+          getPublicSliderEventsApi(),
+          getPublicSliderPromotionsApi(),
+        ]);
+
+        // The first slide is ALWAYS hardcoded as requested
+        const allSlides = [
+          {
+            type: "hardcoded",
+            title: "Founders Connect",
+            highlight: "Startup Meetup 2026",
+            link: "/events/founders-connect-dehradun-edition-v1",
+            image: "/Screenshot 2026-04-23 004018.png",
+            alt: "Founders Connect startup meetup event",
+            buttonLabel: "Join now",
+          }
+        ];
+
+        // Add event slides (second slider onwards from admin panel)
+        if (eventsResponse?.events && eventsResponse.events.length > 0) {
+          const eventSlides = eventsResponse.events.map((event: any) => ({
+            type: "event",
             title: event.title,
             highlight: event.subtitle || event.title,
             link: `/events/${event.slug}`,
             image: event.bannerImage || cloudinaryImages.slide1,
             alt: event.bannerAlt || event.title,
+            buttonLabel: "Join now",
           }));
-          setSlides(eventSlides.length > 0 ? eventSlides : fallbackSlides);
+          allSlides.push(...eventSlides);
         }
+
+        // Add promotion slides (second feature)
+        if (promotionsResponse?.promotions && promotionsResponse.promotions.length > 0) {
+          const promotionSlides = promotionsResponse.promotions.map((promo: any) => ({
+            type: "promotion",
+            title: promo.title,
+            highlight: promo.description || promo.title,
+            link: promo.linkUrl || "",
+            image: promo.imageUrl,
+            alt: promo.altText || promo.title,
+            buttonLabel: promo.buttonLabel || "View More",
+          }));
+          allSlides.push(...promotionSlides);
+        }
+
+        setSlides(allSlides.length > 1 ? allSlides : [...allSlides, ...fallbackSlides.slice(1)]);
       } catch (error) {
-        console.error("Failed to fetch slider events:", error);
+        console.error("Failed to fetch slider content:", error);
         // Keep fallback slides on error
+        setSlides(fallbackSlides);
       }
     };
 
-    fetchSliderEvents();
+    fetchSliderContent();
   }, []);
 
   useEffect(() => {
@@ -79,25 +118,40 @@ const HeroSlider = ({ className }: { className?: string }) => {
   return (
     <section className={`relative pt-16 ${className}`}>
       <div className="container mx-auto px-4 py-8">
-        <div className="relative rounded-2xl overflow-hidden h-[250px] sm:h-[300px] md:h-[400px] lg:h-[500px]">
+        <div className="relative rounded-2xl overflow-hidden h-[300px] sm:h-[400px] md:h-[500px] lg:h-[600px] bg-slate-950 shadow-2xl">
           <Link
             to={currentSlide.link}
             aria-label={`Open ${currentSlide.highlight}`}
             className="absolute inset-0 z-10 block"
           >
             <AnimatePresence mode="wait">
-              <motion.img
-                key={`img-${current}`}
-                src={currentSlide.image}
-                alt={currentSlide.alt}
-                width={1600}
-                height={900}
-                initial={{ opacity: 0, scale: 1.05 }}
-                animate={{ opacity: 1, scale: 1 }}
+              <motion.div
+                key={`slide-${current}`}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.7 }}
-                className="absolute inset-0 w-full h-full object-cover"
-              />
+                className="absolute inset-0 w-full h-full overflow-hidden"
+              >
+                {/* Blurred Background */}
+                <img
+                  src={currentSlide.image}
+                  alt=""
+                  className="absolute inset-0 w-full h-full object-cover scale-[1.15] blur-3xl opacity-60 saturate-150"
+                  aria-hidden="true"
+                />
+                {/* Foreground Image */}
+                <motion.img
+                  src={currentSlide.image}
+                  alt={currentSlide.alt}
+                  width={1600}
+                  height={900}
+                  initial={{ scale: 1.05 }}
+                  animate={{ scale: 1 }}
+                  transition={{ duration: 0.7 }}
+                  className="absolute inset-0 w-full h-full object-contain drop-shadow-2xl z-10"
+                />
+              </motion.div>
             </AnimatePresence>
           </Link>
           <div className="pointer-events-none absolute inset-0 z-20 bg-gradient-to-b from-black/45 via-black/35 to-black/60" />
@@ -105,13 +159,15 @@ const HeroSlider = ({ className }: { className?: string }) => {
           
 
           <div className="absolute inset-0 z-40 flex items-end justify-start pointer-events-none px-3 sm:px-6 md:px-12 pb-6 sm:pb-8 md:pb-10 lg:pb-16">
-            <Link
-              to={currentSlide.link}
-              className="pointer-events-auto inline-flex items-center gap-2 rounded-full border border-purple-400/55 bg-purple-500/20 px-5 sm:px-7 py-2 sm:py-3 text-sm sm:text-lg font-medium text-white backdrop-blur-sm transition-all hover:bg-purple-500/35 active:scale-95"
-            >
-              Join now
-              <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5" />
-            </Link>
+            {currentSlide.link && (
+              <Link
+                to={currentSlide.link}
+                className="pointer-events-auto inline-flex items-center gap-2 rounded-full border border-purple-400/55 bg-purple-500/20 px-5 sm:px-7 py-2 sm:py-3 text-sm sm:text-lg font-medium text-white backdrop-blur-sm transition-all hover:bg-purple-500/35 active:scale-95"
+              >
+                {(currentSlide as any).buttonLabel || "Join now"}
+                <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5" />
+              </Link>
+            )}
           </div>
 
           <div className="absolute bottom-6 left-1/2 z-40 flex -translate-x-1/2 gap-2">

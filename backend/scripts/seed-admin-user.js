@@ -5,8 +5,8 @@ dotenv.config({ path: "backend/.env" });
 dotenv.config();
 
 // Fixed admin credentials
-const ADMIN_EMAIL = "admin@foundersconnect.com";
-const ADMIN_PASSWORD = "AdminPass123!";
+const ADMIN_EMAIL = "admin@foundersconnect.co.in";
+const ADMIN_PASSWORD = "Rajan@16";
 
 await mongoose.connect(process.env.MONGODB_URI);
 

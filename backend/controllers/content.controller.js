@@ -1,4 +1,4 @@
-import { BlogContent, EventContent, GalleryImage, PartnerLogo, SiteNotice, SpeakerInvestorProfile, Testimonial } from "../models/index.js";
+import { BlogContent, EventContent, GalleryImage, PartnerLogo, SiteNotice, SpeakerInvestorProfile, Testimonial, SliderPromotion } from "../models/index.js";
 import { deleteCache, deleteCacheByPrefix, getCache, setCache } from "../utils/cache.js";
 import { createCloudinaryUploadSignature } from "../utils/cloudinary.js";
 
@@ -151,6 +151,18 @@ const sanitizeSpeakerInvestorPayload = (body = {}) => ({
   websiteUrl: String(body.websiteUrl || "").trim(),
   order: Number(body.order || 0),
   isActive: typeof body.isActive === "boolean" ? body.isActive : true,
+});
+
+const sanitizeSliderPromotionPayload = (body = {}) => ({
+  title: String(body.title || "").trim(),
+  description: String(body.description || "").trim(),
+  imageUrl: String(body.imageUrl || "").trim(),
+  altText: String(body.altText || "").trim(),
+  linkUrl: String(body.linkUrl || "").trim(),
+  buttonLabel: String(body.buttonLabel || "View More").trim(),
+  order: Number(body.order || 0),
+  isActive: typeof body.isActive === "boolean" ? body.isActive : true,
+  createdBy: String(body.createdBy || "").trim(),
 });
 
 const validateRequired = (payload, fields, res) => {
@@ -852,6 +864,97 @@ export const updateAdminSiteNotice = async (req, res, next) => {
 
     await deleteCache("public:site-notice", "admin:site-notice");
     return res.status(200).json({ message: "Site notice updated successfully.", notice });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+// Slider Promotions - Public
+export const listPublicSliderPromotions = async (req, res, next) => {
+  try {
+    const cacheKey = "public:slider-promotions";
+    const cached = await getCache(cacheKey);
+    if (cached) return res.status(200).json(cached);
+
+    const promotions = await SliderPromotion.find({ isActive: true })
+      .sort({ order: 1, createdAt: -1 })
+      .lean();
+    const payload = { promotions };
+    await setCache(cacheKey, payload, 300);
+    return res.status(200).json(payload);
+  } catch (error) {
+    return next(error);
+  }
+};
+
+// Slider Promotions - Admin
+export const listAdminSliderPromotions = async (req, res, next) => {
+  try {
+    const cacheKey = "admin:slider-promotions";
+    const cached = await getCache(cacheKey);
+    if (cached) return res.status(200).json(cached);
+
+    const promotions = await SliderPromotion.find({}).sort({ order: 1, createdAt: -1 }).lean();
+    const payload = { promotions };
+    await setCache(cacheKey, payload, 60);
+    return res.status(200).json(payload);
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const createAdminSliderPromotion = async (req, res, next) => {
+  try {
+    if (!req.body || Object.keys(req.body).length === 0) {
+      return res.status(400).json({ message: "Request body is empty." });
+    }
+
+    const payload = sanitizeSliderPromotionPayload(req.body);
+    
+    if (!validateRequired(payload, [{ key: "title", label: "Title" }, { key: "imageUrl", label: "Image URL" }], res)) return;
+    
+    // Add the admin user ID to createdBy if not provided
+    if (!payload.createdBy && req.user) {
+      payload.createdBy = req.user.sub || req.user.id || "";
+    }
+    
+    const promotion = await SliderPromotion.create(payload);
+    await deleteCache("public:slider-promotions", "admin:slider-promotions");
+    return res.status(201).json({ message: "Promotion created successfully.", promotion });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const updateAdminSliderPromotion = async (req, res, next) => {
+  try {
+    const id = String(req.params.id || "").trim();
+    const payload = sanitizeSliderPromotionPayload(req.body);
+    
+    const promotion = await SliderPromotion.findByIdAndUpdate(id, payload, { new: true });
+
+    if (!promotion) {
+      return res.status(404).json({ message: "Promotion not found." });
+    }
+
+    await deleteCache("public:slider-promotions", "admin:slider-promotions");
+    return res.status(200).json({ message: "Promotion updated successfully.", promotion });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const deleteAdminSliderPromotion = async (req, res, next) => {
+  try {
+    const id = String(req.params.id || "").trim();
+    const promotion = await SliderPromotion.findByIdAndDelete(id);
+
+    if (!promotion) {
+      return res.status(404).json({ message: "Promotion not found." });
+    }
+
+    await deleteCache("public:slider-promotions", "admin:slider-promotions");
+    return res.status(200).json({ message: "Promotion deleted successfully." });
   } catch (error) {
     return next(error);
   }

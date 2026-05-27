@@ -11,6 +11,7 @@ import {
   listPublicSliderEvents,
   listPublicTestimonials,
   getPublicCloudinaryUploadSignature,
+  listPublicSliderPromotions,
 } from "../controllers/content.controller.js";
 import { listPublicPartnerTypes } from "../controllers/partner-type.controller.js";
 import { subscribeNewsletter, unsubscribeNewsletter } from "../controllers/newsletter.controller.js";
@@ -31,6 +32,7 @@ contentRouter.get("/partners", listPublicPartnerLogos);
 contentRouter.get("/speakers-investors", listPublicSpeakerInvestorProfiles);
 contentRouter.get("/testimonials", listPublicTestimonials);
 contentRouter.get("/partner-types", listPublicPartnerTypes);
+contentRouter.get("/slider-promotions", listPublicSliderPromotions);
 contentRouter.post("/cloudinary/sign-upload", getPublicCloudinaryUploadSignature);
 contentRouter.post("/newsletter/subscribe", subscribeNewsletter);
 contentRouter.get("/newsletter/unsubscribe", unsubscribeNewsletter);

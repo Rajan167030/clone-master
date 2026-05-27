@@ -5,6 +5,7 @@ import { useSEO } from "@/hooks/useSEO";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ArrowRight, ExternalLink, X, Loader } from "lucide-react";
+
 import { getPublicSpeakerInvestorProfilesApi, type SpeakerInvestorProfile } from "@/lib/api";
 
 const RANDOM_AVATARS = [
@@ -64,93 +65,70 @@ const DetailedProfileModal = ({
       onClick={onClose}
     >
       <div
-        className="relative w-full max-w-2xl rounded-3xl bg-white shadow-2xl overflow-hidden"
+        className="relative w-full max-w-lg rounded-3xl bg-white p-6 sm:p-8 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Close button */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 z-10 rounded-full bg-white/90 p-2 hover:bg-white transition-colors"
+          className="absolute top-4 right-4 rounded-full bg-slate-100 p-2 hover:bg-slate-200 transition-colors"
           aria-label="Close modal"
         >
-          <X size={24} className="text-slate-900" />
+          <X size={20} className="text-slate-600" />
         </button>
 
-        <div className="grid gap-0 md:grid-cols-[280px_1fr]">
-          {/* Photo section */}
-          <div className="relative aspect-square overflow-hidden bg-slate-100">
+        <div className="flex flex-col items-center text-center">
+          <div className="mb-4 h-24 w-24 sm:h-28 sm:w-28 overflow-hidden rounded-full border-4 border-slate-50 shadow-md">
             <img
               src={photoUrl}
-              alt={profile.photoAlt || profile.name}
+              alt={profile.name}
               className="h-full w-full object-cover object-top"
               loading="lazy"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/20 via-transparent to-transparent" />
           </div>
+          
+          <h2 className="text-2xl font-bold text-slate-900">{profile.name}</h2>
+          <p className="mt-1 font-semibold text-primary">{profile.designation}</p>
+          {profile.company && (
+            <p className="text-sm font-medium text-slate-500 mt-0.5">{profile.company}</p>
+          )}
 
-          {/* Details section */}
-          <div className="flex flex-col p-4 sm:p-6">
-            <div className="mb-3">
-              <h2 className="text-2xl font-extrabold tracking-tight text-black">
-                {profile.name}
-              </h2>
-              <p className="mt-1 text-base font-semibold text-indigo-600">
-                {profile.designation}
-              </p>
-              {profile.company && (
-                <p className="mt-1 text-base text-slate-600">
-                  {profile.company}
-                </p>
-              )}
-            </div>
-
-            {profile.introduction && (
-              <div className="mb-4 bg-indigo-50 border border-indigo-200 rounded-lg p-3">
-                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-indigo-700 mb-2">
-                  Introduction
-                </p>
-                <p className="text-sm leading-6 text-indigo-900">
-                  {profile.introduction}
-                </p>
-              </div>
+          <div className="mt-5 flex gap-3">
+            {profile.linkedinUrl && (
+              <a
+                href={profile.linkedinUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-50 border border-slate-200 text-slate-600 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 transition-colors shadow-sm"
+                aria-label="LinkedIn"
+                title="LinkedIn Profile"
+              >
+                <ExternalLink size={18} className="fill-current" />
+              </a>
             )}
-
-            {profile.summary && (
-              <div className="mb-6 flex-1">
-                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400 mb-2">
-                  About
-                </p>
-                <p className="text-sm leading-7 text-slate-700">
-                  {profile.summary}
-                </p>
-              </div>
+            {profile.websiteUrl && (
+              <a
+                href={profile.websiteUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-50 border border-slate-200 text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors shadow-sm"
+                aria-label="Website"
+                title="Visit Website"
+              >
+                <ArrowRight size={18} />
+              </a>
             )}
-
-            <div className="flex flex-col gap-3 border-t border-slate-200 pt-6">
-              {profile.linkedinUrl && (
-                <a
-                  href={profile.linkedinUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-3 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-slate-700 hover:bg-indigo-50 hover:border-indigo-200 hover:text-indigo-700 transition-colors"
-                >
-                  <ExternalLink size={20} />
-                  <span className="font-semibold">View LinkedIn Profile</span>
-                </a>
-              )}
-              {profile.websiteUrl && (
-                <a
-                  href={profile.websiteUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-3 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-slate-700 hover:bg-blue-50 hover:border-blue-200 hover:text-blue-700 transition-colors"
-                >
-                  <ArrowRight size={20} />
-                  <span className="font-semibold">Visit Website</span>
-                </a>
-              )}
-            </div>
           </div>
+        </div>
+
+        <div className="mt-6 sm:mt-8 border-t border-slate-100 pt-6">
+          {(profile.introduction || profile.summary) ? (
+            <div className="text-sm leading-relaxed text-slate-600">
+              {profile.introduction && <p className="mb-3">{profile.introduction}</p>}
+              {profile.summary && <p>{profile.summary}</p>}
+            </div>
+          ) : (
+            <p className="text-center text-sm italic text-slate-400">No additional information available.</p>
+          )}
         </div>
       </div>
     </div>
@@ -505,7 +483,7 @@ const PremiumInvestorCard = ({
               className="flex-shrink-0 rounded-full border border-slate-200 bg-slate-50 p-1.5 text-slate-500 hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 transition-colors"
               aria-label="LinkedIn Profile"
             >
-              <ExternalLink size={16} />
+              <ExternalLink size={16} className="fill-current" />
             </a>
           )}
           <div className="flex-shrink-0 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">
@@ -574,7 +552,7 @@ function PremiumSpeakerCard({
                 className="flex-shrink-0 rounded-full border border-slate-200 bg-slate-50 p-1.5 text-slate-500 hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 transition-colors"
                 aria-label="LinkedIn Profile"
               >
-                <ExternalLink size={16} />
+                <ExternalLink size={16} className="fill-current" />
               </a>
             )}
             <div className="flex-shrink-0 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">

@@ -34,6 +34,10 @@ import {
   updateAdminEventApi,
   updateAdminTestimonialApi,
   updateAdminSiteNoticeApi,
+  getAdminSliderPromotionsApi,
+  createAdminSliderPromotionApi,
+  updateAdminSliderPromotionApi,
+  deleteAdminSliderPromotionApi,
   type AdminEventInterest,
   type AdminJoinRequest,
   type AdminMember,
@@ -44,6 +48,7 @@ import {
   type NewsletterAudience,
   type NewsletterSubscriber,
   type EmailTemplate,
+  type SliderPromotion,
   createAdminTemplateApi,
   previewAdminTemplateApi,
   createAdminCampaignApi,
@@ -84,6 +89,7 @@ import {
   Mic2,
   Upload,
   Rocket,
+  Image,
 } from "lucide-react";
 
 const emptyEventForm = {
@@ -92,6 +98,7 @@ const emptyEventForm = {
   subtitle: "",
   shortDescription: "",
   bannerImage: "",
+  mobileBannerImage: "",
   bannerAlt: "",
   hostName: "",
   hostLogoText: "FC",
@@ -140,6 +147,18 @@ const emptySiteNoticeForm = {
 const emptyNewsletterForm = {
   subject: "",
   html: "",
+};
+
+const emptySliderPromotionForm = {
+  title: "",
+  description: "",
+  imageUrl: "",
+  altText: "",
+  linkUrl: "",
+  buttonLabel: "View More",
+  order: 0,
+  isActive: true,
+  createdBy: "",
 };
 
 type CloudinaryUploadResponse = {
@@ -308,17 +327,25 @@ const AdminDashboard = () => {
   const [selectedPartnerId, setSelectedPartnerId] = useState("");
   const [selectedGalleryId, setSelectedGalleryId] = useState("");
   const [selectedTestimonialId, setSelectedTestimonialId] = useState("");
-  const [activeTab, setActiveTab] = useState<"dashboard" | "analytics" | "events" | "blogs" | "members" | "partners" | "newsletter" | "automation" | "funding">("dashboard");
+  const [selectedPromotionId, setSelectedPromotionId] = useState("");
+  const [promotions, setPromotions] = useState<SliderPromotion[]>([]);
+  const [promotionForm, setPromotionForm] = useState(emptySliderPromotionForm);
+  const [showPromotionForm, setShowPromotionForm] = useState(false);
+  const [uploadingPromotionImage, setUploadingPromotionImage] = useState(false);
+  const [promotionImageMode, setPromotionImageMode] = useState<ImageInputMode>("url");
+  const [activeTab, setActiveTab] = useState<"dashboard" | "analytics" | "events" | "blogs" | "members" | "partners" | "newsletter" | "automation" | "funding" | "promotions">("dashboard");
   const [showEventForm, setShowEventForm] = useState(false);
   const [showBlogForm, setShowBlogForm] = useState(false);
   const [showPartnerForm, setShowPartnerForm] = useState(false);
   const [showGalleryForm, setShowGalleryForm] = useState(false);
   const [showTestimonialForm, setShowTestimonialForm] = useState(false);
   const [uploadingEventBanner, setUploadingEventBanner] = useState(false);
+  const [uploadingEventMobileBanner, setUploadingEventMobileBanner] = useState(false);
   const [uploadingBlogCover, setUploadingBlogCover] = useState(false);
   const [uploadingGalleryImage, setUploadingGalleryImage] = useState(false);
   const [uploadingNoticeBanner, setUploadingNoticeBanner] = useState(false);
   const [eventImageMode, setEventImageMode] = useState<ImageInputMode>("url");
+  const [eventMobileImageMode, setEventMobileImageMode] = useState<ImageInputMode>("url");
   const [blogImageMode, setBlogImageMode] = useState<ImageInputMode>("url");
   const [noticeImageMode, setNoticeImageMode] = useState<ImageInputMode>("url");
 
@@ -410,6 +437,7 @@ const AdminDashboard = () => {
       getAdminFundingApplicationsApi(token),
       getAdminPartnerTypesApi(token),
       getAdminSiteNoticeApi(token),
+      getAdminSliderPromotionsApi(token),
     ])
       .then(([
         eventsResponse,
@@ -427,6 +455,7 @@ const AdminDashboard = () => {
         fundingResponse,
         partnerTypesResponse,
         noticeResponse,
+        promotionsResponse,
       ]) => {
         setEvents(eventsResponse.events);
         setPosts(blogsResponse.posts);
@@ -440,6 +469,7 @@ const AdminDashboard = () => {
         setPartnerTypes(partnerTypesResponse.types || []);
         setTemplates(templatesResponse.templates || []);
         setCampaigns(campaignsResponse.campaigns || []);
+        setPromotions(promotionsResponse.promotions || []);
         setSiteNoticeForm(
           noticeResponse.notice
             ? {
@@ -749,6 +779,49 @@ const AdminDashboard = () => {
     }
   };
 
+  const handleEventMobileBannerUpload = async (file?: File | null) => {
+    if (!file) return;
+    if (!token) {
+      window.alert("Please log in again before uploading images.");
+      return;
+    }
+    setUploadingEventMobileBanner(true);
+    try {
+      const signaturePayload = await getCloudinaryUploadSignatureApi(token, {
+        folder: "founders-connect/events/mobile",
+      });
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("api_key", signaturePayload.apiKey);
+      formData.append("timestamp", String(signaturePayload.timestamp));
+      formData.append("signature", signaturePayload.signature);
+      formData.append("folder", signaturePayload.folder);
+      if (signaturePayload.publicId) {
+        formData.append("public_id", signaturePayload.publicId);
+      }
+      const uploadResponse = await fetch(signaturePayload.uploadUrl, {
+        method: "POST",
+        body: formData,
+      });
+      const uploadData = (await uploadResponse.json().catch(() => ({}))) as CloudinaryUploadResponse & {
+        error?: { message?: string };
+      };
+      if (!uploadResponse.ok || !uploadData.secure_url) {
+        throw new Error(uploadData.error?.message || "Cloudinary upload failed.");
+      }
+      setEventForm((current) => ({
+        ...current,
+        mobileBannerImage: uploadData.secure_url || "",
+      }));
+      window.alert("Mobile image uploaded successfully.");
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Unable to upload image.";
+      window.alert(message);
+    } finally {
+      setUploadingEventMobileBanner(false);
+    }
+  };
+
   const handleBlogCoverUpload = async (file?: File | null) => {
     if (!file) return;
     if (!token) {
@@ -1022,6 +1095,45 @@ const AdminDashboard = () => {
       .finally(() => setSavingTestimonial(false));
   };
 
+  const handleSavePromotion = () => {
+    const missing = [];
+    if (!promotionForm.title.trim()) missing.push("Title");
+    if (!promotionForm.imageUrl.trim()) missing.push("Image URL");
+
+    if (missing.length > 0) {
+      window.alert(`Please provide ${missing.join(" and ")} before saving.`);
+      return;
+    }
+
+    const payload = {
+      title: promotionForm.title.trim(),
+      description: promotionForm.description.trim(),
+      imageUrl: promotionForm.imageUrl.trim(),
+      altText: promotionForm.altText.trim(),
+      linkUrl: promotionForm.linkUrl.trim(),
+      buttonLabel: promotionForm.buttonLabel.trim() || "View More",
+      order: Number(promotionForm.order || 0),
+      isActive: Boolean(promotionForm.isActive),
+      createdBy: account?.id || "",
+    };
+
+    const request = selectedPromotionId
+      ? updateAdminSliderPromotionApi(token, selectedPromotionId, payload)
+      : createAdminSliderPromotionApi(token, payload);
+
+    request
+      .then((response) => {
+        window.alert(response.message);
+        setPromotionForm(emptySliderPromotionForm);
+        setSelectedPromotionId("");
+        setShowPromotionForm(false);
+        loadAdminData();
+      })
+      .catch((error) => {
+        window.alert(error instanceof Error ? error.message : "Unable to save promotion.");
+      });
+  };
+
   const StatCard = ({ icon: Icon, label, value, trend }: any) => (
     <Card className="border-slate-200">
       <CardContent className="pt-6">
@@ -1048,6 +1160,7 @@ const AdminDashboard = () => {
     { label: "Dashboard", id: "dashboard", icon: BarChart3 },
     { label: "Analytics", id: "analytics", icon: TrendingUp },
     { label: "Events", id: "events", icon: Calendar },
+    { label: "Promotions", id: "promotions", icon: Image },
     { label: "Blogs", id: "blogs", icon: FileText },
     { label: "Members", id: "members", icon: Users },
     { label: "Partners", id: "partners", icon: Handshake },
@@ -1164,6 +1277,7 @@ const AdminDashboard = () => {
               {activeTab === "dashboard" && "Control Center"}
               {activeTab === "analytics" && "Analytics"}
               {activeTab === "events" && "Events Management"}
+              {activeTab === "promotions" && "Slider Promotions Management"}
               {activeTab === "blogs" && "Blog Management"}
               {activeTab === "members" && "Members & Requests"}
               {activeTab === "partners" && "Partners Management"}
@@ -1175,6 +1289,7 @@ const AdminDashboard = () => {
               {activeTab === "dashboard" && "Welcome back! Here's your admin overview."}
               {activeTab === "analytics" && "Analyze form activity, content growth, and campaign performance in one place."}
               {activeTab === "events" && "Create, edit, or manage event content"}
+              {activeTab === "promotions" && "Add and manage promotional banners for the hero slider (second feature)"}
               {activeTab === "blogs" && "Create, edit, or manage blog posts"}
               {activeTab === "members" && "Manage members and guest event requests"}
               {activeTab === "partners" && "Add and manage partner logos shown on the landing page."}
@@ -1634,6 +1749,7 @@ const AdminDashboard = () => {
                                   subtitle: event.subtitle,
                                   shortDescription: event.shortDescription,
                                   bannerImage: event.bannerImage,
+                                  mobileBannerImage: (event as any).mobileBannerImage || "",
                                   bannerAlt: event.bannerAlt,
                                   hostName: event.hostName,
                                   hostLogoText: event.hostLogoText,
@@ -3127,6 +3243,230 @@ const AdminDashboard = () => {
                     )}
                   </CardContent>
                 </Card>
+              </div>
+            </div>
+          )}
+
+          {/* Promotions Tab */}
+          {activeTab === "promotions" && (
+            <div className="space-y-6">
+              {showPromotionForm && (
+                <Card className="border-slate-200">
+                  <CardHeader>
+                    <CardTitle>{selectedPromotionId ? "Edit Promotion" : "Create New Promotion"}</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div>
+                      <label className="text-sm font-medium text-slate-700">Title *</label>
+                      <Input
+                        placeholder="Promotion title"
+                        value={promotionForm.title}
+                        onChange={(e) => setPromotionForm((c) => ({ ...c, title: e.target.value }))}
+                        className="mt-1"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-slate-700">Description</label>
+                      <Textarea
+                        placeholder="Promotion description"
+                        value={promotionForm.description}
+                        onChange={(e) => setPromotionForm((c) => ({ ...c, description: e.target.value }))}
+                        rows={3}
+                        className="mt-1"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-slate-700">Image Mode</label>
+                      <div className="flex gap-3 mt-1">
+                        <label className="flex items-center gap-2">
+                          <input
+                            type="radio"
+                            value="url"
+                            checked={promotionImageMode === "url"}
+                            onChange={(e) => setPromotionImageMode(e.target.value as ImageInputMode)}
+                          />
+                          <span className="text-sm">URL</span>
+                        </label>
+                        <label className="flex items-center gap-2">
+                          <input
+                            type="radio"
+                            value="upload"
+                            checked={promotionImageMode === "upload"}
+                            onChange={(e) => setPromotionImageMode(e.target.value as ImageInputMode)}
+                          />
+                          <span className="text-sm">Upload</span>
+                        </label>
+                      </div>
+                    </div>
+                    {promotionImageMode === "url" ? (
+                      <div>
+                        <label className="text-sm font-medium text-slate-700">Image URL *</label>
+                        <Input
+                          placeholder="https://example.com/image.jpg"
+                          value={promotionForm.imageUrl}
+                          onChange={(e) => setPromotionForm((c) => ({ ...c, imageUrl: e.target.value }))}
+                          className="mt-1"
+                        />
+                      </div>
+                    ) : (
+                      <div>
+                        <label className="text-sm font-medium text-slate-700">Upload Image *</label>
+                        <Input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => {
+                            // File upload handler would go here
+                            if (e.target.files?.[0]) {
+                              window.alert("Image upload feature requires Cloudinary integration. Use URL mode for now.");
+                            }
+                          }}
+                          className="mt-1"
+                        />
+                      </div>
+                    )}
+                    <div>
+                      <label className="text-sm font-medium text-slate-700">Alt Text</label>
+                      <Input
+                        placeholder="Image alt text"
+                        value={promotionForm.altText}
+                        onChange={(e) => setPromotionForm((c) => ({ ...c, altText: e.target.value }))}
+                        className="mt-1"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-slate-700">Link URL</label>
+                      <Input
+                        placeholder="https://example.com"
+                        value={promotionForm.linkUrl}
+                        onChange={(e) => setPromotionForm((c) => ({ ...c, linkUrl: e.target.value }))}
+                        className="mt-1"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-slate-700">Button Label</label>
+                      <Input
+                        placeholder="View More"
+                        value={promotionForm.buttonLabel}
+                        onChange={(e) => setPromotionForm((c) => ({ ...c, buttonLabel: e.target.value }))}
+                        className="mt-1"
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="text-sm font-medium text-slate-700">Order</label>
+                        <Input
+                          type="number"
+                          placeholder="0"
+                          value={promotionForm.order}
+                          onChange={(e) => setPromotionForm((c) => ({ ...c, order: Number(e.target.value) }))}
+                          className="mt-1"
+                        />
+                      </div>
+                      <div className="flex items-end">
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={promotionForm.isActive}
+                            onChange={(e) => setPromotionForm((c) => ({ ...c, isActive: e.target.checked }))}
+                          />
+                          <span className="text-sm font-medium text-slate-700">Active</span>
+                        </label>
+                      </div>
+                    </div>
+                    <div className="flex flex-wrap gap-3 pt-4">
+                      <Button onClick={handleSavePromotion} className="gap-2">
+                        <CheckCircle2 className="h-4 w-4" />
+                        {selectedPromotionId ? "Update" : "Create"}
+                      </Button>
+                      <Button variant="outline" onClick={() => { setShowPromotionForm(false); setPromotionForm(emptySliderPromotionForm); setSelectedPromotionId(""); }}>
+                        Cancel
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {!showPromotionForm && (
+                <Button onClick={() => setShowPromotionForm(true)} className="gap-2">
+                  <Plus className="h-4 w-4" />
+                  Add New Promotion
+                </Button>
+              )}
+
+              <div className="grid gap-4">
+                {promotions.length === 0 ? (
+                  <Card>
+                    <CardContent className="pt-12 text-center">
+                      <Image className="mx-auto h-12 w-12 text-slate-300 mb-3" />
+                      <p className="text-slate-500">No promotions yet. Create your first promotion!</p>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  promotions.map((promotion) => (
+                    <Card key={promotion._id} className="hover:shadow-md transition-shadow">
+                      <CardContent className="pt-6">
+                        <div className="flex items-start gap-4">
+                          <img src={promotion.imageUrl} alt={promotion.altText} className="w-20 h-20 object-cover rounded" />
+                          <div className="flex-1">
+                            <div className="flex items-center justify-between gap-3 mb-1">
+                              <h3 className="font-bold text-slate-900">{promotion.title}</h3>
+                              <Badge variant={promotion.isActive ? "default" : "secondary"}>
+                                {promotion.isActive ? "Active" : "Inactive"}
+                              </Badge>
+                            </div>
+                            <p className="text-sm text-slate-600 mb-2">{promotion.description}</p>
+                            <p className="text-xs text-slate-500">Order: {promotion.order} | Created by ID: {promotion.createdBy}</p>
+                          </div>
+                          <div className="flex gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                setPromotionForm({
+                                  title: promotion.title,
+                                  description: promotion.description,
+                                  imageUrl: promotion.imageUrl,
+                                  altText: promotion.altText,
+                                  linkUrl: promotion.linkUrl,
+                                  buttonLabel: promotion.buttonLabel,
+                                  order: promotion.order,
+                                  isActive: promotion.isActive,
+                                  createdBy: promotion.createdBy,
+                                });
+                                setSelectedPromotionId(promotion._id);
+                                setShowPromotionForm(true);
+                              }}
+                              className="gap-1"
+                            >
+                              <Edit size={16} />
+                              Edit
+                            </Button>
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              onClick={() => {
+                                if (window.confirm("Delete this promotion?")) {
+                                  deleteAdminSliderPromotionApi(token, promotion._id)
+                                    .then((response) => {
+                                      window.alert(response.message);
+                                      loadAdminData();
+                                    })
+                                    .catch((error) => {
+                                      window.alert(error instanceof Error ? error.message : "Failed to delete");
+                                    });
+                                }
+                              }}
+                              className="gap-1"
+                            >
+                              <Trash2 size={16} />
+                              Delete
+                            </Button>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))
+                )}
               </div>
             </div>
           )}

@@ -50,22 +50,19 @@ const Footer = () => {
           <div className="pointer-events-none absolute -top-40 -right-40 h-[40rem] w-[40rem] rounded-full bg-primary/20 blur-[120px]" />
           <div className="pointer-events-none absolute -bottom-40 -left-40 h-[40rem] w-[40rem] rounded-full bg-purple-600/20 blur-[120px]" />
           
-          <div className="grid grid-cols-2 gap-8 mb-4 md:grid-cols-6 relative z-10">
-            <div className="col-span-2">
-              <div className="flex items-center gap-3 mb-4">
-                {/* Founders Connect Logo */}
-                <div className="flex items-center gap-3">
-                  <img 
-                    src="/founders_connect_global_logo.jpg" 
-                    alt="Founders Connect" 
-                    className="h-20 md:h-24 w-auto object-contain rounded-xl"
-                  />
-                </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-12 gap-8 lg:gap-12 mb-10 relative z-10">
+            <div className="sm:col-span-2 md:col-span-4 lg:col-span-4">
+              <div className="mb-6">
+                <img 
+                  src="/founders_connect_global_logo.jpg" 
+                  alt="Founders Connect" 
+                  className="h-16 md:h-20 w-auto object-contain rounded-xl"
+                />
               </div>
-              <p className="text-sm text-muted-foreground max-w-xs leading-relaxed">
+              <p className="text-sm text-muted-foreground max-w-sm leading-relaxed">
                 A curated ecosystem where founders, builders, and investors meet with intent. We create high-signal events and membership experiences for startups.
               </p>
-              <div className="flex items-center gap-3 mt-4">
+              <div className="flex items-center gap-3 mt-6">
                 {socials.map(({ name, href, icon }) => (
                   <a
                     key={name}
@@ -81,18 +78,18 @@ const Footer = () => {
               </div>
 
               {/* Newsletter subscribe form */}
-              <div className="mt-4 pt-4 border-t border-border/40 max-w-sm">
-                <h4 className="text-xs font-bold uppercase tracking-[0.2em] text-foreground mb-1">Subscribe to our newsletter</h4>
-                <p className="text-xs text-muted-foreground mb-2 leading-relaxed">Get exclusive invites to founder events and growth insights.</p>
+              <div className="mt-8 pt-6 border-t border-border/40 max-w-sm">
+                <h4 className="text-xs font-bold uppercase tracking-[0.2em] text-foreground mb-2">Subscribe to our newsletter</h4>
+                <p className="text-xs text-muted-foreground mb-4 leading-relaxed">Get exclusive invites to founder events and growth insights.</p>
                 {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
                 {/* @ts-ignore */}
                 <SubscribeForm />
               </div>
             </div>
 
-            <div>
-              <div className="font-heading font-semibold text-foreground mb-3">Explore</div>
-              <ul className="space-y-2 text-sm text-muted-foreground">
+            <div className="md:col-span-1 lg:col-span-2">
+              <div className="font-heading font-semibold text-foreground mb-5">Explore</div>
+              <ul className="space-y-3 text-sm text-muted-foreground">
                 <li><a href="/events" className="hover:text-primary transition-colors">Events</a></li>
                 <li><a href="/membership" className="hover:text-primary transition-colors">Membership</a></li>
                 <li><a href="/blog" className="hover:text-primary transition-colors">Blog</a></li>
@@ -100,9 +97,9 @@ const Footer = () => {
               </ul>
             </div>
 
-            <div>
-              <div className="font-heading font-semibold text-foreground mb-3">Community</div>
-              <ul className="space-y-2 text-sm text-muted-foreground">
+            <div className="md:col-span-1 lg:col-span-2">
+              <div className="font-heading font-semibold text-foreground mb-5">Community</div>
+              <ul className="space-y-3 text-sm text-muted-foreground">
                 <li><a href="#" className="hover:text-primary transition-colors">Founders</a></li>
                 <li><a href="#" className="hover:text-primary transition-colors">Investors</a></li>
                 <li><a href="#" className="hover:text-primary transition-colors">Partners</a></li>
@@ -110,9 +107,9 @@ const Footer = () => {
               </ul>
             </div>
 
-            <div>
-              <div className="font-heading font-semibold text-foreground mb-3">About</div>
-              <ul className="space-y-2 text-sm text-muted-foreground">
+            <div className="md:col-span-1 lg:col-span-2">
+              <div className="font-heading font-semibold text-foreground mb-5">About</div>
+              <ul className="space-y-3 text-sm text-muted-foreground">
                 <li><a href="/about" className="hover:text-primary transition-colors">About Us</a></li>
                 <li><a href="#" className="hover:text-primary transition-colors">Press</a></li>
                 <li><a href="#" className="hover:text-primary transition-colors">Careers</a></li>
@@ -120,35 +117,26 @@ const Footer = () => {
               </ul>
             </div>
 
-            <div>
-              <div className="font-heading font-semibold text-foreground mb-3">Contact Info</div>
-              <ul className="space-y-3 text-xs sm:text-sm text-muted-foreground">
-                <li className="flex items-start gap-2">
-                  <span className="text-primary mt-0.5 flex-shrink-0">📧</span>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-foreground mb-0.5">Email:</p>
-                    <a href="mailto:info@foundersconnect.co.in" className="hover:text-primary transition-colors break-all word-break">
-                      info@foundersconnect.co.in
-                    </a>
-                  </div>
+            <div className="sm:col-span-2 md:col-span-1 lg:col-span-2">
+              <div className="font-heading font-semibold text-foreground mb-5">Contact Info</div>
+              <ul className="space-y-4 text-sm text-muted-foreground">
+                <li className="flex items-center gap-3">
+                  <span className="text-primary text-base flex-shrink-0">📧</span>
+                  <a href="mailto:info@foundersconnect.co.in" className="hover:text-primary transition-colors break-words">
+                    info@foundersconnect.co.in
+                  </a>
                 </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-primary mt-0.5 flex-shrink-0">📞</span>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-foreground mb-0.5">Phone:</p>
-                    <a href="tel:+918860573577" className="hover:text-primary transition-colors">
-                      +91 8860 573 577
-                    </a>
-                  </div>
+                <li className="flex items-center gap-3">
+                  <span className="text-primary text-base flex-shrink-0">📞</span>
+                  <a href="tel:+918860573577" className="hover:text-primary transition-colors">
+                    +91 8860 573 577
+                  </a>
                 </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-primary mt-0.5 flex-shrink-0">📍</span>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-foreground mb-0.5">Location:</p>
-                    <span className="leading-relaxed">
-                      Delhi, India
-                    </span>
-                  </div>
+                <li className="flex items-center gap-3">
+                  <span className="text-primary text-base flex-shrink-0">📍</span>
+                  <span className="leading-relaxed">
+                    Delhi, India
+                  </span>
                 </li>
               </ul>
             </div>

@@ -32,6 +32,10 @@ import {
   updateAdminEvent,
   updateAdminTestimonial,
   updateAdminSpeakerInvestorProfile,
+  listAdminSliderPromotions,
+  createAdminSliderPromotion,
+  updateAdminSliderPromotion,
+  deleteAdminSliderPromotion,
 } from "../controllers/content.controller.js";
 import { listSubscribersAdmin } from "../controllers/newsletter.controller.js";
 import { sendBulkEmail } from "../controllers/email-automation.controller.js";
@@ -97,6 +101,11 @@ adminRouter.delete("/blogs/:slug", deleteAdminBlog);
 
 adminRouter.get("/site-notice", getAdminSiteNotice);
 adminRouter.put("/site-notice", updateAdminSiteNotice);
+
+adminRouter.get("/slider-promotions", listAdminSliderPromotions);
+adminRouter.post("/slider-promotions", createAdminSliderPromotion);
+adminRouter.patch("/slider-promotions/:id", updateAdminSliderPromotion);
+adminRouter.delete("/slider-promotions/:id", deleteAdminSliderPromotion);
 
 adminRouter.get("/partners", listAdminPartnerLogos);
 adminRouter.post("/partners", createAdminPartnerLogo);

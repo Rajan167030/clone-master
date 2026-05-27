@@ -17,7 +17,7 @@ export const signAuthToken = (account) => {
   };
 
   return jwt.sign(payload, process.env.JWT_SECRET || DEFAULT_SECRET, {
-    expiresIn: "7d",
+    expiresIn: "30d",
   });
 };
 

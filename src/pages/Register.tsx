@@ -223,7 +223,7 @@ const Register = () => {
                 role === "user"
                   ? "border-violet-200 bg-violet-50 text-slate-900"
                   : "border-slate-200 bg-white text-slate-600 hover:border-violet-200 hover:text-slate-900"
-              }
+              }`}
             >
               <User className="h-4 w-4 text-violet-600" />
               User
@@ -234,7 +234,7 @@ const Register = () => {
                 role === "investor"
                   ? "border-violet-200 bg-violet-50 text-slate-900"
                   : "border-slate-200 bg-white text-slate-600 hover:border-violet-200 hover:text-slate-900"
-              }
+              }`}
             >
               <BarChart3 className="h-4 w-4 text-violet-600" />
               Investor
@@ -245,7 +245,7 @@ const Register = () => {
                 role === "founder"
                   ? "border-violet-200 bg-violet-50 text-slate-900"
                   : "border-slate-200 bg-white text-slate-600 hover:border-violet-200 hover:text-slate-900"
-              }
+              }`}
             >
               <Rocket className="h-4 w-4 text-violet-600" />
               Founder

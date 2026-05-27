@@ -1,4 +1,5 @@
 import { useId, useState, type ChangeEvent, type FormEvent } from "react";
+import { Link } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -539,6 +540,21 @@ const JoinUs = () => {
               Fill out the detailed form above. Once submitted, your request is stored in database and reviewed by our team.
             </p>
           </div>
+        </div>
+      </section>
+
+      {/* Join Us & Get Funding Strip */}
+      <section className="relative w-full overflow-hidden bg-primary py-4 md:py-6 flex items-center shadow-inner">
+        <div className="absolute inset-0 bg-[linear-gradient(45deg,rgba(0,0,0,0.1)_25%,transparent_25%,transparent_50%,rgba(0,0,0,0.1)_50%,rgba(0,0,0,0.1)_75%,transparent_75%,transparent)] bg-[length:30px_30px] opacity-10 pointer-events-none mix-blend-overlay"></div>
+        <div className="animate-marquee flex whitespace-nowrap items-center" style={{ width: '200%' }}>
+          {[...Array(15)].map((_, i) => (
+            <div key={i} className="mx-6 md:mx-10 text-sm md:text-lg font-bold tracking-widest uppercase text-white flex items-center gap-6 md:gap-10">
+              <Link to="/join-us" className="hover:text-white/70 transition-colors">Join Us</Link>
+              <span className="w-2 h-2 rounded-full bg-white/40 block"></span>
+              <Link to="/get-funding" className="hover:text-white/70 transition-colors">Get Funding</Link>
+              <span className="w-2 h-2 rounded-full bg-white/40 block"></span>
+            </div>
+          ))}
         </div>
       </section>
 

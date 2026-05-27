@@ -4,7 +4,8 @@
   "type": "module",
   "scripts": {
     "dev": "node --watch server.js",
-    "start": "node server.js"
+    "start": "node server.js",
+    "seed-admin": "node scripts/seed-admin-user.js"
   },
   "dependencies": {
     "agenda": "^6.2.4",

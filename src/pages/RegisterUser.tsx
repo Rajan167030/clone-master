@@ -214,17 +214,7 @@ const RegisterUser = () => {
               </p>
             </div>
 
-            <div className="space-y-2">
-              <label htmlFor="phoneNumber" className="text-sm font-semibold text-gray-700">Phone Number <span className="text-red-500">*</span></label>
-              <div className="flex gap-2">
-                <select id="phoneCountryCode" name="phoneCountryCode" defaultValue="+91" className="h-12 w-32 rounded-md border border-gray-300 bg-white px-3 text-sm text-gray-700 focus:ring-purple-500">
-                  {countryCodes.map((country) => (
-                    <option key={country.code} value={country.code}>{country.code}</option>
-                  ))}
-                </select>
-                <Input id="phoneNumber" name="phoneNumber" type="tel" placeholder="9876543210" className="h-12 border-gray-300 focus:ring-purple-500" required />
-              </div>
-            </div>
+
 
             <div className="space-y-3">
               {benefits.map((benefit, idx) => (
@@ -307,8 +297,15 @@ const RegisterUser = () => {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label htmlFor="phone" className="text-sm font-semibold text-gray-700">Phone Number <span className="text-red-500">*</span></label>
-                    <Input id="phone" name="phone" type="tel" placeholder="+91 9876543210" className="h-12 border-gray-300 focus:ring-blue-500" required />
+                    <label htmlFor="phoneNumber" className="text-sm font-semibold text-gray-700">Phone Number <span className="text-red-500">*</span></label>
+                    <div className="flex gap-2">
+                      <select id="phoneCountryCode" name="phoneCountryCode" defaultValue="+91" className="h-12 w-24 rounded-md border border-gray-300 bg-white px-2 text-sm text-gray-700 focus:ring-blue-500 focus:border-blue-500">
+                        {countryCodes.map((country) => (
+                          <option key={country.code} value={country.code}>{country.code}</option>
+                        ))}
+                      </select>
+                      <Input id="phoneNumber" name="phoneNumber" type="tel" placeholder="9876543210" className="h-12 border-gray-300 focus:ring-blue-500" required />
+                    </div>
                   </div>
                   <div className="space-y-2">
                     <label htmlFor="city" className="text-sm font-semibold text-gray-700">City <span className="text-red-500">*</span></label>
