@@ -1,8 +1,9 @@
 # Founders Connect: Complete Ecosystem Platform 🚀
 
-<div align="center">
-  <img width="100%" height="auto" alt="Founders Connect Workspace Preview" src="https://github.com/user-attachments/assets/46ff4fc8-6834-41d9-9a36-6e003cca3149" />
-  
+
+<img width="1914" height="876" alt="image" src="https://github.com/user-attachments/assets/33051814-faf5-4b30-b443-a29f04ef6921" />
+
+
   <p align="center">
     <strong>A high-performance premium networking ecosystem and analytics hub connecting builders, founders, and investors.</strong>
   </p>
