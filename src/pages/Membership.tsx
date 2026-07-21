@@ -73,7 +73,7 @@ const Membership = () => {
     description: "Choose your Founders Connect membership tier: Silver, Gold, or Diamond.",
     keywords: "founders connect membership, silver gold diamond membership, founder membership pricing",
     ogType: "website",
-    canonicalUrl: "https://founders.connect/membership",
+    canonicalUrl: "https://www.foundersconnect.co.in/membership",
   });
 
   return (

@@ -4,7 +4,7 @@ import Footer from "@/components/Footer";
 import { useSEO } from "@/hooks/useSEO";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { ArrowRight, ExternalLink, X, Loader } from "lucide-react";
+import { ArrowRight, ExternalLink, X, Loader, Eye } from "lucide-react";
 
 import { getPublicSpeakerInvestorProfilesApi, type SpeakerInvestorProfile } from "@/lib/api";
 
@@ -45,6 +45,15 @@ const DEMO_INVESTORS: Array<Omit<SpeakerInvestorProfile, "_id" | "isActive" | "c
   { slug: "kavitha-nair",    category: "investor", name: "Ms. Kavitha Nair",    designation: "Investment Director", company: "Nexus VP",        order: 6, linkedinUrl: "https://linkedin.com/in/kavitha-nair", introduction: "Passionate about diversity and backing women entrepreneurs in the startup space." },
 ];
 
+const getCompanyBadge = (company?: string) => {
+  if (!company) return "VC";
+  return company
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join("")
+    .toUpperCase();
+};
 
 /* ─────────────────────────────────────────────────────────────────────────
    Detailed Profile Modal
@@ -65,12 +74,12 @@ const DetailedProfileModal = ({
       onClick={onClose}
     >
       <div
-        className="relative w-full max-w-lg rounded-3xl bg-white p-6 sm:p-8 shadow-2xl"
+        className="relative w-full max-w-lg rounded-3xl bg-white p-6 sm:p-8 shadow-2xl animate-in fade-in zoom-in-95 duration-200"
         onClick={(e) => e.stopPropagation()}
       >
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 rounded-full bg-slate-100 p-2 hover:bg-slate-200 transition-colors"
+          className="absolute top-4 right-4 rounded-full bg-slate-100 p-2 hover:bg-slate-200 hover:rotate-90 transition-all duration-300"
           aria-label="Close modal"
         >
           <X size={20} className="text-slate-600" />
@@ -85,7 +94,7 @@ const DetailedProfileModal = ({
               loading="lazy"
             />
           </div>
-          
+
           <h2 className="text-2xl font-bold text-slate-900">{profile.name}</h2>
           <p className="mt-1 font-semibold text-primary">{profile.designation}</p>
           {profile.company && (
@@ -98,11 +107,11 @@ const DetailedProfileModal = ({
                 href={profile.linkedinUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-50 border border-slate-200 text-slate-600 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 transition-colors shadow-sm"
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-50 border border-slate-200 text-slate-600 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 hover:-translate-y-0.5 transition-all shadow-sm"
                 aria-label="LinkedIn"
                 title="LinkedIn Profile"
               >
-                <ExternalLink size={18} className="fill-current" />
+                <ExternalLink size={18} />
               </a>
             )}
             {profile.websiteUrl && (
@@ -110,7 +119,7 @@ const DetailedProfileModal = ({
                 href={profile.websiteUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-50 border border-slate-200 text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors shadow-sm"
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-50 border border-slate-200 text-slate-600 hover:bg-slate-100 hover:text-slate-900 hover:-translate-y-0.5 transition-all shadow-sm"
                 aria-label="Website"
                 title="Visit Website"
               >
@@ -149,7 +158,7 @@ const PastSpeakersInvestors = () => {
     description: "Explore the past speakers and investors featured at Founders Connect events, panels, and community sessions.",
     keywords: "past speakers, past investors, founders connect speakers, founders connect investors",
     ogType: "website",
-    canonicalUrl: "https://founders.connect/past-speakers-investors",
+    canonicalUrl: "https://www.foundersconnect.co.in/past-speakers-investors",
   });
 
   useEffect(() => {
@@ -169,8 +178,13 @@ const PastSpeakersInvestors = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
 
-      {/* ── Hero ── */}
-     
+      {loadError && !loading && (
+        <div className="container mx-auto px-4 pt-6">
+          <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
+            {loadError} — showing sample profiles instead.
+          </div>
+        </div>
+      )}
 
       {/* ── Past Speakers ── */}
       <section id="speakers" className="relative overflow-hidden border-y border-slate-200 bg-white py-16 sm:py-20 md:py-24">
@@ -199,14 +213,16 @@ const PastSpeakersInvestors = () => {
             ) : displaySpeakers.length === 0 ? (
               <EmptyState message="No speaker profiles have been added yet." />
             ) : (
-              <div className="grid grid-cols-1 justify-items-center gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3">
+              <div className="grid grid-cols-1 justify-items-center gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3">
                 {displaySpeakers.map((speaker, i) => (
-                  <PremiumSpeakerCard
+                  <PremiumProfileCard
                     key={speaker.slug}
                     profile={speaker}
                     photoUrl={speaker.photoUrl || getRandomAvatar(i)}
                     photoAlt={speaker.photoAlt || speaker.name}
-                    affiliationBadge={speaker.company ? getCompanyBadge(speaker.company) : undefined}
+                    badge={speaker.company ? getCompanyBadge(speaker.company) : "SPK"}
+                    fallbackLabel="Independent"
+                    accent="teal"
                     onCardClick={() => setSelectedProfile(speaker)}
                   />
                 ))}
@@ -243,14 +259,16 @@ const PastSpeakersInvestors = () => {
             ) : displayInvestors.length === 0 ? (
               <EmptyState message="No investor profiles have been added yet." />
             ) : (
-              <div className="grid grid-cols-1 justify-items-center gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+              <div className="grid grid-cols-1 justify-items-center gap-6 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
                 {displayInvestors.map((investor, i) => (
-                  <PremiumInvestorCard
+                  <PremiumProfileCard
                     key={investor.slug}
                     profile={investor}
                     photoUrl={investor.photoUrl || getRandomAvatar(i + 6)}
                     photoAlt={investor.photoAlt || investor.name}
-                    companyLogo={investor.company ? getCompanyBadge(investor.company) : undefined}
+                    badge={investor.company ? getCompanyBadge(investor.company) : "VC"}
+                    fallbackLabel="Independent Investor"
+                    accent="indigo"
                     onCardClick={() => setSelectedProfile(investor)}
                   />
                 ))}
@@ -302,49 +320,11 @@ const PastSpeakersInvestors = () => {
 };
 
 /* ─────────────────────────────────────────────────────────────────────────
-   Decorative section banner  (works on all screen sizes)
-───────────────────────────────────────────────────────────────────────── */
-const SectionBanner = ({
-  title,
-  accentColor,
-  bgClass,
-}: {
-  title: string;
-  accentColor: string;
-  bgClass: string;
-}) => (
-  <div className="relative flex items-center justify-center mb-8 sm:mb-12">
-    {/* Wing SVGs — hidden on tiny screens, visible sm+ */}
-    <div className="hidden sm:block absolute left-0 top-1/2 -translate-y-1/2">
-      <svg width="100" height="44" viewBox="0 0 120 48" fill="none" aria-hidden>
-        <path d="M0 24 Q30 4 60 24 Q90 44 120 24" stroke={accentColor} strokeWidth="2.5" fill="none" opacity="0.5" />
-        <circle cx="0"   cy="24" r="5" fill={accentColor} opacity="0.4" />
-        <circle cx="120" cy="24" r="5" fill={accentColor} opacity="0.4" />
-      </svg>
-    </div>
-
-    <div className={`relative z-10 inline-flex items-center rounded-2xl border-2 px-5 py-2.5 shadow-lg sm:px-8 sm:py-3 ${bgClass}`}>
-      <span className="text-lg font-extrabold tracking-wide text-white sm:text-2xl md:text-3xl">
-        {title}
-      </span>
-    </div>
-
-    <div className="hidden sm:block absolute right-0 top-1/2 -translate-y-1/2">
-      <svg width="100" height="44" viewBox="0 0 120 48" fill="none" aria-hidden>
-        <path d="M0 24 Q30 44 60 24 Q90 4 120 24" stroke={accentColor} strokeWidth="2.5" fill="none" opacity="0.5" />
-        <circle cx="0"   cy="24" r="5" fill={accentColor} opacity="0.4" />
-        <circle cx="120" cy="24" r="5" fill={accentColor} opacity="0.4" />
-      </svg>
-    </div>
-  </div>
-);
-
-/* ─────────────────────────────────────────────────────────────────────────
    Empty / loading state
 ───────────────────────────────────────────────────────────────────────── */
 const EmptyState = ({ message }: { message: string }) => {
   const isLoading = message.includes("Loading");
-  
+
   return (
     <div className="rounded-[28px] border border-dashed border-slate-200 bg-white p-8 text-center text-sm text-slate-500 shadow-[0_20px_60px_-35px_rgba(15,23,42,0.14)]">
       {isLoading ? (
@@ -360,186 +340,94 @@ const EmptyState = ({ message }: { message: string }) => {
 };
 
 /* ─────────────────────────────────────────────────────────────────────────
-   Speaker oval card
+   Premium profile card — shared by speakers + investors, with a proper
+   hover interaction: whole card lifts, image zooms + gets a scrim,
+   a "View Profile" affordance fades in, and the socials nudge upward.
 ───────────────────────────────────────────────────────────────────────── */
-const OvalCard = ({
-  name,
-  designation,
-  company,
-  photoUrl,
-  photoAlt,
-  ringColor = "#0ea5e9",
-  ringLightColor = "#bae6fd",
-}: {
-  name: string;
-  designation: string;
-  company?: string;
-  photoUrl: string;
-  photoAlt: string;
-  ringColor?: string;
-  ringLightColor?: string;
-}) => (
-  <div className="group flex w-full flex-col items-center text-center">
-    <div
-      className="relative mx-auto"
-      style={{
-        width: "clamp(110px, 36vw, 176px)",
-        height: "clamp(132px, 43vw, 210px)",
-      }}
-    >
-      <div
-        className="absolute inset-0"
-        style={{ borderRadius: "50% / 50%", border: `5px solid ${ringLightColor}` }}
-      />
-      <svg className="absolute inset-0 h-full w-full" viewBox="0 0 176 210" fill="none" preserveAspectRatio="none" aria-hidden>
-        <ellipse cx="88" cy="105" rx="82" ry="98" stroke={ringColor} strokeWidth="4" strokeDasharray="80 260" strokeLinecap="round" transform="rotate(-30 88 105)" />
-        <ellipse cx="88" cy="105" rx="82" ry="98" stroke={ringColor} strokeWidth="2" strokeDasharray="40 300" strokeLinecap="round" transform="rotate(160 88 105)" />
-      </svg>
+const ACCENT_STYLES = {
+  teal: {
+    label: "text-teal-600",
+    ring: "hover:border-teal-300",
+    glow: "hover:shadow-[0_24px_60px_-24px_rgba(13,148,136,0.35)]",
+    chip: "border-teal-200 bg-teal-50 text-teal-700",
+    social: "hover:bg-teal-50 hover:text-teal-600 hover:border-teal-200",
+  },
+  indigo: {
+    label: "text-indigo-600",
+    ring: "hover:border-indigo-300",
+    glow: "hover:shadow-[0_24px_60px_-24px_rgba(79,70,229,0.35)]",
+    chip: "border-indigo-200 bg-indigo-50 text-indigo-700",
+    social: "hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200",
+  },
+} as const;
 
-      <div
-        className="absolute inset-[8px] overflow-hidden bg-slate-100 transition-transform duration-300 group-hover:scale-105"
-        style={{ borderRadius: "50% / 50%" }}
-      >
-        <img
-          src={photoUrl}
-          alt={photoAlt}
-          className="h-full w-full object-cover object-top"
-          loading="lazy"
-        />
-      </div>
-    </div>
-
-    <h3 className="mt-3 text-xs font-bold leading-tight text-foreground sm:mt-4 sm:text-sm md:text-base">
-      {name}
-    </h3>
-    <p className="mt-0.5 text-[10px] font-semibold text-primary sm:text-xs md:text-sm">
-      {designation}
-    </p>
-    {company && (
-      <p className="mt-0.5 text-[10px] text-muted-foreground sm:text-xs">
-        {company}
-      </p>
-    )}
-  </div>
-);
-
-/* ─────────────────────────────────────────────────────────────────────────
-   Premium investor card
-───────────────────────────────────────────────────────────────────────── */
-const PremiumInvestorCard = ({
+const PremiumProfileCard = ({
   profile,
   photoUrl,
   photoAlt,
-  companyLogo,
+  badge,
+  fallbackLabel,
+  accent,
   onCardClick,
+  wide = false,
 }: {
   profile: SpeakerInvestorProfile;
   photoUrl: string;
   photoAlt: string;
-  companyLogo?: string;
+  badge: string;
+  fallbackLabel: string;
+  accent: "teal" | "indigo";
   onCardClick?: () => void;
-}) => (
-  <article className="group flex h-full w-full max-w-[260px] flex-col overflow-hidden rounded-[24px] border border-slate-200 bg-white shadow-[0_12px_32px_-24px_rgba(15,23,42,0.3)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_50px_-26px_rgba(15,23,42,0.28)] sm:max-w-[280px] md:max-w-[300px]">
-    <div
-      className="relative aspect-[3/4] overflow-hidden bg-slate-100 cursor-pointer"
-      onClick={onCardClick}
-    >
-      <img
-        src={photoUrl}
-        alt={photoAlt}
-        className="h-full w-full object-cover object-top transition-transform duration-700 group-hover:scale-105"
-        loading="lazy"
-      />
-      <div className="absolute inset-0 bg-gradient-to-t from-slate-950/12 via-transparent to-transparent" />
-    </div>
+  wide?: boolean;
+}) => {
+  const styles = ACCENT_STYLES[accent];
+  const widthClasses = wide
+    ? "max-w-[300px] sm:max-w-[340px] md:max-w-[380px]"
+    : "max-w-[260px] sm:max-w-[280px] md:max-w-[300px]";
+  const aspectClass = wide ? "aspect-[4/3]" : "aspect-[3/4]";
 
-    <div className="flex flex-1 flex-col gap-3 p-4 sm:p-5">
-      <div className="cursor-pointer" onClick={onCardClick}>
-        <h3 className="text-[clamp(1rem,1.6vw,1.2rem)] font-extrabold tracking-tight text-black">
-          {profile.name}
-        </h3>
-        <p className="mt-1 text-xs font-semibold text-indigo-600 sm:text-sm">
-          {profile.designation}
-        </p>
-      </div>
-
-      <div className="mt-auto flex items-end justify-between gap-3 border-t border-slate-200 pt-3">
-        <div className="cursor-pointer flex-1" onClick={onCardClick}>
-          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">
-            Company
-          </p>
-          <p className="mt-1 text-xs font-medium text-slate-500 sm:text-sm">
-            {profile.company || "Independent Investor"}
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2">
-          {profile.linkedinUrl && (
-            <a
-              href={profile.linkedinUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={(e) => e.stopPropagation()}
-              className="flex-shrink-0 rounded-full border border-slate-200 bg-slate-50 p-1.5 text-slate-500 hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 transition-colors"
-              aria-label="LinkedIn Profile"
-            >
-              <ExternalLink size={16} className="fill-current" />
-            </a>
-          )}
-          <div className="flex-shrink-0 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">
-            {companyLogo || "VC"}
-          </div>
-        </div>
-      </div>
-    </div>
-  </article>
-);
-
-/* ─────────────────────────────────────────────────────────────────────────
-   Premium speaker card (same visual language as investors)
-───────────────────────────────────────────────────────────────────────── */
-function PremiumSpeakerCard({
-  profile,
-  photoUrl,
-  photoAlt,
-  affiliationBadge,
-  onCardClick,
-}: {
-  profile: SpeakerInvestorProfile;
-  photoUrl: string;
-  photoAlt: string;
-  affiliationBadge?: string;
-  onCardClick?: () => void;
-}) {
   return (
-    <article className="group flex h-full w-full max-w-[260px] flex-col overflow-hidden rounded-[24px] border border-slate-200 bg-white shadow-[0_12px_32px_-24px_rgba(15,23,42,0.3)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_50px_-26px_rgba(15,23,42,0.28)] sm:max-w-[280px] md:max-w-[300px]">
-      <div
-        className="relative aspect-[3/4] overflow-hidden bg-slate-100 cursor-pointer"
-        onClick={onCardClick}
-      >
+    <article
+      role="button"
+      tabIndex={0}
+      onClick={onCardClick}
+      onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && onCardClick?.()}
+      className={`group relative flex h-full w-full cursor-pointer flex-col overflow-hidden rounded-[24px] border border-slate-200 bg-white shadow-[0_12px_32px_-24px_rgba(15,23,42,0.3)] transition-all duration-300 ease-out hover:-translate-y-2 focus-visible:-translate-y-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${styles.ring} ${styles.glow} ${widthClasses}`}
+    >
+      <div className={`relative ${aspectClass} overflow-hidden bg-slate-100`}>
         <img
           src={photoUrl}
           alt={photoAlt}
-          className="h-full w-full object-cover object-top transition-transform duration-700 group-hover:scale-105"
+          className="h-full w-full object-cover object-top transition-transform duration-500 ease-out group-hover:scale-110"
           loading="lazy"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/12 via-transparent to-transparent" />
+        {/* Scrim + "View Profile" affordance, revealed on hover/focus */}
+        <div className="absolute inset-0 flex items-end justify-center bg-gradient-to-t from-slate-950/70 via-slate-950/10 to-transparent p-4 opacity-0 transition-opacity duration-300 group-hover:opacity-100 group-focus-visible:opacity-100">
+          <span className="mb-1 inline-flex translate-y-2 items-center gap-1.5 rounded-full bg-white/95 px-3 py-1.5 text-xs font-semibold text-slate-900 shadow-md transition-transform duration-300 group-hover:translate-y-0 group-focus-visible:translate-y-0">
+            <Eye size={14} />
+            View Profile
+          </span>
+        </div>
       </div>
 
       <div className="flex flex-1 flex-col gap-3 p-4 sm:p-5">
-        <div className="cursor-pointer" onClick={onCardClick}>
-          <h3 className="text-[clamp(1rem,1.6vw,1.2rem)] font-extrabold tracking-tight text-black">
+        <div>
+          <h3 className="text-[clamp(1rem,1.6vw,1.2rem)] font-extrabold tracking-tight text-black transition-colors group-hover:text-slate-700">
             {profile.name}
           </h3>
-          <p className="mt-1 text-xs font-semibold text-indigo-600 sm:text-sm">
+          <p className={`mt-1 text-xs font-semibold sm:text-sm ${styles.label}`}>
             {profile.designation}
           </p>
         </div>
 
         <div className="mt-auto flex items-end justify-between gap-3 border-t border-slate-200 pt-3">
-          <div className="cursor-pointer flex-1" onClick={onCardClick}>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">Affiliation</p>
-            <p className="mt-1 text-xs font-medium text-slate-500 sm:text-sm">{profile.company || "Independent"}</p>
+          <div className="flex-1">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">
+              {profile.category === "investor" ? "Company" : "Affiliation"}
+            </p>
+            <p className="mt-1 text-xs font-medium text-slate-500 sm:text-sm">
+              {profile.company || fallbackLabel}
+            </p>
           </div>
 
           <div className="flex items-center gap-2">
@@ -549,29 +437,22 @@ function PremiumSpeakerCard({
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={(e) => e.stopPropagation()}
-                className="flex-shrink-0 rounded-full border border-slate-200 bg-slate-50 p-1.5 text-slate-500 hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 transition-colors"
+                className={`flex-shrink-0 rounded-full border border-slate-200 bg-slate-50 p-1.5 text-slate-500 transition-all hover:-translate-y-0.5 hover:shadow-sm ${styles.social}`}
                 aria-label="LinkedIn Profile"
               >
-                <ExternalLink size={16} className="fill-current" />
+                <ExternalLink size={16} />
               </a>
             )}
-            <div className="flex-shrink-0 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">
-              {affiliationBadge || "SPK"}
+            <div
+              className={`flex-shrink-0 rounded-full border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] transition-colors ${styles.chip}`}
+            >
+              {badge}
             </div>
           </div>
         </div>
       </div>
     </article>
   );
-}
-const getCompanyBadge = (company?: string) => {
-  if (!company) return "VC";
-  return company
-    .split(/\s+/)
-    .slice(0, 2)
-    .map((part) => part[0])
-    .join("")
-    .toUpperCase();
 };
 
 export default PastSpeakersInvestors;
