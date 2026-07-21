@@ -8,6 +8,7 @@ import dashboardRouter from "./routes/dashboard.routes.js";
 import profileRouter from "./routes/profile.routes.js";
 import aiRouter from "./routes/ai.routes.js";
 import earlyAccessRouter from "./routes/earlyaccess.routes.js";
+import activityRouter from "./routes/activity.routes.js";
 import { errorHandler, notFoundHandler } from "./middlewares/error.middleware.js";
 
 const app = express();
@@ -79,6 +80,7 @@ app.use("/api/admin", adminRouter);
 app.use("/api/profile", profileRouter);
 app.use("/api/ai", aiRouter);
 app.use("/api/early-access", earlyAccessRouter);
+app.use("/api/activity", activityRouter);
 
 app.use(notFoundHandler);
 app.use(errorHandler);

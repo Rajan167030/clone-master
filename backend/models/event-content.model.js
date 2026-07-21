@@ -17,6 +17,7 @@ const EventContentSchema = new Schema(
     subtitle: { type: String, default: "", trim: true },
     shortDescription: { type: String, default: "", trim: true },
     bannerImage: { type: String, required: true, trim: true },
+    mobileBannerImage: { type: String, default: "", trim: true },
     bannerAlt: { type: String, default: "", trim: true },
     hostName: { type: String, default: "", trim: true },
     hostLogoText: { type: String, default: "FC", trim: true },

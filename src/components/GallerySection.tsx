@@ -155,65 +155,87 @@ const GallerySection = ({ className }: { className?: string }) => {
           </p>
         </div>
 
-        {/* Masonry Gallery Grid */}
-        <div className="w-full">
+        {/* Marquee Gallery */}
+        <div className="w-full overflow-hidden">
           {loading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4 lg:gap-6">
-              {[...Array(8)].map((_, i) => (
-                <div key={i} className="bg-muted/50 animate-pulse rounded-lg aspect-square" />
+            <div className="flex gap-4 overflow-hidden py-4">
+              {[...Array(6)].map((_, i) => (
+                <div key={i} className="w-[280px] h-[200px] bg-muted/50 animate-pulse rounded-2xl shrink-0" />
               ))}
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 auto-rows-[220px] sm:auto-rows-[240px] md:auto-rows-[260px] gap-3 md:gap-4 lg:gap-6">
-              {displayImages.map((image, index) => (
-                <div
-                  key={image._id || index}
-                  className={`group relative rounded-2xl overflow-hidden cursor-pointer shadow-md hover:shadow-xl transition-all duration-300 ${image.spanClass || "md:row-span-1"}`}
-                >
-                  {/* Image */}
-                  <img
-                    src={image.imageUrl}
-                    alt={image.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                  />
+            <div className="flex flex-col gap-6">
+              {/* Row 1 - Moving Left */}
+              <div className="relative flex overflow-hidden">
+                <div className="absolute left-0 top-0 bottom-0 w-24 sm:w-48 bg-gradient-to-r from-background to-transparent z-10 pointer-events-none" />
+                <div className="absolute right-0 top-0 bottom-0 w-24 sm:w-48 bg-gradient-to-l from-background to-transparent z-10 pointer-events-none" />
 
-                  {/* Overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-background/85 via-background/35 to-transparent opacity-80 group-hover:opacity-100 transition-opacity duration-300" />
+                <div className="animate-marquee flex whitespace-nowrap min-w-full">
+                  {[...displayImages, ...displayImages, ...displayImages].map((image, index) => (
+                    <div
+                      key={`${image._id}-${index}`}
+                      className="group relative rounded-2xl overflow-hidden cursor-pointer shadow-md hover:shadow-xl transition-all duration-300 mx-3 w-[260px] sm:w-[320px] h-[180px] sm:h-[220px] shrink-0"
+                    >
+                      {/* Image */}
+                      <img
+                        src={image.imageUrl}
+                        alt={image.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                      />
+                      
+                      {/* Overlay */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-background/85 via-background/35 to-transparent opacity-80 group-hover:opacity-100 transition-opacity duration-300" />
 
-                  {/* Title on hover */}
-                  <div className="absolute inset-0 flex items-end p-4 md:p-5">
-                    <div className="translate-y-2 group-hover:translate-y-0 transition-transform duration-300 w-full">
-                      <div className="inline-flex items-center gap-2 rounded-full bg-white/10 backdrop-blur-md border border-white/15 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.24em] text-white/90 mb-2">
-                        Indian Meetup
+                      {/* Title on hover */}
+                      <div className="absolute inset-0 flex items-end p-4 md:p-5">
+                        <div className="translate-y-2 group-hover:translate-y-0 transition-transform duration-300 w-full whitespace-normal">
+                          <h3 className="font-heading font-semibold text-sm md:text-base text-white line-clamp-2 drop-shadow">
+                            {image.title}
+                          </h3>
+                        </div>
                       </div>
-                      <h3 className="font-heading font-semibold text-sm md:text-base text-white line-clamp-2 drop-shadow">
-                        {image.title}
-                      </h3>
                     </div>
-                  </div>
-
-                  {/* Icon indicator */}
-                  <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-primary/90 flex items-center justify-center shadow-lg shadow-primary/30">
-                      <svg className="w-4 h-4 md:w-5 md:h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7" />
-                      </svg>
-                    </div>
-                  </div>
+                  ))}
                 </div>
-              ))}
+              </div>
+
+              {/* Row 2 - Moving Right */}
+              <div className="relative flex overflow-hidden">
+                <div className="absolute left-0 top-0 bottom-0 w-24 sm:w-48 bg-gradient-to-r from-background to-transparent z-10 pointer-events-none" />
+                <div className="absolute right-0 top-0 bottom-0 w-24 sm:w-48 bg-gradient-to-l from-background to-transparent z-10 pointer-events-none" />
+
+                <div className="animate-marquee-reverse flex whitespace-nowrap min-w-full">
+                  {[...displayImages, ...displayImages, ...displayImages].reverse().map((image, index) => (
+                    <div
+                      key={`${image._id}-rev-${index}`}
+                      className="group relative rounded-2xl overflow-hidden cursor-pointer shadow-md hover:shadow-xl transition-all duration-300 mx-3 w-[260px] sm:w-[320px] h-[180px] sm:h-[220px] shrink-0"
+                    >
+                      {/* Image */}
+                      <img
+                        src={image.imageUrl}
+                        alt={image.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                      />
+                      
+                      {/* Overlay */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-background/85 via-background/35 to-transparent opacity-80 group-hover:opacity-100 transition-opacity duration-300" />
+
+                      {/* Title on hover */}
+                      <div className="absolute inset-0 flex items-end p-4 md:p-5">
+                        <div className="translate-y-2 group-hover:translate-y-0 transition-transform duration-300 w-full whitespace-normal">
+                          <h3 className="font-heading font-semibold text-sm md:text-base text-white line-clamp-2 drop-shadow">
+                            {image.title}
+                          </h3>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           )}
         </div>
       </div>
-
-      <style>{`
-        @media (max-width: 640px) {
-          .auto-rows-\\[250px\\] {
-            grid-auto-rows: 200px;
-          }
-        }
-      `}</style>
     </section>
   );
 };

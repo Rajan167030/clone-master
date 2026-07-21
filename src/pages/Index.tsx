@@ -9,7 +9,7 @@ import GallerySection from "@/components/GallerySection";
 import StatsSection from "@/components/StatsSection";
 import PortfolioMarquee from "@/components/PortfolioMarquee";
 import ExploreNetwork from "@/components/ExploreNetwork";
-import JourneySection from "@/components/JourneySection";
+import InvestorsSection from "@/components/InvestorsSection";
 import Testimonials from "@/components/Testimonials";
 import JoinUsSection from "@/components/JoinUsSection";
 import Footer from "@/components/Footer";
@@ -117,14 +117,14 @@ const Index = () => {
 
       <Navbar />
       <HeroSlider className="gsap-section" />
-      <StatsSection className="gsap-section" />
-      <PortfolioMarquee className="gsap-section" />
-      <SponsorsSection className="gsap-section" />
-      <ExploreNetwork className="gsap-section" />
-      <JourneySection className="gsap-section" />
-      <GallerySection className="gsap-section" />
-      <Testimonials className="gsap-section" />
-      <JoinUsSection showSocial={true} className="gsap-section" />
+      <StatsSection className="gsap-section !py-12 md:!py-16" />
+      <PortfolioMarquee className="gsap-section !py-12 md:!py-16" />
+      <SponsorsSection className="gsap-section !py-12 md:!py-16" />
+      <ExploreNetwork className="gsap-section !py-12 md:!py-16" />
+      <InvestorsSection className="gsap-section !py-12 md:!py-16" />
+      <GallerySection className="gsap-section !py-12 md:!py-16" />
+      <Testimonials className="gsap-section !py-12 md:!py-16" />
+      <JoinUsSection showSocial={true} className="gsap-section !py-12 md:!py-16" />
       <Footer />
     </div>
   );

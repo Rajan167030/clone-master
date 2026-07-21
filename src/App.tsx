@@ -35,6 +35,7 @@ const CollegePartners = lazy(() => import("./pages/CollegePartners.tsx"));
 const FundingApplication = lazy(() => import("./pages/FundingApplication.tsx"));
 const ProductPage = lazy(() => import("./pages/ProductPage.tsx"));
 const OurTeam = lazy(() => import("./pages/OurTeam.tsx"));
+const BangaloreActivity = lazy(() => import("./pages/BangaloreActivity.tsx"));
 
 const queryClient = new QueryClient();
 
@@ -47,6 +48,8 @@ const App = () => (
         <Suspense fallback={<div className="min-h-screen bg-background" />}>
           <Routes>
             <Route path="/" element={<Index />} />
+            <Route path="/activity" element={<BangaloreActivity />} />
+            <Route path="/bangalore-activity" element={<BangaloreActivity />} />
             <Route path="/login" element={<Login role="user" />} />
             <Route path="/login/user" element={<Login role="user" />} />
             <Route path="/login/investor" element={<Login role="investor" />} />

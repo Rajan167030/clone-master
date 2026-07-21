@@ -23,6 +23,7 @@ const navDropdowns: NavDropdown[] = [
       { label: "Company", href: "/about" },
       { label: "Blog", href: "/blog" },
       { label: "Our Team", href: "/team" },
+      { label: "gallery", href: "/gallery" },
     ],
   },
   {
@@ -36,6 +37,7 @@ const navDropdowns: NavDropdown[] = [
   {
     label: "Connect",
     items: [
+      { label: "Activity (Bangalore)", href: "/activity" },
       { label: "Join Us", href: "/join-us" },
       { label: "Get Funding", href: "/get-funding" },
     ],

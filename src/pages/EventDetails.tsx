@@ -106,8 +106,15 @@ const EventDetails = () => {
           </Link>
           <div className="grid gap-6 lg:grid-cols-[1.3fr_0.7fr]">
             <Card className="overflow-hidden border-0 shadow-2xl bg-gradient-to-br from-background to-secondary/40">
-              <div className="relative h-[340px] md:h-[420px]">
-                <img src={event.bannerImage} alt={event.bannerAlt} className="h-full w-full object-cover" />
+              <div className="relative h-[380px] md:h-[420px]">
+                {event.mobileBannerImage ? (
+                  <>
+                    <img src={event.mobileBannerImage} alt={event.bannerAlt || event.title} className="block md:hidden h-full w-full object-cover" />
+                    <img src={event.bannerImage} alt={event.bannerAlt || event.title} className="hidden md:block h-full w-full object-cover" />
+                  </>
+                ) : (
+                  <img src={event.bannerImage} alt={event.bannerAlt || event.title} className="h-full w-full object-cover" />
+                )}
                 <div className="absolute inset-0 bg-gradient-to-t from-background via-background/45 to-transparent" />
                 <div className="absolute bottom-0 left-0 w-full p-6 md:p-8">
                   <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-background/90 px-3 py-1 text-xs font-semibold">

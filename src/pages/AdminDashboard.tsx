@@ -62,6 +62,10 @@ import {
   type Testimonial,
   type Campaign,
   type RecipientUploadStats,
+  getBangaloreStartupsApi,
+  getBangaloreInvestorsApi,
+  type ActivityStartupItem,
+  type ActivityInvestorProfile,
 } from "@/lib/api";
 import { getToken, getAccount } from "@/lib/session";
 import { Button } from "@/components/ui/button";
@@ -90,6 +94,7 @@ import {
   Upload,
   Rocket,
   Image,
+  Activity,
 } from "lucide-react";
 
 const emptyEventForm = {
@@ -190,6 +195,7 @@ const emptyPartnerForm = {
 
 const emptyGalleryForm = {
   title: "",
+  eventName: "",
   imageUrl: "",
   altText: "",
   caption: "",
@@ -288,6 +294,8 @@ const AdminDashboard = () => {
   const [fundingApplications, setFundingApplications] = useState<FundingApplication[]>([]);
   const [partnerTypes, setPartnerTypes] = useState<Array<{ slug: string; name: string }>>([]);
   const [partnerTypeFilter, setPartnerTypeFilter] = useState<string>("");
+  const [activityStartups, setActivityStartups] = useState<ActivityStartupItem[]>([]);
+  const [activityInvestors, setActivityInvestors] = useState<ActivityInvestorProfile[]>([]);
   const [templates, setTemplates] = useState<EmailTemplate[]>([]);
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [selectedCampaignId, setSelectedCampaignId] = useState<string>("");
@@ -333,7 +341,7 @@ const AdminDashboard = () => {
   const [showPromotionForm, setShowPromotionForm] = useState(false);
   const [uploadingPromotionImage, setUploadingPromotionImage] = useState(false);
   const [promotionImageMode, setPromotionImageMode] = useState<ImageInputMode>("url");
-  const [activeTab, setActiveTab] = useState<"dashboard" | "analytics" | "events" | "blogs" | "members" | "partners" | "newsletter" | "automation" | "funding" | "promotions">("dashboard");
+  const [activeTab, setActiveTab] = useState<"dashboard" | "analytics" | "events" | "blogs" | "members" | "partners" | "newsletter" | "automation" | "funding" | "promotions" | "activity">("dashboard");
   const [showEventForm, setShowEventForm] = useState(false);
   const [showBlogForm, setShowBlogForm] = useState(false);
   const [showPartnerForm, setShowPartnerForm] = useState(false);
@@ -438,6 +446,8 @@ const AdminDashboard = () => {
       getAdminPartnerTypesApi(token),
       getAdminSiteNoticeApi(token),
       getAdminSliderPromotionsApi(token),
+      getBangaloreStartupsApi(),
+      getBangaloreInvestorsApi(),
     ])
       .then(([
         eventsResponse,
@@ -456,6 +466,8 @@ const AdminDashboard = () => {
         partnerTypesResponse,
         noticeResponse,
         promotionsResponse,
+        startupsResponse,
+        investorsResponse,
       ]) => {
         setEvents(eventsResponse.events);
         setPosts(blogsResponse.posts);
@@ -470,6 +482,8 @@ const AdminDashboard = () => {
         setTemplates(templatesResponse.templates || []);
         setCampaigns(campaignsResponse.campaigns || []);
         setPromotions(promotionsResponse.promotions || []);
+        setActivityStartups(startupsResponse || []);
+        setActivityInvestors(investorsResponse || []);
         setSiteNoticeForm(
           noticeResponse.notice
             ? {
@@ -1159,6 +1173,7 @@ const AdminDashboard = () => {
   const adminMenuItems = [
     { label: "Dashboard", id: "dashboard", icon: BarChart3 },
     { label: "Analytics", id: "analytics", icon: TrendingUp },
+    { label: "Bangalore Event", id: "activity", icon: Activity },
     { label: "Events", id: "events", icon: Calendar },
     { label: "Promotions", id: "promotions", icon: Image },
     { label: "Blogs", id: "blogs", icon: FileText },
@@ -1284,6 +1299,7 @@ const AdminDashboard = () => {
               {activeTab === "newsletter" && "Newsletter Management"}
               {activeTab === "automation" && "Email Automation"}
               {activeTab === "funding" && "Funding Applications"}
+              {activeTab === "activity" && "Bangalore Event Activity"}
             </h1>
             <p className="mt-3 max-w-3xl text-slate-600">
               {activeTab === "dashboard" && "Welcome back! Here's your admin overview."}
@@ -1296,6 +1312,7 @@ const AdminDashboard = () => {
               {activeTab === "newsletter" && "View subscribers and manage newsletter signups."}
               {activeTab === "automation" && "Send bulk campaigns to subscribers, members, or everyone."}
               {activeTab === "funding" && "Review and manage startup funding applications."}
+              {activeTab === "activity" && "View live registrations for startups and investors from the Bangalore Event."}
             </p>
           </div>
 
@@ -1567,99 +1584,169 @@ const AdminDashboard = () => {
                   </CardHeader>
                   <CardContent className="space-y-4 bg-white rounded-b-lg p-4">
                     <div className="grid gap-4 sm:grid-cols-2">
-                      <Input placeholder="Slug" value={eventForm.slug} onChange={(e) => setEventForm((c) => ({ ...c, slug: e.target.value }))} />
-                      <Input placeholder="Title" value={eventForm.title} onChange={(e) => setEventForm((c) => ({ ...c, title: e.target.value }))} />
+                      <Input placeholder="Event Slug (e.g. bangalore-founder-connect)" value={eventForm.slug} onChange={(e) => setEventForm((c) => ({ ...c, slug: e.target.value }))} />
+                      <Input placeholder="Event Title *" value={eventForm.title} onChange={(e) => setEventForm((c) => ({ ...c, title: e.target.value }))} />
                     </div>
-                    <Input placeholder="Subtitle" value={eventForm.subtitle} onChange={(e) => setEventForm((c) => ({ ...c, subtitle: e.target.value }))} />
-                    <Textarea placeholder="Short Description" value={eventForm.shortDescription} onChange={(e) => setEventForm((c) => ({ ...c, shortDescription: e.target.value }))} />
+                    <Input placeholder="Subtitle (One line summary)" value={eventForm.subtitle} onChange={(e) => setEventForm((c) => ({ ...c, subtitle: e.target.value }))} />
+                    <Textarea placeholder="Short Description *" value={eventForm.shortDescription} onChange={(e) => setEventForm((c) => ({ ...c, shortDescription: e.target.value }))} />
+                    
                     <div className="grid gap-4 sm:grid-cols-2">
-                      <Input placeholder="Date Label" value={eventForm.dateLabel} onChange={(e) => setEventForm((c) => ({ ...c, dateLabel: e.target.value }))} />
-                      <Input placeholder="Location Label" value={eventForm.locationLabel} onChange={(e) => setEventForm((c) => ({ ...c, locationLabel: e.target.value }))} />
+                      <Input placeholder="Date & Time Label (e.g. Sat, Aug 15, 2026 • 5:00 PM)" value={eventForm.dateLabel} onChange={(e) => setEventForm((c) => ({ ...c, dateLabel: e.target.value }))} />
+                      <Input placeholder="Location Label (e.g. Indiranagar, Bangalore)" value={eventForm.locationLabel} onChange={(e) => setEventForm((c) => ({ ...c, locationLabel: e.target.value }))} />
                     </div>
-                    <div className="grid gap-4 sm:grid-cols-3">
-                      <Input placeholder="Map URL" value={eventForm.mapUrl} onChange={(e) => setEventForm((c) => ({ ...c, mapUrl: e.target.value }))} />
-                      <Input placeholder="Calendar URL" value={eventForm.calendarUrl} onChange={(e) => setEventForm((c) => ({ ...c, calendarUrl: e.target.value }))} />
+                    
+                    <div className="grid gap-4 sm:grid-cols-2">
                       <Input placeholder="External Registration URL (Link to Luma/Eventbrite)" value={eventForm.registrationUrl} onChange={(e) => setEventForm((c) => ({ ...c, registrationUrl: e.target.value }))} />
+                      <Input placeholder="Ticket Label (e.g. Free RSVP / Invite Only)" value={eventForm.ticketLabel} onChange={(e) => setEventForm((c) => ({ ...c, ticketLabel: e.target.value }))} />
                     </div>
-                    <div className="grid gap-4 sm:grid-cols-2">
-                      <Input placeholder="Ticket Label (e.g. Free RSVP / Member Only)" value={eventForm.ticketLabel} onChange={(e) => setEventForm((c) => ({ ...c, ticketLabel: e.target.value }))} />
-                      <Input placeholder="Refund Policy" value={eventForm.refundPolicy} onChange={(e) => setEventForm((c) => ({ ...c, refundPolicy: e.target.value }))} />
-                    </div>
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2">
-                        <label className="text-sm font-medium text-slate-700">Banner Image</label>
-                        <div className="flex gap-2 rounded-lg border border-slate-200 bg-slate-50 p-1">
-                          <button
-                            type="button"
-                            onClick={() => setEventImageMode("url")}
-                            className={`px-3 py-1 rounded text-xs font-medium transition-colors ${
-                              eventImageMode === "url"
-                                ? "bg-violet-500 text-white"
-                                : "bg-transparent text-slate-600 hover:text-slate-900"
-                            }`}
-                          >
-                            Paste URL
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setEventImageMode("upload")}
-                            className={`px-3 py-1 rounded text-xs font-medium transition-colors ${
-                              eventImageMode === "upload"
-                                ? "bg-violet-500 text-white"
-                                : "bg-transparent text-slate-600 hover:text-slate-900"
-                            }`}
-                          >
-                            <Upload className="inline h-3 w-3 mr-1" />
-                            Upload File
-                          </button>
+
+                    {/* --- DUAL IMAGE UPLOADER: DESKTOP & MOBILE --- */}
+                    <div className="grid gap-6 md:grid-cols-2 pt-2 border-t border-b pb-4 my-2">
+                      {/* 1. Desktop Image */}
+                      <div className="space-y-2.5 p-3.5 rounded-xl bg-slate-50 border border-slate-200">
+                        <div className="flex items-center justify-between">
+                          <label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                            <Image className="w-4 h-4 text-purple-600" />
+                            Desktop View Poster/Banner *
+                          </label>
+                          <div className="flex gap-1 rounded bg-white p-0.5 border text-[11px]">
+                            <button
+                              type="button"
+                              onClick={() => setEventImageMode("url")}
+                              className={`px-2 py-0.5 rounded font-medium ${eventImageMode === "url" ? "bg-purple-600 text-white" : "text-slate-600"}`}
+                            >
+                              URL
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setEventImageMode("upload")}
+                              className={`px-2 py-0.5 rounded font-medium ${eventImageMode === "upload" ? "bg-purple-600 text-white" : "text-slate-600"}`}
+                            >
+                              Upload
+                            </button>
+                          </div>
                         </div>
-                      </div>
-                      {eventImageMode === "url" ? (
-                        <Input
-                          placeholder="https://example.com/image.jpg"
-                          value={eventForm.bannerImage}
-                          onChange={(e) => setEventForm((c) => ({ ...c, bannerImage: e.target.value }))}
-                        />
-                      ) : (
-                        <div className="flex flex-wrap items-center gap-3">
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            disabled={uploadingEventBanner}
-                            onClick={() => document.getElementById("event-banner-upload")?.click()}
-                          >
-                            {uploadingEventBanner ? "Uploading..." : "Choose Image"}
-                          </Button>
-                          <input
-                            id="event-banner-upload"
-                            type="file"
-                            accept="image/*"
-                            className="hidden"
-                            onChange={(e) => {
-                              const file = e.target.files?.[0];
-                              void handleEventBannerUpload(file);
-                              e.target.value = "";
-                            }}
+
+                        {eventImageMode === "url" ? (
+                          <Input
+                            placeholder="https://example.com/desktop-banner.jpg"
+                            value={eventForm.bannerImage}
+                            onChange={(e) => setEventForm((c) => ({ ...c, bannerImage: e.target.value }))}
                           />
-                          <span className="text-xs text-slate-500">File will be uploaded to Cloudinary</span>
+                        ) : (
+                          <div className="flex items-center gap-2">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              disabled={uploadingEventBanner}
+                              onClick={() => document.getElementById("event-banner-upload")?.click()}
+                              className="text-xs"
+                            >
+                              {uploadingEventBanner ? "Uploading..." : "Upload Desktop Image"}
+                            </Button>
+                            <input
+                              id="event-banner-upload"
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                void handleEventBannerUpload(file);
+                                e.target.value = "";
+                              }}
+                            />
+                          </div>
+                        )}
+
+                        <p className="text-[11px] font-medium text-slate-500 bg-purple-50/70 p-2 rounded border border-purple-100">
+                          📏 <strong>Recommended Desktop Size:</strong> 1920 × 1080 px (Aspect Ratio 16:9)
+                        </p>
+
+                        {eventForm.bannerImage && (
+                          <img
+                            src={eventForm.bannerImage}
+                            alt="Desktop preview"
+                            className="h-28 w-full rounded-lg border object-cover shadow-sm"
+                          />
+                        )}
+                      </div>
+
+                      {/* 2. Mobile Image */}
+                      <div className="space-y-2.5 p-3.5 rounded-xl bg-slate-50 border border-slate-200">
+                        <div className="flex items-center justify-between">
+                          <label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                            <Image className="w-4 h-4 text-indigo-600" />
+                            Mobile View Poster/Banner
+                          </label>
+                          <div className="flex gap-1 rounded bg-white p-0.5 border text-[11px]">
+                            <button
+                              type="button"
+                              onClick={() => setEventMobileImageMode("url")}
+                              className={`px-2 py-0.5 rounded font-medium ${eventMobileImageMode === "url" ? "bg-indigo-600 text-white" : "text-slate-600"}`}
+                            >
+                              URL
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setEventMobileImageMode("upload")}
+                              className={`px-2 py-0.5 rounded font-medium ${eventMobileImageMode === "upload" ? "bg-indigo-600 text-white" : "text-slate-600"}`}
+                            >
+                              Upload
+                            </button>
+                          </div>
                         </div>
-                      )}
-                      {eventForm.bannerImage && (
-                        <img
-                          src={eventForm.bannerImage}
-                          alt={eventForm.bannerAlt || eventForm.title || "Event banner preview"}
-                          className="h-28 w-full rounded-lg border border-slate-200 object-cover sm:h-36"
-                        />
-                      )}
+
+                        {eventMobileImageMode === "url" ? (
+                          <Input
+                            placeholder="https://example.com/mobile-poster.jpg"
+                            value={eventForm.mobileBannerImage}
+                            onChange={(e) => setEventForm((c) => ({ ...c, mobileBannerImage: e.target.value }))}
+                          />
+                        ) : (
+                          <div className="flex items-center gap-2">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              disabled={uploadingEventMobileBanner}
+                              onClick={() => document.getElementById("event-mobile-banner-upload")?.click()}
+                              className="text-xs"
+                            >
+                              {uploadingEventMobileBanner ? "Uploading..." : "Upload Mobile Image"}
+                            </Button>
+                            <input
+                              id="event-mobile-banner-upload"
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                void handleEventMobileBannerUpload(file);
+                                e.target.value = "";
+                              }}
+                            />
+                          </div>
+                        )}
+
+                        <p className="text-[11px] font-medium text-slate-500 bg-indigo-50/70 p-2 rounded border border-indigo-100">
+                          📏 <strong>Recommended Mobile Size:</strong> 800 × 1200 px (Aspect Ratio 4:5 or 9:16 Portrait)
+                        </p>
+
+                        {eventForm.mobileBannerImage && (
+                          <img
+                            src={eventForm.mobileBannerImage}
+                            alt="Mobile preview"
+                            className="h-28 w-20 mx-auto rounded-lg border object-cover shadow-sm"
+                          />
+                        )}
+                      </div>
                     </div>
-                    <Input placeholder="Host Name" value={eventForm.hostName} onChange={(e) => setEventForm((c) => ({ ...c, hostName: e.target.value }))} />
-                    <Textarea placeholder="About (one paragraph per line)" value={eventForm.about} onChange={(e) => setEventForm((c) => ({ ...c, about: e.target.value }))} />
-                    <Textarea placeholder="Expectations (one per line)" value={eventForm.expectations} onChange={(e) => setEventForm((c) => ({ ...c, expectations: e.target.value }))} />
-                    <Textarea placeholder="Differentiators (one per line)" value={eventForm.differentiators} onChange={(e) => setEventForm((c) => ({ ...c, differentiators: e.target.value }))} />
-                    <Textarea placeholder="Audience (one per line)" value={eventForm.audience} onChange={(e) => setEventForm((c) => ({ ...c, audience: e.target.value }))} />
-                    <Textarea placeholder="Tags (one per line)" value={eventForm.tags} onChange={(e) => setEventForm((c) => ({ ...c, tags: e.target.value }))} />
-                    <Textarea placeholder="FAQs: question || answer" value={eventForm.faqs} onChange={(e) => setEventForm((c) => ({ ...c, faqs: e.target.value }))} />
+
+                    <Input placeholder="Host / Organizer Name" value={eventForm.hostName} onChange={(e) => setEventForm((c) => ({ ...c, hostName: e.target.value }))} />
+                    <Textarea placeholder="About Event (one paragraph per line)" rows={3} value={eventForm.about} onChange={(e) => setEventForm((c) => ({ ...c, about: e.target.value }))} />
+                    <Textarea placeholder="Tags / Categories (comma or line separated)" rows={2} value={eventForm.tags} onChange={(e) => setEventForm((c) => ({ ...c, tags: e.target.value }))} />
+                    <Textarea placeholder="FAQs (format: question || answer)" rows={3} value={eventForm.faqs} onChange={(e) => setEventForm((c) => ({ ...c, faqs: e.target.value }))} />
                     
                     <div className="space-y-3 border-t pt-4">
                       <div className="flex items-center gap-2">
@@ -2644,11 +2731,16 @@ const AdminDashboard = () => {
                             <X className="h-4 w-4" />
                           </Button>
                         </div>
-                        <div className="grid gap-3 sm:grid-cols-2">
+                        <div className="grid gap-3 sm:grid-cols-3">
                           <Input
                             placeholder="Title *"
                             value={galleryForm.title}
                             onChange={(e) => setGalleryForm((current) => ({ ...current, title: e.target.value }))}
+                          />
+                          <Input
+                            placeholder="Event Name (e.g. Founders Meetup 2024)"
+                            value={galleryForm.eventName}
+                            onChange={(e) => setGalleryForm((current) => ({ ...current, eventName: e.target.value }))}
                           />
                           <Input
                             placeholder="Order"
@@ -2741,9 +2833,10 @@ const AdminDashboard = () => {
                             <div className="flex-1">
                               <div className="flex items-center gap-2">
                                 <h4 className="font-semibold text-slate-900">{image.title}</h4>
+                                {image.eventName && <Badge variant="outline" className="border-violet-200 text-violet-700 bg-violet-50">{image.eventName}</Badge>}
                                 <Badge variant={image.isActive ? "default" : "secondary"}>{image.isActive ? "Active" : "Hidden"}</Badge>
                               </div>
-                              <p className="text-xs text-slate-500">Order: {image.order ?? 0}</p>
+                              <p className="text-xs text-slate-500 mt-1">Order: {image.order ?? 0}</p>
                               <p className="text-sm text-slate-600 mt-1 line-clamp-2">{image.caption || image.altText || image.imageUrl}</p>
                             </div>
                             <div className="flex gap-2">
@@ -2754,6 +2847,7 @@ const AdminDashboard = () => {
                                   setSelectedGalleryId(image._id);
                                   setGalleryForm({
                                     title: image.title || "",
+                                    eventName: image.eventName || "",
                                     imageUrl: image.imageUrl || "",
                                     altText: image.altText || "",
                                     caption: image.caption || "",
@@ -3571,6 +3665,145 @@ const AdminDashboard = () => {
                    </CardContent>
                  </Card>
               </div>
+            </div>
+          )}
+
+          {/* Activity Tab */}
+          {activeTab === "activity" && (
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-2xl font-bold text-slate-900">Bangalore Event Data</h2>
+                  <p className="text-sm text-slate-500">View and export real-time registrations for startups and investors.</p>
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      const emails = [...new Set([
+                        ...activityStartups.map(s => s.founderEmail),
+                        ...activityInvestors.map(i => i.email)
+                      ])].join(", ");
+                      navigator.clipboard.writeText(emails);
+                      window.alert("All emails copied to clipboard!");
+                    }}
+                    className="gap-2"
+                  >
+                    <Mail size={16} />
+                    Copy All Emails
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      exportToCSV(activityStartups, "bangalore-startups");
+                      exportToCSV(activityInvestors, "bangalore-investors");
+                    }}
+                    className="gap-2"
+                  >
+                    <FileText size={16} />
+                    Export CSVs
+                  </Button>
+                </div>
+              </div>
+
+              {/* Startups Table */}
+              <Card>
+                <CardHeader className="bg-slate-50 border-b">
+                  <CardTitle>Registered Startups ({activityStartups.length})</CardTitle>
+                  <CardDescription>Startups participating in the Bangalore event.</CardDescription>
+                </CardHeader>
+                <CardContent className="p-0">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-sm">
+                      <thead className="bg-slate-50 text-slate-500 border-b">
+                        <tr>
+                          <th className="p-4 font-medium">Startup</th>
+                          <th className="p-4 font-medium">Founder</th>
+                          <th className="p-4 font-medium">Email</th>
+                          <th className="p-4 font-medium">Category / Stage</th>
+                          <th className="p-4 font-medium">Score</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100">
+                        {activityStartups.length === 0 ? (
+                          <tr>
+                            <td colSpan={5} className="p-8 text-center text-slate-500">No startups registered yet.</td>
+                          </tr>
+                        ) : (
+                          activityStartups.map((startup) => (
+                            <tr key={startup.id} className="hover:bg-slate-50">
+                              <td className="p-4">
+                                <div className="flex items-center gap-3">
+                                  {startup.logoUrl && <img src={startup.logoUrl} alt="" className="w-8 h-8 rounded object-cover" />}
+                                  <div>
+                                    <p className="font-semibold text-slate-900">{startup.startupName}</p>
+                                    <p className="text-xs text-slate-500">{startup.tagline}</p>
+                                  </div>
+                                </div>
+                              </td>
+                              <td className="p-4">{startup.founderName}</td>
+                              <td className="p-4">{startup.founderEmail}</td>
+                              <td className="p-4">
+                                <Badge variant="secondary" className="mr-2">{startup.category}</Badge>
+                                <Badge variant="outline">{startup.stage}</Badge>
+                              </td>
+                              <td className="p-4">
+                                <div className="flex items-center gap-1 font-semibold">
+                                  ⭐ {Number(startup.averageScore || 0).toFixed(1)}
+                                  <span className="text-xs text-slate-400">({startup.totalRatingsCount || 0})</span>
+                                </div>
+                              </td>
+                            </tr>
+                          ))
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Investors Table */}
+              <Card>
+                <CardHeader className="bg-slate-50 border-b">
+                  <CardTitle>Registered Investors ({activityInvestors.length})</CardTitle>
+                  <CardDescription>Investors participating in the Bangalore event.</CardDescription>
+                </CardHeader>
+                <CardContent className="p-0">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-sm">
+                      <thead className="bg-slate-50 text-slate-500 border-b">
+                        <tr>
+                          <th className="p-4 font-medium">Investor</th>
+                          <th className="p-4 font-medium">Firm</th>
+                          <th className="p-4 font-medium">Email</th>
+                          <th className="p-4 font-medium">Designation</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100">
+                        {activityInvestors.length === 0 ? (
+                          <tr>
+                            <td colSpan={4} className="p-8 text-center text-slate-500">No investors registered yet.</td>
+                          </tr>
+                        ) : (
+                          activityInvestors.map((investor) => (
+                            <tr key={investor.id} className="hover:bg-slate-50">
+                              <td className="p-4">
+                                <div className="flex items-center gap-3">
+                                  {investor.photoUrl ? <img src={investor.photoUrl} alt="" className="w-8 h-8 rounded-full object-cover" /> : <div className="w-8 h-8 rounded-full bg-slate-200" />}
+                                  <p className="font-semibold text-slate-900">{investor.fullName}</p>
+                                </div>
+                              </td>
+                              <td className="p-4">{investor.firmName}</td>
+                              <td className="p-4">{investor.email}</td>
+                              <td className="p-4">{investor.designation}</td>
+                            </tr>
+                          ))
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           )}
         </div>

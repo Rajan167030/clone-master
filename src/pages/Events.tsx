@@ -89,7 +89,14 @@ const Events = () => {
               return matchesSearch && matchesTag;
             }).map((event) => (
               <Card key={event.slug} className="overflow-hidden border-border/60 shadow-lg hover-scale flex flex-col">
-                <img src={event.bannerImage} alt={event.bannerAlt} className="h-48 w-full object-cover" />
+                {event.mobileBannerImage ? (
+                  <>
+                    <img src={event.mobileBannerImage} alt={event.bannerAlt || event.title} className="block md:hidden h-52 w-full object-cover" />
+                    <img src={event.bannerImage} alt={event.bannerAlt || event.title} className="hidden md:block h-48 w-full object-cover" />
+                  </>
+                ) : (
+                  <img src={event.bannerImage} alt={event.bannerAlt || event.title} className="h-48 w-full object-cover" />
+                )}
                 <CardHeader>
                   <div className="flex items-start justify-between gap-3">
                     <CardTitle className="text-xl leading-snug">{event.title}</CardTitle>

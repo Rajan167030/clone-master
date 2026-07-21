@@ -102,6 +102,7 @@ export type DynamicEvent = {
   subtitle: string;
   shortDescription: string;
   bannerImage: string;
+  mobileBannerImage?: string;
   bannerAlt: string;
   hostName: string;
   hostLogoText: string;
@@ -141,6 +142,7 @@ export type DynamicBlogPost = {
 export type GalleryImage = {
   _id: string;
   title: string;
+  eventName?: string;
   imageUrl: string;
   altText?: string;
   caption?: string;
@@ -762,9 +764,9 @@ export const getAdminGalleryApi = (token: string) =>
     headers: { Authorization: `Bearer ${token}` },
   });
 
-export const createAdminGalleryApi = (
+export const createAdminGalleryApi = async (
   token: string,
-  payload: Pick<GalleryImage, "title" | "imageUrl" | "altText" | "caption" | "linkUrl" | "order" | "isActive">,
+  payload: Pick<GalleryImage, "title" | "eventName" | "imageUrl" | "altText" | "caption" | "linkUrl" | "order" | "isActive">,
 ) =>
   request<{ message: string; image: GalleryImage }>("/admin/gallery", {
     method: "POST",
@@ -772,10 +774,10 @@ export const createAdminGalleryApi = (
     body: JSON.stringify(payload),
   });
 
-export const updateAdminGalleryApi = (
+export const updateAdminGalleryApi = async (
   token: string,
   id: string,
-  payload: Pick<GalleryImage, "title" | "imageUrl" | "altText" | "caption" | "linkUrl" | "order" | "isActive">,
+  payload: Pick<GalleryImage, "title" | "eventName" | "imageUrl" | "altText" | "caption" | "linkUrl" | "order" | "isActive">,
 ) =>
   request<{ message: string; image: GalleryImage }>(`/admin/gallery/${id}`, {
     method: "PATCH",
@@ -1025,3 +1027,336 @@ export const generateProfileUrlApi = (token: string) =>
     method: "GET",
     headers: { Authorization: `Bearer ${token}` },
   });
+
+// --- BANGALORE EVENT ACTIVITY API & LOCAL STORAGE ---
+
+export type RatingScores = {
+  innovation: number;
+  market: number;
+  traction: number;
+  team: number;
+  pitch: number;
+};
+
+export type ActivityRatingItem = {
+  investorId: string;
+  investorName: string;
+  investorFirm?: string;
+  investorPhoto?: string;
+  scores: RatingScores;
+  totalScore: number; // out of 25
+  comment?: string;
+  updatedAt: string;
+};
+
+export type ActivityStartupItem = {
+  id: string;
+  founderName: string;
+  founderEmail: string;
+  founderPhone?: string;
+  startupName: string;
+  tagline: string;
+  description: string;
+  category: string;
+  stage: string;
+  location: string;
+  pitchDeckUrl: string;
+  logoUrl: string;
+  ratings: ActivityRatingItem[];
+  averageScore: number; // 0 to 5 scale
+  totalRatingsCount: number;
+  createdAt: string;
+};
+
+export type ActivityInvestorProfile = {
+  id: string;
+  fullName: string;
+  email: string;
+  phone?: string;
+  firmName: string;
+  designation: string;
+  sectors: string[];
+  ticketSize?: string;
+  linkedin?: string;
+  bio?: string;
+  photoUrl: string;
+  promoCodeUsed: string;
+};
+
+const INITIAL_BANGALORE_STARTUPS: ActivityStartupItem[] = [
+  {
+    id: "blr-startup-1",
+    founderName: "Aarav Sharma",
+    founderEmail: "aarav@nexaaihealth.in",
+    founderPhone: "+91 98765 43210",
+    startupName: "NexaAI Health",
+    tagline: "AI-driven predictive diagnostic tools for Indian multispecialty hospitals.",
+    description: "NexaAI builds proprietary deep-learning vision models that assist radiologists in detecting early-stage pulmonary & cardiac abnormalities 4x faster.",
+    category: "HealthTech & AI",
+    stage: "Seed",
+    location: "Bangalore",
+    pitchDeckUrl: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
+    logoUrl: "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=300&auto=format&fit=crop&q=80",
+    ratings: [
+      {
+        investorId: "inv-demo-1",
+        investorName: "Vikram Mehta",
+        investorFirm: "Apex Venture Partners",
+        investorPhoto: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80",
+        scores: { innovation: 5, market: 4, traction: 5, team: 5, pitch: 4 },
+        totalScore: 23,
+        comment: "Outstanding tech stack and strong team execution in Bangalore ecosystem.",
+        updatedAt: new Date().toISOString(),
+      },
+    ],
+    averageScore: 4.6,
+    totalRatingsCount: 1,
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: "blr-startup-2",
+    founderName: "Priya Sundaram",
+    founderEmail: "priya@finedgepay.com",
+    founderPhone: "+91 91234 56789",
+    startupName: "FinEdge Pay",
+    tagline: "UPI-integrated instant micro-credit for tier-2/3 micro-merchants.",
+    description: "Enabling quick 14-day working capital loans for small retailers using real-time UPI transaction intelligence and localized credit scoring.",
+    category: "FinTech",
+    stage: "Pre-Seed",
+    location: "Bangalore",
+    pitchDeckUrl: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
+    logoUrl: "https://images.unsplash.com/photo-1559526324-4b87b5e36e44?w=300&auto=format&fit=crop&q=80",
+    ratings: [
+      {
+        investorId: "inv-demo-1",
+        investorName: "Vikram Mehta",
+        investorFirm: "Apex Venture Partners",
+        investorPhoto: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80",
+        scores: { innovation: 4, market: 5, traction: 4, team: 4, pitch: 4 },
+        totalScore: 21,
+        comment: "Huge addressable market with clear monetization path.",
+        updatedAt: new Date().toISOString(),
+      },
+    ],
+    averageScore: 4.2,
+    totalRatingsCount: 1,
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: "blr-startup-3",
+    founderName: "Rohan Varma",
+    founderEmail: "rohan@urbanvoltev.com",
+    founderPhone: "+91 99887 76655",
+    startupName: "UrbanVolt EV",
+    tagline: "Ultra-fast 90-second battery swapping grid for EV delivery fleets.",
+    description: "Operating 40+ automated battery swapping hubs across East & South Bangalore, powering 3,000+ last-mile delivery riders daily.",
+    category: "CleanTech & EV",
+    stage: "Series A",
+    location: "Bangalore",
+    pitchDeckUrl: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
+    logoUrl: "https://images.unsplash.com/photo-1558441719-443b38645ad9?w=300&auto=format&fit=crop&q=80",
+    ratings: [],
+    averageScore: 0,
+    totalRatingsCount: 0,
+    createdAt: new Date().toISOString(),
+  },
+];
+
+const LOCAL_STORAGE_STARTUPS_KEY = "fc_bangalore_activity_startups_v1";
+const LOCAL_STORAGE_INVESTOR_KEY = "fc_bangalore_activity_investor_v1";
+
+export const getBangaloreStartupsLocal = (): ActivityStartupItem[] => {
+  try {
+    const raw = localStorage.getItem(LOCAL_STORAGE_STARTUPS_KEY);
+    if (!raw) {
+      localStorage.setItem(LOCAL_STORAGE_STARTUPS_KEY, JSON.stringify(INITIAL_BANGALORE_STARTUPS));
+      return INITIAL_BANGALORE_STARTUPS;
+    }
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) && parsed.length > 0 ? parsed : INITIAL_BANGALORE_STARTUPS;
+  } catch {
+    return INITIAL_BANGALORE_STARTUPS;
+  }
+};
+
+export const saveBangaloreStartupLocal = (startupData: Omit<ActivityStartupItem, "id" | "ratings" | "averageScore" | "totalRatingsCount" | "createdAt">): ActivityStartupItem => {
+  const existing = getBangaloreStartupsLocal();
+  const newStartup: ActivityStartupItem = {
+    ...startupData,
+    id: `blr-startup-${Date.now()}`,
+    ratings: [],
+    averageScore: 0,
+    totalRatingsCount: 0,
+    createdAt: new Date().toISOString(),
+  };
+  const updated = [newStartup, ...existing];
+  localStorage.setItem(LOCAL_STORAGE_STARTUPS_KEY, JSON.stringify(updated));
+  return newStartup;
+};
+
+export const submitStartupRatingLocal = (
+  startupId: string,
+  investor: ActivityInvestorProfile,
+  scores: RatingScores,
+  comment?: string
+): ActivityStartupItem[] => {
+  const startups = getBangaloreStartupsLocal();
+  const updated = startups.map((s) => {
+    if (s.id !== startupId) return s;
+
+    const totalScore = scores.innovation + scores.market + scores.traction + scores.team + scores.pitch;
+    const newRating: ActivityRatingItem = {
+      investorId: investor.id,
+      investorName: investor.fullName,
+      investorFirm: investor.firmName,
+      investorPhoto: investor.photoUrl,
+      scores,
+      totalScore,
+      comment: comment || "",
+      updatedAt: new Date().toISOString(),
+    };
+
+    const existingRatings = s.ratings.filter((r) => r.investorId !== investor.id);
+    const newRatings = [...existingRatings, newRating];
+    const totalScoreSum = newRatings.reduce((acc, curr) => acc + curr.totalScore / 5, 0);
+    const avgScore = Number((totalScoreSum / newRatings.length).toFixed(2));
+
+    return {
+      ...s,
+      ratings: newRatings,
+      averageScore: avgScore,
+      totalRatingsCount: newRatings.length,
+    };
+  });
+
+  // Sort startups by average score descending
+  updated.sort((a, b) => b.averageScore - a.averageScore || b.totalRatingsCount - a.totalRatingsCount);
+  localStorage.setItem(LOCAL_STORAGE_STARTUPS_KEY, JSON.stringify(updated));
+  return updated;
+};
+
+export const saveInvestorProfileLocal = (investorData: Omit<ActivityInvestorProfile, "id">): ActivityInvestorProfile => {
+  const investorProfile: ActivityInvestorProfile = {
+    ...investorData,
+    id: `inv-${Date.now()}`,
+  };
+  localStorage.setItem(LOCAL_STORAGE_INVESTOR_KEY, JSON.stringify(investorProfile));
+  return investorProfile;
+};
+
+export const getSavedInvestorProfileLocal = (): ActivityInvestorProfile | null => {
+  try {
+    const raw = localStorage.getItem(LOCAL_STORAGE_INVESTOR_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+};
+
+// --- REAL-TIME BACKEND API CONNECTORS WITH MONGODB & SYNC ---
+
+export const getBangaloreStartupsApi = async (): Promise<ActivityStartupItem[]> => {
+  try {
+    const res = await request<{ startups: ActivityStartupItem[] }>("/activity/startups", { method: "GET" });
+    if (res?.startups && Array.isArray(res.startups) && res.startups.length > 0) {
+      // Map MongoDB _id to id if needed
+      const mapped = res.startups.map((item: any) => ({
+        ...item,
+        id: item.id || item._id || `blr-${Math.random()}`,
+      }));
+      localStorage.setItem(LOCAL_STORAGE_STARTUPS_KEY, JSON.stringify(mapped));
+      return mapped;
+    }
+  } catch {
+    // Silently fallback to local storage
+  }
+  return getBangaloreStartupsLocal();
+};
+
+export const saveBangaloreStartupApi = async (
+  startupData: Omit<ActivityStartupItem, "id" | "ratings" | "averageScore" | "totalRatingsCount" | "createdAt">
+): Promise<ActivityStartupItem> => {
+  const localSaved = saveBangaloreStartupLocal(startupData);
+  try {
+    const res = await request<{ startup: ActivityStartupItem }>("/activity/startup", {
+      method: "POST",
+      body: JSON.stringify({ ...startupData, promoCode: "startup20" }),
+    });
+    if (res?.startup) {
+      const serverStartup = {
+        ...res.startup,
+        id: (res.startup as any)._id || res.startup.id || localSaved.id,
+      };
+      return serverStartup;
+    }
+  } catch {
+    // Retain local copy if server fails
+  }
+  return localSaved;
+};
+
+export const saveInvestorProfileApi = async (
+  investorData: Omit<ActivityInvestorProfile, "id">
+): Promise<ActivityInvestorProfile> => {
+  const localSaved = saveInvestorProfileLocal(investorData);
+  try {
+    const res = await request<{ investor: ActivityInvestorProfile }>("/activity/investor", {
+      method: "POST",
+      body: JSON.stringify({ ...investorData, promoCode: "investor20" }),
+    });
+    if (res?.investor) {
+      const serverInvestor = {
+        ...res.investor,
+        id: (res.investor as any)._id || res.investor.id || localSaved.id,
+      };
+      saveInvestorProfileLocal(serverInvestor);
+      return serverInvestor;
+    }
+  } catch {
+    // Retain local copy if server fails
+  }
+  return localSaved;
+};
+
+export const submitStartupRatingApi = async (
+  startupId: string,
+  investor: ActivityInvestorProfile,
+  scores: RatingScores,
+  comment?: string
+): Promise<ActivityStartupItem[]> => {
+  const localUpdated = submitStartupRatingLocal(startupId, investor, scores, comment);
+  try {
+    await request("/activity/rate", {
+      method: "POST",
+      body: JSON.stringify({
+        startupId,
+        investorId: investor.id,
+        investorName: investor.fullName,
+        investorFirm: investor.firmName,
+        investorPhoto: investor.photoUrl,
+        scores,
+        comment,
+      }),
+    });
+    // Refresh live list from server
+    return await getBangaloreStartupsApi();
+  } catch {
+    // Fallback to local updated list
+  }
+  return localUpdated;
+};
+
+export const getBangaloreInvestorsApi = async (): Promise<ActivityInvestorProfile[]> => {
+  try {
+    const res = await request<{ investors: ActivityInvestorProfile[] }>("/activity/investors", { method: "GET" });
+    if (res?.investors && Array.isArray(res.investors)) {
+      return res.investors.map((item: any) => ({
+        ...item,
+        id: item.id || item._id || `inv-${Math.random()}`,
+      }));
+    }
+  } catch {
+    // Silently return empty
+  }
+  return [];
+};

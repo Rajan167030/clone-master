@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 const GalleryImageSchema = new mongoose.Schema(
   {
     title: { type: String, required: true, trim: true },
+    eventName: { type: String, default: "", trim: true },
     imageUrl: { type: String, required: true, trim: true },
     altText: { type: String, default: "", trim: true },
     caption: { type: String, default: "", trim: true },
