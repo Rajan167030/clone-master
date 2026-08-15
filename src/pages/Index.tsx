@@ -4,13 +4,13 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Navbar from "@/components/Navbar";
 import { useSEO, useStructuredData } from "@/hooks/useSEO";
 import HeroSlider from "@/components/HeroSlider";
-import SponsorsSection from "@/components/SponsorsSection";
 import GallerySection from "@/components/GallerySection";
 import StatsSection from "@/components/StatsSection";
 import PortfolioMarquee from "@/components/PortfolioMarquee";
 import ExploreNetwork from "@/components/ExploreNetwork";
 import InvestorsSection from "@/components/InvestorsSection";
 import Testimonials from "@/components/Testimonials";
+import BlogSection from "@/components/BlogSection";
 import JoinUsSection from "@/components/JoinUsSection";
 import Footer from "@/components/Footer";
 import {
@@ -119,9 +119,9 @@ const Index = () => {
       <HeroSlider className="gsap-section" />
       <StatsSection className="gsap-section !py-12 md:!py-16" />
       <PortfolioMarquee className="gsap-section !py-12 md:!py-16" />
-      <SponsorsSection className="gsap-section !py-12 md:!py-16" />
       <ExploreNetwork className="gsap-section !py-12 md:!py-16" />
       <InvestorsSection className="gsap-section !py-12 md:!py-16" />
+      <BlogSection className="gsap-section !py-12 md:!py-16" />
       <GallerySection className="gsap-section !py-12 md:!py-16" />
       <Testimonials className="gsap-section !py-12 md:!py-16" />
       <JoinUsSection showSocial={true} className="gsap-section !py-12 md:!py-16" />

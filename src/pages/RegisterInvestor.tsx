@@ -1,13 +1,15 @@
-import { useRef, useState, type FormEvent } from "react";
-import { TrendingUp, CheckCircle2, ArrowRight, ChevronLeft } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { useEffect, useRef, useState, type FormEvent } from "react";
+import { TrendingUp, CheckCircle2, ArrowRight, ChevronLeft, ShieldAlert, Loader2 } from "lucide-react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 import BackButton from "@/components/BackButton";
-import { registerApi } from "@/lib/api";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
+import { registerApi, validateInvestorInviteApi } from "@/lib/api";
 import { setSession } from "@/lib/session";
 import { useToast } from "@/hooks/use-toast";
 import EmailVerificationBox from "@/components/EmailVerificationBox";
@@ -16,12 +18,45 @@ import { countryCodes, getPhoneValidationError } from "@/lib/formValidation";
 const RegisterInvestor = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [searchParams] = useSearchParams();
+  const inviteToken = (searchParams.get("token") || "").trim();
+  const [inviteStatus, setInviteStatus] = useState<"checking" | "valid" | "invalid">("checking");
+  const [inviteError, setInviteError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [emailForVerification, setEmailForVerification] = useState("");
   const [emailVerificationToken, setEmailVerificationToken] = useState("");
   const [currentStep, setCurrentStep] = useState(1);
   const formRef = useRef<HTMLFormElement | null>(null);
+
+  useEffect(() => {
+    if (!inviteToken) {
+      setInviteStatus("invalid");
+      setInviteError("This registration link is missing an invite code.");
+      return;
+    }
+
+    let mounted = true;
+    validateInvestorInviteApi(inviteToken)
+      .then((response) => {
+        if (!mounted) return;
+        if (response.valid) {
+          setInviteStatus("valid");
+        } else {
+          setInviteStatus("invalid");
+          setInviteError(response.message || "This invite link is invalid or has expired.");
+        }
+      })
+      .catch((error) => {
+        if (!mounted) return;
+        setInviteStatus("invalid");
+        setInviteError(error instanceof Error ? error.message : "This invite link is invalid or has expired.");
+      });
+
+    return () => {
+      mounted = false;
+    };
+  }, [inviteToken]);
 
   const benefits = [
     "Curated founders directory with detailed profiles",
@@ -103,6 +138,11 @@ const RegisterInvestor = () => {
 
   const handleRegister = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    if (inviteStatus !== "valid" || !inviteToken) {
+      toast({ title: "Invite Required", description: "A valid invite link is required to register as an investor.", variant: "destructive" });
+      return;
+    }
 
     const formData = new FormData(e.currentTarget);
     const fullName = String(formData.get("fullName") || "").trim();
@@ -192,6 +232,7 @@ const RegisterInvestor = () => {
         investorId,
       },
       emailVerificationToken,
+      inviteToken,
     })
       .then((response) => {
         toast({
@@ -212,6 +253,47 @@ const RegisterInvestor = () => {
         setIsLoading(false);
       });
   };
+
+  if (inviteStatus === "checking") {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navbar />
+        <main className="flex min-h-[70vh] flex-col items-center justify-center gap-3 px-4 text-center">
+          <Loader2 className="h-8 w-8 animate-spin text-green-600" />
+          <p className="text-sm text-muted-foreground">Checking your invite link...</p>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (inviteStatus === "invalid") {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navbar />
+        <main className="flex min-h-[70vh] flex-col items-center justify-center gap-4 px-4 text-center">
+          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-red-50 border border-red-100 text-red-600">
+            <ShieldAlert className="h-8 w-8" />
+          </div>
+          <h1 className="font-heading text-2xl font-bold text-foreground sm:text-3xl">
+            Investor registration is invite-only
+          </h1>
+          <p className="max-w-md text-sm text-muted-foreground">
+            {inviteError || "This registration link is invalid or has expired."} Please contact the Founders Connect team to request an invite link, or reach out via the Join Us form.
+          </p>
+          <div className="mt-2 flex flex-wrap items-center justify-center gap-3">
+            <Button asChild variant="outline">
+              <Link to="/join-us">Go to Join Us</Link>
+            </Button>
+            <Button asChild>
+              <Link to="/">Back to Home</Link>
+            </Button>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-green-50 via-white to-gray-50">

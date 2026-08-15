@@ -56,7 +56,7 @@ const membershipTiers: MembershipTier[] = [
       "Personal mentorship and strategy reviews",
       "Priority product launch support",
     ],
-    registerLink: "/register/investor",
+    registerLink: "/join-us",
   },
 ];
 

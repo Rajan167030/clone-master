@@ -66,6 +66,12 @@ import {
   getBangaloreInvestorsApi,
   type ActivityStartupItem,
   type ActivityInvestorProfile,
+  listAdminInvestorInvitesApi,
+  createAdminInvestorInviteApi,
+  revokeAdminInvestorInviteApi,
+  reactivateAdminInvestorInviteApi,
+  deleteAdminInvestorInviteApi,
+  type InvestorInvite,
 } from "@/lib/api";
 import { getToken, getAccount } from "@/lib/session";
 import { Button } from "@/components/ui/button";
@@ -95,6 +101,10 @@ import {
   Rocket,
   Image,
   Activity,
+  Link2,
+  Copy,
+  Ban,
+  RotateCcw,
 } from "lucide-react";
 
 const emptyEventForm = {
@@ -341,7 +351,11 @@ const AdminDashboard = () => {
   const [showPromotionForm, setShowPromotionForm] = useState(false);
   const [uploadingPromotionImage, setUploadingPromotionImage] = useState(false);
   const [promotionImageMode, setPromotionImageMode] = useState<ImageInputMode>("url");
-  const [activeTab, setActiveTab] = useState<"dashboard" | "analytics" | "events" | "blogs" | "members" | "partners" | "newsletter" | "automation" | "funding" | "promotions" | "activity">("dashboard");
+  const [activeTab, setActiveTab] = useState<"dashboard" | "analytics" | "events" | "blogs" | "members" | "partners" | "newsletter" | "automation" | "funding" | "promotions" | "activity" | "investor-invites">("dashboard");
+  const [investorInvites, setInvestorInvites] = useState<InvestorInvite[]>([]);
+  const [newInviteLabel, setNewInviteLabel] = useState("");
+  const [newInviteExpiryDays, setNewInviteExpiryDays] = useState("");
+  const [creatingInvite, setCreatingInvite] = useState(false);
   const [showEventForm, setShowEventForm] = useState(false);
   const [showBlogForm, setShowBlogForm] = useState(false);
   const [showPartnerForm, setShowPartnerForm] = useState(false);
@@ -448,6 +462,7 @@ const AdminDashboard = () => {
       getAdminSliderPromotionsApi(token),
       getBangaloreStartupsApi(),
       getBangaloreInvestorsApi(),
+      listAdminInvestorInvitesApi(token),
     ])
       .then(([
         eventsResponse,
@@ -468,6 +483,7 @@ const AdminDashboard = () => {
         promotionsResponse,
         startupsResponse,
         investorsResponse,
+        investorInvitesResponse,
       ]) => {
         setEvents(eventsResponse.events);
         setPosts(blogsResponse.posts);
@@ -498,9 +514,70 @@ const AdminDashboard = () => {
         );
         setGalleryImages(galleryResponse.images || []);
         setTestimonials(testimonialsResponse.testimonials || []);
+        setInvestorInvites(investorInvitesResponse.invites || []);
       })
       .catch((error) => {
         window.alert(error instanceof Error ? error.message : "Unable to load admin data.");
+      });
+  };
+
+  const getInvestorInviteLink = (inviteToken: string) =>
+    `${window.location.origin}/register/investor?token=${inviteToken}`;
+
+  const handleCreateInvestorInvite = () => {
+    setCreatingInvite(true);
+    const expiresInDays = newInviteExpiryDays.trim() ? Number(newInviteExpiryDays.trim()) : undefined;
+
+    createAdminInvestorInviteApi(token, { label: newInviteLabel.trim(), expiresInDays })
+      .then((response) => {
+        setInvestorInvites((prev) => [response.invite, ...prev]);
+        setNewInviteLabel("");
+        setNewInviteExpiryDays("");
+        navigator.clipboard?.writeText(getInvestorInviteLink(response.invite.token)).catch(() => {});
+        window.alert("Invite link created and copied to clipboard.");
+      })
+      .catch((error) => {
+        window.alert(error instanceof Error ? error.message : "Unable to create invite link.");
+      })
+      .finally(() => setCreatingInvite(false));
+  };
+
+  const handleCopyInviteLink = (inviteToken: string) => {
+    navigator.clipboard?.writeText(getInvestorInviteLink(inviteToken)).catch(() => {});
+    window.alert("Invite link copied to clipboard.");
+  };
+
+  const handleRevokeInvestorInvite = (id: string) => {
+    if (!window.confirm("Revoke this invite link? It will stop working immediately.")) return;
+
+    revokeAdminInvestorInviteApi(token, id)
+      .then((response) => {
+        setInvestorInvites((prev) => prev.map((invite) => (invite._id === id ? response.invite : invite)));
+      })
+      .catch((error) => {
+        window.alert(error instanceof Error ? error.message : "Unable to revoke invite link.");
+      });
+  };
+
+  const handleReactivateInvestorInvite = (id: string) => {
+    reactivateAdminInvestorInviteApi(token, id)
+      .then((response) => {
+        setInvestorInvites((prev) => prev.map((invite) => (invite._id === id ? response.invite : invite)));
+      })
+      .catch((error) => {
+        window.alert(error instanceof Error ? error.message : "Unable to reactivate invite link.");
+      });
+  };
+
+  const handleDeleteInvestorInvite = (id: string) => {
+    if (!window.confirm("Permanently delete this invite link?")) return;
+
+    deleteAdminInvestorInviteApi(token, id)
+      .then(() => {
+        setInvestorInvites((prev) => prev.filter((invite) => invite._id !== id));
+      })
+      .catch((error) => {
+        window.alert(error instanceof Error ? error.message : "Unable to delete invite link.");
       });
   };
 
@@ -1182,6 +1259,7 @@ const AdminDashboard = () => {
     { label: "Newsletter", id: "newsletter", icon: Mail },
     { label: "Email Automation", id: "automation", icon: Send },
     { label: "Funding", id: "funding", icon: Rocket },
+    { label: "Investor Invites", id: "investor-invites", icon: Link2 },
   ];
 
   return (
@@ -1300,6 +1378,7 @@ const AdminDashboard = () => {
               {activeTab === "automation" && "Email Automation"}
               {activeTab === "funding" && "Funding Applications"}
               {activeTab === "activity" && "Bangalore Event Activity"}
+              {activeTab === "investor-invites" && "Investor Invite Links"}
             </h1>
             <p className="mt-3 max-w-3xl text-slate-600">
               {activeTab === "dashboard" && "Welcome back! Here's your admin overview."}
@@ -1313,6 +1392,7 @@ const AdminDashboard = () => {
               {activeTab === "automation" && "Send bulk campaigns to subscribers, members, or everyone."}
               {activeTab === "funding" && "Review and manage startup funding applications."}
               {activeTab === "activity" && "View live registrations for startups and investors from the Bangalore Event."}
+              {activeTab === "investor-invites" && "Generate invite-only links for investor registration and manage who they've been shared with."}
             </p>
           </div>
 
@@ -1369,6 +1449,14 @@ const AdminDashboard = () => {
                   <Link to="/admin/speaker-investors" className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium hover:bg-slate-50">
                     <Upload className="h-4 w-4" />
                     Speakers & Investors
+                  </Link>
+                  <Link to="/admin/investors" className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium hover:bg-slate-50">
+                    <TrendingUp className="h-4 w-4" />
+                    Investors Directory
+                  </Link>
+                  <Link to="/admin/members" className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium hover:bg-slate-50">
+                    <Users className="h-4 w-4" />
+                    Members Directory
                   </Link>
                 </CardContent>
               </Card>
@@ -3798,6 +3886,123 @@ const AdminDashboard = () => {
                               <td className="p-4">{investor.designation}</td>
                             </tr>
                           ))
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
+          {activeTab === "investor-invites" && (
+            <div className="space-y-6">
+              <div>
+                <h2 className="text-2xl font-bold text-slate-900">Investor Invite Links</h2>
+                <p className="text-sm text-slate-500">
+                  Investor sign-up is invite-only. Generate a link here and share it directly with the investor —
+                  anyone with the link can fill out the registration form.
+                </p>
+              </div>
+
+              <Card className="border-2 border-violet-200 bg-violet-50">
+                <CardHeader className="pb-4">
+                  <CardTitle>Generate New Invite Link</CardTitle>
+                  <CardDescription>Optionally label it (e.g. an investor's name) and set an expiry.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4 bg-white rounded-b-lg p-4">
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <Input
+                      placeholder="Label (optional) — e.g. Rohan Mehta, Elevate Capital"
+                      value={newInviteLabel}
+                      onChange={(e) => setNewInviteLabel(e.target.value)}
+                    />
+                    <Input
+                      type="number"
+                      min={1}
+                      placeholder="Expires in days (optional, leave blank for no expiry)"
+                      value={newInviteExpiryDays}
+                      onChange={(e) => setNewInviteExpiryDays(e.target.value)}
+                    />
+                  </div>
+                  <Button onClick={handleCreateInvestorInvite} disabled={creatingInvite} className="gap-2">
+                    <Plus className="h-4 w-4" />
+                    {creatingInvite ? "Generating..." : "Generate Invite Link"}
+                  </Button>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="bg-slate-50 border-b">
+                  <CardTitle>All Invite Links ({investorInvites.length})</CardTitle>
+                  <CardDescription>Track usage and revoke access at any time.</CardDescription>
+                </CardHeader>
+                <CardContent className="p-0">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-sm">
+                      <thead className="bg-slate-50 text-slate-500 border-b">
+                        <tr>
+                          <th className="p-4 font-medium">Label</th>
+                          <th className="p-4 font-medium">Status</th>
+                          <th className="p-4 font-medium">Uses</th>
+                          <th className="p-4 font-medium">Expires</th>
+                          <th className="p-4 font-medium">Created</th>
+                          <th className="p-4 font-medium text-right">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100">
+                        {investorInvites.length === 0 ? (
+                          <tr>
+                            <td colSpan={6} className="p-8 text-center text-slate-500">
+                              No invite links yet. Generate one above to get started.
+                            </td>
+                          </tr>
+                        ) : (
+                          investorInvites.map((invite) => {
+                            const expired = Boolean(invite.expiresAt && new Date(invite.expiresAt) < new Date());
+                            return (
+                              <tr key={invite._id} className="hover:bg-slate-50">
+                                <td className="p-4">
+                                  <p className="font-medium text-slate-900">{invite.label || "Untitled invite"}</p>
+                                  <p className="text-xs text-slate-400 font-mono">{invite.token.slice(0, 16)}...</p>
+                                </td>
+                                <td className="p-4">
+                                  {!invite.isActive ? (
+                                    <Badge variant="secondary" className="bg-slate-200 text-slate-600">Revoked</Badge>
+                                  ) : expired ? (
+                                    <Badge variant="secondary" className="bg-amber-100 text-amber-700">Expired</Badge>
+                                  ) : (
+                                    <Badge variant="secondary" className="bg-green-100 text-green-700">Active</Badge>
+                                  )}
+                                </td>
+                                <td className="p-4">{invite.usageCount}</td>
+                                <td className="p-4">{invite.expiresAt ? new Date(invite.expiresAt).toLocaleDateString() : "Never"}</td>
+                                <td className="p-4">{new Date(invite.createdAt).toLocaleDateString()}</td>
+                                <td className="p-4">
+                                  <div className="flex items-center justify-end gap-1.5">
+                                    <Button variant="outline" size="sm" onClick={() => handleCopyInviteLink(invite.token)} className="gap-1.5">
+                                      <Copy className="h-3.5 w-3.5" />
+                                      Copy Link
+                                    </Button>
+                                    {invite.isActive ? (
+                                      <Button variant="outline" size="sm" onClick={() => handleRevokeInvestorInvite(invite._id)} className="gap-1.5 text-amber-700 border-amber-200 hover:bg-amber-50">
+                                        <Ban className="h-3.5 w-3.5" />
+                                        Revoke
+                                      </Button>
+                                    ) : (
+                                      <Button variant="outline" size="sm" onClick={() => handleReactivateInvestorInvite(invite._id)} className="gap-1.5 text-green-700 border-green-200 hover:bg-green-50">
+                                        <RotateCcw className="h-3.5 w-3.5" />
+                                        Reactivate
+                                      </Button>
+                                    )}
+                                    <Button variant="outline" size="sm" onClick={() => handleDeleteInvestorInvite(invite._id)} className="gap-1.5 text-red-600 border-red-200 hover:bg-red-50">
+                                      <Trash2 className="h-3.5 w-3.5" />
+                                    </Button>
+                                  </div>
+                                </td>
+                              </tr>
+                            );
+                          })
                         )}
                       </tbody>
                     </table>

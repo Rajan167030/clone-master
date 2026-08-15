@@ -4,6 +4,7 @@ import {
   Dashboard,
   FounderAccount,
   InvestorAccount,
+  InvestorInvite,
   UserAccount,
 } from "../models/index.js";
 import { getDashboardTemplate } from "../utils/dashboard-template.js";
@@ -66,6 +67,7 @@ export const register = async (req, res, next) => {
       roleDetails,
       emailVerificationToken,
       referredBy,
+      inviteToken,
     } = req.body || {};
 
     const role = toRole(rawRole);
@@ -77,6 +79,22 @@ export const register = async (req, res, next) => {
       return res.status(400).json({
         message: "fullName, email, password, phone, and city are required.",
       });
+    }
+
+    let investorInvite = null;
+    if (role === "investor") {
+      const normalizedInviteToken = String(inviteToken || "").trim();
+      if (!normalizedInviteToken) {
+        return res.status(403).json({ message: "Investor registration requires a valid invite link." });
+      }
+
+      investorInvite = await InvestorInvite.findOne({ token: normalizedInviteToken });
+      if (!investorInvite || !investorInvite.isActive) {
+        return res.status(403).json({ message: "This invite link is invalid or has been revoked." });
+      }
+      if (investorInvite.expiresAt && new Date(investorInvite.expiresAt) < new Date()) {
+        return res.status(403).json({ message: "This invite link has expired." });
+      }
     }
 
     const normalizedEmail = String(email).toLowerCase().trim();
@@ -132,6 +150,13 @@ export const register = async (req, res, next) => {
       role,
       ...dashboardPayload,
     });
+
+    if (investorInvite) {
+      await InvestorInvite.updateOne(
+        { _id: investorInvite._id },
+        { $inc: { usageCount: 1 }, $set: { lastUsedAt: new Date() } },
+      );
+    }
 
     const token = signAuthToken(created);
 

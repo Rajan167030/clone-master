@@ -16,6 +16,8 @@ import AIChatbot from "@/components/AIChatbot";
 import ProtectedRoute from "./components/ProtectedRoute.tsx";
 import AdminDashboard from "./pages/AdminDashboard.tsx";
 import AdminSpeakerInvestors from "./pages/AdminSpeakerInvestors.tsx";
+import AdminInvestors from "./pages/AdminInvestors.tsx";
+import AdminMembers from "./pages/AdminMembers.tsx";
 import AdminLogin from "./pages/AdminLogin.tsx";
 
 const About = lazy(() => import("./pages/About.tsx"));
@@ -52,7 +54,6 @@ const App = () => (
             <Route path="/bangalore-activity" element={<BangaloreActivity />} />
             <Route path="/login" element={<Login role="user" />} />
             <Route path="/login/user" element={<Login role="user" />} />
-            <Route path="/login/investor" element={<Login role="investor" />} />
             <Route path="/login/founder" element={<Login role="founder" />} />
             <Route path="/register/user" element={<RegisterUser />} />
             <Route path="/register/investor" element={<RegisterInvestor />} />
@@ -94,6 +95,22 @@ const App = () => (
               element={(
                 <ProtectedRoute allowedRole="admin">
                   <AdminSpeakerInvestors />
+                </ProtectedRoute>
+              )}
+            />
+            <Route
+              path="/admin/investors"
+              element={(
+                <ProtectedRoute allowedRole="admin">
+                  <AdminInvestors />
+                </ProtectedRoute>
+              )}
+            />
+            <Route
+              path="/admin/members"
+              element={(
+                <ProtectedRoute allowedRole="admin">
+                  <AdminMembers />
                 </ProtectedRoute>
               )}
             />

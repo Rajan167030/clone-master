@@ -73,7 +73,18 @@ import {
 import { listAdminJoinRequests } from "../controllers/join.controller.js";
 import { listAdminFundingApplications } from "../controllers/funding.controller.js";
 import { requireAuth } from "../middlewares/auth.middleware.js";
-import { listAdminEventInterests } from "../controllers/admin.controller.js";
+import {
+  listAdminEventInterests,
+  listAdminInvestorsDetailed,
+  listAdminMembersDetailed,
+} from "../controllers/admin.controller.js";
+import {
+  listAdminInvestorInvites,
+  createAdminInvestorInvite,
+  revokeAdminInvestorInvite,
+  reactivateAdminInvestorInvite,
+  deleteAdminInvestorInvite,
+} from "../controllers/investor-invite.controller.js";
 
 const adminRouter = Router();
 
@@ -142,6 +153,15 @@ adminRouter.get('/campaigns/:id', getCampaign);
 adminRouter.get('/campaigns/:id/logs', getCampaignLogs);
 adminRouter.get("/join-requests", listAdminJoinRequests);
 adminRouter.get("/funding-applications", listAdminFundingApplications);
+
+adminRouter.get("/investors-directory", listAdminInvestorsDetailed);
+adminRouter.get("/members-directory", listAdminMembersDetailed);
+
+adminRouter.get("/investor-invites", listAdminInvestorInvites);
+adminRouter.post("/investor-invites", createAdminInvestorInvite);
+adminRouter.patch("/investor-invites/:id/revoke", revokeAdminInvestorInvite);
+adminRouter.patch("/investor-invites/:id/reactivate", reactivateAdminInvestorInvite);
+adminRouter.delete("/investor-invites/:id", deleteAdminInvestorInvite);
 
 // Super-admin routes: manage admins and tasks
 adminRouter.get("/super/admins", requireSuperAdmin, listAdmins);

@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "node --watch server.js",
     "start": "node server.js",
-    "seed-admin": "node scripts/seed-admin-user.js"
+    "seed-admin": "node scripts/seed-admin-user.js",
+    "seed-blogs": "node scripts/seed-blogs.js"
   },
   "dependencies": {
     "agenda": "^6.2.4",

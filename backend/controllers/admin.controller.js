@@ -136,6 +136,35 @@ export const listAdminMembers = async (req, res, next) => {
   }
 };
 
+const SENSITIVE_FIELDS =
+  "-passwordHash -resetPasswordOtp -resetPasswordOtpExpiry -__v";
+
+export const listAdminInvestorsDetailed = async (req, res, next) => {
+  try {
+    const investors = await InvestorAccount.find({})
+      .sort({ createdAt: -1 })
+      .select(SENSITIVE_FIELDS)
+      .lean();
+
+    return res.status(200).json({ investors });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const listAdminMembersDetailed = async (req, res, next) => {
+  try {
+    const members = await Account.find({ role: { $in: ["user", "founder"] } })
+      .sort({ createdAt: -1 })
+      .select(SENSITIVE_FIELDS)
+      .lean();
+
+    return res.status(200).json({ members });
+  } catch (error) {
+    return next(error);
+  }
+};
+
 export const listAdminEventInterests = async (req, res, next) => {
   try {
     const interests = await Account.find({ role: "user" })

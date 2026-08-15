@@ -1,4 +1,4 @@
-import { User, TrendingUp, Rocket, ArrowRight } from "lucide-react";
+import { User, Rocket, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -30,20 +30,6 @@ const RegistrationHub = () => {
         "Startup resources",
       ],
       bgGradient: "from-blue-50 to-blue-100",
-    },
-    {
-      title: "Join as an Investor",
-      description: "Discover promising startups, access curated founders directory, and manage your investment portfolio.",
-      icon: <TrendingUp size={40} />,
-      color: "green",
-      path: "/register/investor",
-      highlights: [
-        "Founders directory",
-        "Deal flow alerts",
-        "Pitch events",
-        "Portfolio tracking",
-      ],
-      bgGradient: "from-green-50 to-green-100",
     },
     {
       title: "Join as a Founder",
@@ -102,7 +88,7 @@ const RegistrationHub = () => {
           </div>
 
           {/* Registration Cards */}
-          <div className="grid md:grid-cols-3 gap-8 mb-12">
+          <div className="grid md:grid-cols-2 gap-8 mb-6 max-w-3xl mx-auto">
             {registrationOptions.map((option) => {
               const colors = colorClasses[option.color as keyof typeof colorClasses];
               return (
@@ -147,6 +133,17 @@ const RegistrationHub = () => {
                 </Link>
               );
             })}
+          </div>
+
+          <div className="mb-12 max-w-3xl mx-auto rounded-2xl border border-green-200 bg-green-50 p-6 text-center">
+            <p className="text-sm text-gray-700">
+              <span className="font-semibold text-gray-900">Are you an investor?</span> Investor accounts are invite-only.
+              Reach out via our{" "}
+              <Link to="/join-us" className="text-green-600 font-semibold hover:underline">
+                Join Us form
+              </Link>{" "}
+              and our team will send you a registration link.
+            </p>
           </div>
 
           {/* Info Section */}

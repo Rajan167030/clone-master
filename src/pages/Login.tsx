@@ -1,5 +1,5 @@
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { BarChart3, Rocket, User, ArrowLeft, KeyRound, Mail, CheckCircle2 } from "lucide-react";
+import { Rocket, User, ArrowLeft, KeyRound, Mail, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -11,7 +11,7 @@ import { useState } from "react";
 import BackButton from "@/components/BackButton";
 
 interface LoginProps {
-  role?: "user" | "investor" | "founder";
+  role?: "user" | "founder";
 }
 
 const Login = ({ role = "user" }: LoginProps) => {
@@ -180,31 +180,22 @@ const Login = ({ role = "user" }: LoginProps) => {
           {view === "login" && (
             <>
               <h2 className="mb-2 text-center text-3xl font-heading font-extrabold text-slate-900">
-                {role === "investor" ? "Investor Login" : role === "founder" ? "Founder Login" : "Member Login"}
+                {role === "founder" ? "Founder Login" : "Member Login"}
               </h2>
               <p className="mb-6 text-center text-sm text-slate-500">
-                {role === "investor" 
-                  ? "Access your investor dashboard and portfolio" 
-                  : role === "founder" 
+                {role === "founder"
                   ? "Access your founder dashboard and startup profile"
                   : "Sign in to your member account"}
               </p>
 
               {role === "user" && (
-                <div className="mb-6 grid grid-cols-3 gap-3">
+                <div className="mb-6 grid grid-cols-2 gap-3">
                   <Link
                     to="/login/user"
                     className="flex flex-col items-center justify-center gap-2 rounded-xl border border-violet-200 bg-violet-50 px-3 py-3 text-violet-700 hover:bg-violet-100/70 transition-all shadow-sm"
                   >
                     <User className="h-4 w-4 text-violet-600" />
                     <span className="text-xs font-semibold uppercase tracking-wider">User</span>
-                  </Link>
-                  <Link
-                    to="/login/investor"
-                    className="flex flex-col items-center justify-center gap-2 rounded-xl border border-violet-200 bg-violet-50 px-3 py-3 text-violet-700 hover:bg-violet-100/70 transition-all shadow-sm"
-                  >
-                    <BarChart3 className="h-4 w-4 text-violet-600" />
-                    <span className="text-xs font-semibold uppercase tracking-wider">Investor</span>
                   </Link>
                   <Link
                     to="/login/founder"
@@ -273,8 +264,8 @@ const Login = ({ role = "user" }: LoginProps) => {
 
               <p className="mt-6 text-center text-sm text-slate-500">
                 Don&apos;t have an account?{" "}
-                <Link 
-                  to={role === "investor" ? "/register/investor" : role === "founder" ? "/register/founder" : "/register/user"} 
+                <Link
+                  to={role === "founder" ? "/register/founder" : "/register/user"}
                   className="font-bold text-violet-600 hover:text-violet-500 underline-offset-4 hover:underline"
                 >
                   Register Now

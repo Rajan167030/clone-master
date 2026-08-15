@@ -47,6 +47,19 @@ export type RegisterPayload = {
   roleDetails: Record<string, unknown>;
   emailVerificationToken?: string;
   referredBy?: string;
+  inviteToken?: string;
+};
+
+export type InvestorInvite = {
+  _id: string;
+  token: string;
+  label: string;
+  isActive: boolean;
+  expiresAt: string | null;
+  usageCount: number;
+  lastUsedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
 };
 
 export type EmailVerificationPurpose =
@@ -194,6 +207,57 @@ export type AdminMember = {
   createdAt: string;
   lastLoginAt?: string | null;
   metadata?: Record<string, unknown>;
+};
+
+export type AdminInvestorDetail = {
+  _id: string;
+  fullName: string;
+  email: string;
+  phone: string;
+  city: string;
+  role: "investor";
+  referralCode?: string;
+  referredBy?: string;
+  isActive: boolean;
+  profileId?: string;
+  headline?: string;
+  profilePhoto?: string;
+  lastLoginAt?: string | null;
+  createdAt: string;
+  updatedAt: string;
+  roleDetails: {
+    investmentRange?: { min: number; max: number; currency: string };
+    focusSector?: string[];
+    portfolioSize?: number;
+    investorId?: string;
+  };
+};
+
+export type AdminMemberDetail = {
+  _id: string;
+  fullName: string;
+  email: string;
+  phone: string;
+  city: string;
+  role: "user" | "founder";
+  referralCode?: string;
+  referredBy?: string;
+  isActive: boolean;
+  profileId?: string;
+  headline?: string;
+  profilePhoto?: string;
+  lastLoginAt?: string | null;
+  createdAt: string;
+  updatedAt: string;
+  roleDetails: {
+    interest?: string;
+    occupation?: string;
+    experienceLevel?: string;
+    startupName?: string;
+    startupStage?: string;
+    teamSize?: number;
+    startupWebsite?: string;
+  };
 };
 
 export type AdminEventInterest = {
@@ -371,6 +435,45 @@ export const registerApi = (payload: RegisterPayload) =>
   request<AuthResponse>("/auth/register", {
     method: "POST",
     body: JSON.stringify(payload),
+  });
+
+export const validateInvestorInviteApi = (token: string) =>
+  request<{ valid: boolean; message?: string }>(`/auth/investor-invite/${encodeURIComponent(token)}`, {
+    method: "GET",
+  });
+
+export const listAdminInvestorInvitesApi = (token: string) =>
+  request<{ invites: InvestorInvite[] }>("/admin/investor-invites", {
+    method: "GET",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const createAdminInvestorInviteApi = (
+  token: string,
+  payload: { label?: string; expiresInDays?: number },
+) =>
+  request<{ message: string; invite: InvestorInvite }>("/admin/investor-invites", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify(payload),
+  });
+
+export const revokeAdminInvestorInviteApi = (token: string, id: string) =>
+  request<{ message: string; invite: InvestorInvite }>(`/admin/investor-invites/${id}/revoke`, {
+    method: "PATCH",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const reactivateAdminInvestorInviteApi = (token: string, id: string) =>
+  request<{ message: string; invite: InvestorInvite }>(`/admin/investor-invites/${id}/reactivate`, {
+    method: "PATCH",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const deleteAdminInvestorInviteApi = (token: string, id: string) =>
+  request<{ message: string }>(`/admin/investor-invites/${id}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${token}` },
   });
 
 export const loginApi = (payload: { email: string; password: string }) =>
@@ -932,6 +1035,18 @@ export const updateAdminSpeakerInvestorProfileApi = (
 export const deleteAdminSpeakerInvestorProfileApi = (token: string, slug: string) =>
   request<{ message: string }>(`/admin/speaker-investors/${slug}`, {
     method: "DELETE",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const getAdminInvestorsDirectoryApi = (token: string) =>
+  request<{ investors: AdminInvestorDetail[] }>("/admin/investors-directory", {
+    method: "GET",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const getAdminMembersDirectoryApi = (token: string) =>
+  request<{ members: AdminMemberDetail[] }>("/admin/members-directory", {
+    method: "GET",
     headers: { Authorization: `Bearer ${token}` },
   });
 
