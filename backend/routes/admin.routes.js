@@ -50,7 +50,7 @@ import {
   getCampaign,
   getCampaignLogs,
 } from "../controllers/campaigns.controller.js";
-import { listAdminPartnerInquiries } from "../controllers/partner-inquiry.controller.js";
+import { listAdminPartnerInquiries, updateAdminPartnerInquiryStatus } from "../controllers/partner-inquiry.controller.js";
 import {
   listAdminPartnerTypes,
   createAdminPartnerType,
@@ -70,12 +70,11 @@ import {
   createAdmin,
   deleteAdminAccount,
 } from "../controllers/task.controller.js";
-import { listAdminJoinRequests } from "../controllers/join.controller.js";
+import { listAdminJoinRequests, updateAdminJoinRequestStatus } from "../controllers/join.controller.js";
 import { listAdminFundingApplications } from "../controllers/funding.controller.js";
 import { requireAuth } from "../middlewares/auth.middleware.js";
 import {
   listAdminEventInterests,
-  listAdminInvestorsDetailed,
   listAdminMembersDetailed,
 } from "../controllers/admin.controller.js";
 import {
@@ -84,11 +83,16 @@ import {
   revokeAdminInvestorInvite,
   reactivateAdminInvestorInvite,
   deleteAdminInvestorInvite,
+  listAdminInvestorLeads,
 } from "../controllers/investor-invite.controller.js";
+import { auditLogger } from "../middlewares/audit.middleware.js";
+import { listAuditLogs } from "../controllers/audit.controller.js";
+import { sendAdminMessage, listAdminMessages, listChatParticipants } from "../controllers/admin-chat.controller.js";
 
 const adminRouter = Router();
 
 adminRouter.use(requireAuth, requireAdmin);
+adminRouter.use(auditLogger);
 
 adminRouter.get("/members", listAdminMembers);
 adminRouter.post("/members", createAdminMember);
@@ -131,6 +135,7 @@ adminRouter.post("/testimonials", createAdminTestimonial);
 adminRouter.patch("/testimonials/:id", updateAdminTestimonial);
 adminRouter.delete("/testimonials/:id", deleteAdminTestimonial);
 adminRouter.get("/partner-inquiries", listAdminPartnerInquiries);
+adminRouter.patch("/partner-inquiries/:id/status", updateAdminPartnerInquiryStatus);
 adminRouter.get("/event-interests", listAdminEventInterests);
 adminRouter.get("/partner-types", listAdminPartnerTypes);
 adminRouter.post("/partner-types", createAdminPartnerType);
@@ -152,9 +157,10 @@ adminRouter.get('/campaigns', listCampaigns);
 adminRouter.get('/campaigns/:id', getCampaign);
 adminRouter.get('/campaigns/:id/logs', getCampaignLogs);
 adminRouter.get("/join-requests", listAdminJoinRequests);
+adminRouter.patch("/join-requests/:id/status", updateAdminJoinRequestStatus);
 adminRouter.get("/funding-applications", listAdminFundingApplications);
 
-adminRouter.get("/investors-directory", listAdminInvestorsDetailed);
+adminRouter.get("/investors-directory", listAdminInvestorLeads);
 adminRouter.get("/members-directory", listAdminMembersDetailed);
 
 adminRouter.get("/investor-invites", listAdminInvestorInvites);
@@ -174,5 +180,13 @@ adminRouter.get("/super/tasks", requireAdmin, listTasks); // admins can view tas
 adminRouter.patch("/super/tasks/:id/assign", requireSuperAdmin, assignTask);
 adminRouter.patch("/super/tasks/:id/status", requireAdmin, updateTaskStatus);
 adminRouter.delete("/super/tasks/:id", requireSuperAdmin, deleteTask);
+
+// Super-admin: activity/audit history across the admin panel
+adminRouter.get("/super/audit-logs", requireSuperAdmin, listAuditLogs);
+
+// Admin-to-admin chat (any admin or superadmin)
+adminRouter.get("/chat/participants", listChatParticipants);
+adminRouter.get("/chat/messages", listAdminMessages);
+adminRouter.post("/chat/messages", sendAdminMessage);
 
 export default adminRouter;

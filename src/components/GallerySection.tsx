@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { getPublicGalleryApi, type GalleryImage } from "@/lib/api";
+import { optimizeCloudinaryUrl } from "@/lib/cloudinary";
 
 type GalleryTile = GalleryImage & {
   aspectRatio?: "square" | "portrait" | "landscape";
@@ -160,7 +161,7 @@ const GallerySection = ({ className }: { className?: string }) => {
           {loading ? (
             <div className="flex gap-4 overflow-hidden py-4">
               {[...Array(6)].map((_, i) => (
-                <div key={i} className="w-[280px] h-[200px] bg-muted/50 animate-pulse rounded-2xl shrink-0" />
+                <div key={i} className="w-[340px] h-[240px] bg-muted/50 animate-pulse rounded-2xl shrink-0" />
               ))}
             </div>
           ) : (
@@ -174,17 +175,19 @@ const GallerySection = ({ className }: { className?: string }) => {
                   {[...displayImages, ...displayImages, ...displayImages].map((image, index) => (
                     <div
                       key={`${image._id}-${index}`}
-                      className="group relative rounded-2xl overflow-hidden cursor-pointer shadow-md hover:shadow-xl transition-all duration-300 mx-3 w-[260px] sm:w-[320px] h-[180px] sm:h-[220px] shrink-0"
+                      className="group relative rounded-2xl overflow-hidden cursor-pointer shadow-md hover:shadow-xl transition-all duration-300 mx-3 w-[340px] sm:w-[420px] h-[240px] sm:h-[300px] shrink-0"
                     >
                       {/* Image */}
                       <img
-                        src={image.imageUrl}
+                        src={optimizeCloudinaryUrl(image.imageUrl, 900)}
                         alt={image.title}
+                        loading="lazy"
+                        decoding="async"
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                       />
-                      
-                      {/* Overlay */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-background/85 via-background/35 to-transparent opacity-80 group-hover:opacity-100 transition-opacity duration-300" />
+
+                      {/* Overlay (title legibility on hover only, no permanent haze) */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
                       {/* Title on hover */}
                       <div className="absolute inset-0 flex items-end p-4 md:p-5">
@@ -208,17 +211,19 @@ const GallerySection = ({ className }: { className?: string }) => {
                   {[...displayImages, ...displayImages, ...displayImages].reverse().map((image, index) => (
                     <div
                       key={`${image._id}-rev-${index}`}
-                      className="group relative rounded-2xl overflow-hidden cursor-pointer shadow-md hover:shadow-xl transition-all duration-300 mx-3 w-[260px] sm:w-[320px] h-[180px] sm:h-[220px] shrink-0"
+                      className="group relative rounded-2xl overflow-hidden cursor-pointer shadow-md hover:shadow-xl transition-all duration-300 mx-3 w-[340px] sm:w-[420px] h-[240px] sm:h-[300px] shrink-0"
                     >
                       {/* Image */}
                       <img
-                        src={image.imageUrl}
+                        src={optimizeCloudinaryUrl(image.imageUrl, 900)}
                         alt={image.title}
+                        loading="lazy"
+                        decoding="async"
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                       />
-                      
-                      {/* Overlay */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-background/85 via-background/35 to-transparent opacity-80 group-hover:opacity-100 transition-opacity duration-300" />
+
+                      {/* Overlay (title legibility on hover only, no permanent haze) */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
                       {/* Title on hover */}
                       <div className="absolute inset-0 flex items-end p-4 md:p-5">

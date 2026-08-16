@@ -5,15 +5,19 @@ const { Schema } = mongoose;
 const AuditLogSchema = new Schema(
   {
     actorId: { type: Schema.Types.ObjectId, ref: "Account", required: true, index: true },
+    actorName: { type: String, default: "", trim: true },
     actorRole: {
       type: String,
       required: true,
-      enum: ["admin", "founder", "investor", "user"],
+      enum: ["admin", "superadmin", "founder", "investor", "user"],
       index: true,
     },
     action: { type: String, required: true, trim: true, index: true },
-    targetCollection: { type: String, required: true, trim: true },
-    targetId: { type: Schema.Types.ObjectId, required: true, index: true },
+    method: { type: String, default: "", trim: true },
+    path: { type: String, default: "", trim: true },
+    targetCollection: { type: String, default: "", trim: true },
+    targetId: { type: Schema.Types.ObjectId, default: null, index: true },
+    statusCode: { type: Number, default: null },
     changes: { type: Schema.Types.Mixed, default: {} },
     ipAddress: { type: String, default: "" },
     userAgent: { type: String, default: "" },

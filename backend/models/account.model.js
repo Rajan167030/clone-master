@@ -176,3 +176,12 @@ export const InvestorAccount =
 
 export const FounderAccount =
   mongoose.models.founder || Account.discriminator("founder", FounderSchema);
+
+// Admin/superadmin accounts use the base schema as-is (no extra roleDetails shape),
+// but still need a registered discriminator or Account.create()/save() throws
+// "Discriminator not found" whenever role is "admin" or "superadmin".
+export const AdminAccount =
+  mongoose.models.admin || Account.discriminator("admin", new Schema({}));
+
+export const SuperAdminAccount =
+  mongoose.models.superadmin || Account.discriminator("superadmin", new Schema({}));

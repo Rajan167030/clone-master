@@ -12,6 +12,7 @@ import {
   getPublicEventsApi,
   type DynamicEvent,
 } from "@/lib/api";
+import { optimizeCloudinaryUrl } from "@/lib/cloudinary";
 
 const Events = () => {
   // SEO Hook
@@ -91,11 +92,11 @@ const Events = () => {
               <Card key={event.slug} className="overflow-hidden border-border/60 shadow-lg hover-scale flex flex-col">
                 {event.mobileBannerImage ? (
                   <>
-                    <img src={event.mobileBannerImage} alt={event.bannerAlt || event.title} className="block md:hidden h-52 w-full object-cover" />
-                    <img src={event.bannerImage} alt={event.bannerAlt || event.title} className="hidden md:block h-48 w-full object-cover" />
+                    <img src={optimizeCloudinaryUrl(event.mobileBannerImage, 800)} alt={event.bannerAlt || event.title} loading="lazy" decoding="async" className="block md:hidden h-52 w-full object-cover" />
+                    <img src={optimizeCloudinaryUrl(event.bannerImage, 800)} alt={event.bannerAlt || event.title} loading="lazy" decoding="async" className="hidden md:block h-48 w-full object-cover" />
                   </>
                 ) : (
-                  <img src={event.bannerImage} alt={event.bannerAlt || event.title} className="h-48 w-full object-cover" />
+                  <img src={optimizeCloudinaryUrl(event.bannerImage, 800)} alt={event.bannerAlt || event.title} loading="lazy" decoding="async" className="h-48 w-full object-cover" />
                 )}
                 <CardHeader>
                   <div className="flex items-start justify-between gap-3">

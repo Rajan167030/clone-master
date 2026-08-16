@@ -5,7 +5,7 @@ export type SessionAccount = {
   id: string;
   fullName: string;
   email: string;
-  role: "user" | "investor" | "founder" | "admin";
+  role: "user" | "investor" | "founder" | "admin" | "superadmin";
   city?: string;
   phone?: string;
   referralCode?: string;

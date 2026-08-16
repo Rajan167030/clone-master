@@ -51,7 +51,7 @@ const Login = ({ role = "user" }: LoginProps) => {
           description: "Login successful. Redirecting...",
         });
         setSession(response.token, response.account);
-        const destination = response.account.role === "admin" && redirectTo === "/dashboard"
+        const destination = (response.account.role === "admin" || response.account.role === "superadmin") && redirectTo === "/dashboard"
           ? "/admin"
           : redirectTo;
         setTimeout(() => navigate(destination, { replace: true }), 1500);

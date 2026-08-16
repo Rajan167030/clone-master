@@ -30,6 +30,8 @@ export { PartnerInquiry } from "./partner-inquiry.model.js";
 export { PartnerType } from "./partner-type.model.js";
 export { EmailVerification } from "./email-verification.model.js";
 export { InvestorInvite } from "./investor-invite.model.js";
+export { InvestorLead } from "./investor-lead.model.js";
+export { AdminMessage } from "./admin-message.model.js";
 export { default as EmailTemplate } from "./template.model.js";
 export { default as Campaign } from "./campaign.model.js";
 export { default as SendLog } from "./send-log.model.js";

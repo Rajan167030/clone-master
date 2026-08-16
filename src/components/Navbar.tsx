@@ -51,7 +51,7 @@ const Navbar = () => {
   const navigate = useNavigate();
   const authed = isAuthenticated();
   const account = getAccount();
-  const isAdmin = account?.role === "admin";
+  const isAdmin = account?.role === "admin" || account?.role === "superadmin";
 
   const handleLogout = () => {
     clearSession();
@@ -106,17 +106,19 @@ const Navbar = () => {
                   <ChevronDown size={16} className="group-hover:rotate-180 transition-transform" />
                 </button>
 
-                {/* Dropdown Menu */}
-                <div className="absolute left-0 mt-0 w-48 bg-white border border-gray-200 rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 py-2">
-                  {dropdown.items.map((item) => (
-                    <Link
-                      key={item.label}
-                      to={item.href}
-                      className="block px-4 py-2 text-sm text-slate-700 hover:bg-purple-50 hover:text-purple-600 transition-colors"
-                    >
-                      {item.label}
-                    </Link>
-                  ))}
+                {/* Dropdown Menu — curtain reveal from the top */}
+                <div className="absolute left-0 top-full w-48 overflow-hidden invisible group-hover:visible">
+                  <div className="origin-top scale-y-0 opacity-0 group-hover:scale-y-100 group-hover:opacity-100 transition-[transform,opacity] duration-300 ease-out bg-white border border-gray-200 rounded-md shadow-lg py-2">
+                    {dropdown.items.map((item) => (
+                      <Link
+                        key={item.label}
+                        to={item.href}
+                        className="block px-4 py-2 text-sm text-slate-700 hover:bg-purple-50 hover:text-purple-600 transition-colors"
+                      >
+                        {item.label}
+                      </Link>
+                    ))}
+                  </div>
                 </div>
               </div>
             ))}
@@ -152,9 +154,13 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* Mobile Menu */}
-      {isMobileMenuOpen && (
-        <div className="md:hidden border-t border-gray-200 bg-white">
+      {/* Mobile Menu — curtain reveal from the top */}
+      <div
+        className={`md:hidden grid overflow-hidden transition-[grid-template-rows,opacity] duration-300 ease-out ${
+          isMobileMenuOpen ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
+        }`}
+      >
+        <div className="min-h-0 overflow-hidden border-t border-gray-200 bg-white">
           <div className="px-4 py-4 space-y-3">
             <div className="space-y-1 mb-2">
               {topLevelLinks.map((link) => (
@@ -182,9 +188,13 @@ const Navbar = () => {
                   />
                 </button>
 
-                {/* Mobile Dropdown */}
-                {openDropdown === dropdown.label && (
-                  <div className="pl-4 py-2 space-y-1">
+                {/* Mobile Dropdown — curtain reveal */}
+                <div
+                  className={`grid overflow-hidden transition-[grid-template-rows,opacity] duration-300 ease-out ${
+                    openDropdown === dropdown.label ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
+                  }`}
+                >
+                  <div className="min-h-0 overflow-hidden pl-4 py-2 space-y-1">
                     {dropdown.items.map((item) => (
                       <Link
                         key={item.label}
@@ -196,7 +206,7 @@ const Navbar = () => {
                       </Link>
                     ))}
                   </div>
-                )}
+                </div>
               </div>
             ))}
 
@@ -221,7 +231,7 @@ const Navbar = () => {
             </Button>
           </div>
         </div>
-      )}
+      </div>
       </nav>
     </header>
   );

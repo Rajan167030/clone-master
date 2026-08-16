@@ -15,7 +15,13 @@ const JoinRequestSchema = new Schema(
     city: { type: String, required: true, trim: true },
     whyJoin: { type: String, required: true, trim: true },
     referralSource: { type: String, required: true, trim: true },
-    status: { type: String, default: "pending" },
+    status: {
+      type: String,
+      enum: ["pending", "approved", "denied"],
+      default: "pending",
+      index: true,
+    },
+    reviewedAt: { type: Date, default: null },
   },
   { timestamps: true, collection: "join_requests" },
 );

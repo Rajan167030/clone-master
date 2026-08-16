@@ -329,7 +329,7 @@ export const adminLogin = async (req, res, next) => {
       return res.status(401).json({ message: "Invalid admin credentials." });
     }
 
-    if (account.role !== "admin") {
+    if (account.role !== "admin" && account.role !== "superadmin") {
       return res.status(403).json({ message: "Access denied. Admin privileges required." });
     }
 

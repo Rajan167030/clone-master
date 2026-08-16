@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import {
@@ -22,7 +22,9 @@ import {
   getAdminNewsletterSubscribersApi,
   getAdminTemplatesApi,
   getAdminJoinRequestsApi,
+  updateAdminJoinRequestStatusApi,
   getAdminPartnerInquiriesApi,
+  updateAdminPartnerInquiryStatusApi,
   getAdminFundingApplicationsApi,
   getAdminPartnersApi,
   getAdminSiteNoticeApi,
@@ -72,6 +74,27 @@ import {
   reactivateAdminInvestorInviteApi,
   deleteAdminInvestorInviteApi,
   type InvestorInvite,
+  getAdminInvestorsDirectoryApi,
+  type AdminInvestorDetail,
+  listAdminsApi,
+  createAdminApi,
+  updateAdminRoleApi,
+  deleteAdminAccountApi,
+  type AdminAccountSummary,
+  type CreateAdminResponse,
+  listAuditLogsApi,
+  type AuditLogEntry,
+  listAdminChatMessagesApi,
+  sendAdminChatMessageApi,
+  type AdminChatMessage,
+  listChatParticipantsApi,
+  type ChatParticipant,
+  listTasksApi,
+  createTaskApi,
+  assignTaskApi,
+  updateTaskStatusApi,
+  deleteTaskApi,
+  type AdminTask,
 } from "@/lib/api";
 import { getToken, getAccount } from "@/lib/session";
 import { Button } from "@/components/ui/button";
@@ -105,6 +128,10 @@ import {
   Copy,
   Ban,
   RotateCcw,
+  Clock3,
+  ShieldCheck,
+  MessageSquare,
+  KeyRound,
 } from "lucide-react";
 
 const emptyEventForm = {
@@ -351,8 +378,40 @@ const AdminDashboard = () => {
   const [showPromotionForm, setShowPromotionForm] = useState(false);
   const [uploadingPromotionImage, setUploadingPromotionImage] = useState(false);
   const [promotionImageMode, setPromotionImageMode] = useState<ImageInputMode>("url");
-  const [activeTab, setActiveTab] = useState<"dashboard" | "analytics" | "events" | "blogs" | "members" | "partners" | "newsletter" | "automation" | "funding" | "promotions" | "activity" | "investor-invites">("dashboard");
+  const [activeTab, setActiveTab] = useState<"dashboard" | "analytics" | "events" | "blogs" | "members" | "partners" | "newsletter" | "automation" | "funding" | "promotions" | "activity" | "investor-invites" | "team" | "chat" | "tasks">("dashboard");
   const [investorInvites, setInvestorInvites] = useState<InvestorInvite[]>([]);
+  const [investorLeads, setInvestorLeads] = useState<AdminInvestorDetail[]>([]);
+
+  // Team & Access (superadmin)
+  const [admins, setAdmins] = useState<AdminAccountSummary[]>([]);
+  const [loadingAdmins, setLoadingAdmins] = useState(false);
+  const emptyNewAdminForm = { fullName: "", email: "", phone: "", city: "", role: "admin" as "admin" | "superadmin" };
+  const [newAdminForm, setNewAdminForm] = useState(emptyNewAdminForm);
+  const [creatingAdmin, setCreatingAdmin] = useState(false);
+  const [justCreatedAdmin, setJustCreatedAdmin] = useState<CreateAdminResponse | null>(null);
+  const [updatingAdminId, setUpdatingAdminId] = useState("");
+
+  // Audit log (superadmin)
+  const [auditLogs, setAuditLogs] = useState<AuditLogEntry[]>([]);
+  const [loadingAuditLogs, setLoadingAuditLogs] = useState(false);
+
+  // Admin chat
+  const [chatMessages, setChatMessages] = useState<AdminChatMessage[]>([]);
+  const [chatInput, setChatInput] = useState("");
+  const [sendingChat, setSendingChat] = useState(false);
+  const chatEndRef = useRef<HTMLDivElement | null>(null);
+  const [chatParticipants, setChatParticipants] = useState<ChatParticipant[]>([]);
+  const [mentionedIds, setMentionedIds] = useState<string[]>([]);
+  const [mentionQuery, setMentionQuery] = useState<string | null>(null);
+
+  // Tasks
+  const [tasks, setTasks] = useState<AdminTask[]>([]);
+  const [loadingTasks, setLoadingTasks] = useState(false);
+  const emptyNewTaskForm = { title: "", description: "", priority: "medium" as "low" | "medium" | "high", dueAt: "", assignedTo: "" };
+  const [newTaskForm, setNewTaskForm] = useState(emptyNewTaskForm);
+  const [creatingTaskItem, setCreatingTaskItem] = useState(false);
+  const [updatingTaskId, setUpdatingTaskId] = useState("");
+  const [taskStatusFilter, setTaskStatusFilter] = useState("");
   const [newInviteLabel, setNewInviteLabel] = useState("");
   const [newInviteExpiryDays, setNewInviteExpiryDays] = useState("");
   const [creatingInvite, setCreatingInvite] = useState(false);
@@ -420,7 +479,7 @@ const AdminDashboard = () => {
       subscribers.filter((subscriber) => subscriber.isActive).map((subscriber) => normalizeEmail(subscriber.email)),
     );
     const memberEmails = new Set(
-      members.filter((member) => member.isActive && member.role !== "admin").map((member) => normalizeEmail(member.email)),
+      members.filter((member) => member.isActive && member.role !== "admin" && member.role !== "superadmin").map((member) => normalizeEmail(member.email)),
     );
     const joinRequestEmails = new Set(joinRequests.map((request) => normalizeEmail(request.email)));
 
@@ -463,6 +522,7 @@ const AdminDashboard = () => {
       getBangaloreStartupsApi(),
       getBangaloreInvestorsApi(),
       listAdminInvestorInvitesApi(token),
+      getAdminInvestorsDirectoryApi(token),
     ])
       .then(([
         eventsResponse,
@@ -484,6 +544,7 @@ const AdminDashboard = () => {
         startupsResponse,
         investorsResponse,
         investorInvitesResponse,
+        investorLeadsResponse,
       ]) => {
         setEvents(eventsResponse.events);
         setPosts(blogsResponse.posts);
@@ -515,6 +576,7 @@ const AdminDashboard = () => {
         setGalleryImages(galleryResponse.images || []);
         setTestimonials(testimonialsResponse.testimonials || []);
         setInvestorInvites(investorInvitesResponse.invites || []);
+        setInvestorLeads(investorLeadsResponse.investors || []);
       })
       .catch((error) => {
         window.alert(error instanceof Error ? error.message : "Unable to load admin data.");
@@ -579,6 +641,294 @@ const AdminDashboard = () => {
       .catch((error) => {
         window.alert(error instanceof Error ? error.message : "Unable to delete invite link.");
       });
+  };
+
+  const loadAdmins = () => {
+    setLoadingAdmins(true);
+    listAdminsApi(token)
+      .then((response) => setAdmins(response.admins || []))
+      .catch((error) => {
+        window.alert(error instanceof Error ? error.message : "Unable to load admins.");
+      })
+      .finally(() => setLoadingAdmins(false));
+  };
+
+  const loadAuditLogs = () => {
+    setLoadingAuditLogs(true);
+    listAuditLogsApi(token)
+      .then((response) => setAuditLogs(response.logs || []))
+      .catch((error) => {
+        window.alert(error instanceof Error ? error.message : "Unable to load activity history.");
+      })
+      .finally(() => setLoadingAuditLogs(false));
+  };
+
+  useEffect(() => {
+    if (activeTab === "team" && account?.role === "superadmin") {
+      loadAdmins();
+      loadAuditLogs();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab]);
+
+  const handleCreateAdmin = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newAdminForm.fullName.trim() || !newAdminForm.email.trim() || !newAdminForm.phone.trim() || !newAdminForm.city.trim()) {
+      window.alert("Please fill in all fields.");
+      return;
+    }
+
+    setCreatingAdmin(true);
+    createAdminApi(token, {
+      fullName: newAdminForm.fullName.trim(),
+      email: newAdminForm.email.trim().toLowerCase(),
+      phone: newAdminForm.phone.trim(),
+      city: newAdminForm.city.trim(),
+      role: newAdminForm.role,
+    })
+      .then((response) => {
+        setJustCreatedAdmin(response);
+        setNewAdminForm(emptyNewAdminForm);
+        loadAdmins();
+      })
+      .catch((error) => {
+        window.alert(error instanceof Error ? error.message : "Unable to create admin account.");
+      })
+      .finally(() => setCreatingAdmin(false));
+  };
+
+  const handleUpdateAdminRole = (id: string, role: "admin" | "superadmin") => {
+    setUpdatingAdminId(id);
+    updateAdminRoleApi(token, id, role)
+      .then(() => loadAdmins())
+      .catch((error) => {
+        window.alert(error instanceof Error ? error.message : "Unable to update role.");
+      })
+      .finally(() => setUpdatingAdminId(""));
+  };
+
+  const handleDeleteAdmin = (id: string, fullName: string) => {
+    if (!window.confirm(`Remove admin access for ${fullName}? They'll be demoted to a regular member.`)) return;
+
+    setUpdatingAdminId(id);
+    deleteAdminAccountApi(token, id)
+      .then(() => loadAdmins())
+      .catch((error) => {
+        window.alert(error instanceof Error ? error.message : "Unable to remove admin.");
+      })
+      .finally(() => setUpdatingAdminId(""));
+  };
+
+  // Admin chat: poll for new messages while the chat tab is open
+  const lastChatMessageTimeRef = useRef<string | undefined>(undefined);
+
+  useEffect(() => {
+    if (activeTab !== "chat") return;
+
+    let cancelled = false;
+
+    listChatParticipantsApi(token)
+      .then((response) => {
+        if (!cancelled) setChatParticipants(response.participants || []);
+      })
+      .catch(() => {});
+
+    listAdminChatMessagesApi(token)
+      .then((response) => {
+        if (cancelled) return;
+        const messages = response.messages || [];
+        setChatMessages(messages);
+        lastChatMessageTimeRef.current = messages[messages.length - 1]?.createdAt;
+      })
+      .catch(() => {});
+
+    const interval = setInterval(() => {
+      listAdminChatMessagesApi(token, lastChatMessageTimeRef.current)
+        .then((response) => {
+          if (cancelled || !response.messages?.length) return;
+          lastChatMessageTimeRef.current = response.messages[response.messages.length - 1].createdAt;
+          setChatMessages((prev) => {
+            const existingIds = new Set(prev.map((m) => m._id));
+            const fresh = response.messages.filter((m) => !existingIds.has(m._id));
+            return fresh.length ? [...prev, ...fresh] : prev;
+          });
+        })
+        .catch(() => {});
+    }, 4000);
+
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab]);
+
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [chatMessages]);
+
+  const mentionMatches = mentionQuery !== null
+    ? chatParticipants.filter(
+        (p) => p._id !== account?.id && p.fullName.toLowerCase().includes(mentionQuery.toLowerCase()),
+      )
+    : [];
+
+  const handleChatInputChange = (value: string) => {
+    setChatInput(value);
+    const trailingMention = value.match(/(?:^|\s)@([a-zA-Z]*)$/);
+    setMentionQuery(trailingMention ? trailingMention[1] : null);
+  };
+
+  const handlePickMention = (participant: ChatParticipant) => {
+    const newValue = chatInput.replace(/(?:^|\s)@([a-zA-Z]*)$/, (match) => {
+      const prefix = match.startsWith(" ") ? " " : "";
+      return `${prefix}@${participant.fullName} `;
+    });
+    setChatInput(newValue);
+    setMentionedIds((prev) => (prev.includes(participant._id) ? prev : [...prev, participant._id]));
+    setMentionQuery(null);
+  };
+
+  const handleSendChatMessage = (e: React.FormEvent) => {
+    e.preventDefault();
+    const text = chatInput.trim();
+    if (!text) return;
+
+    setSendingChat(true);
+    sendAdminChatMessageApi(token, text, account?.fullName, mentionedIds)
+      .then((response) => {
+        setChatMessages((prev) => [...prev, response.chatMessage]);
+        lastChatMessageTimeRef.current = response.chatMessage.createdAt;
+        setChatInput("");
+        setMentionedIds([]);
+        setMentionQuery(null);
+      })
+      .catch((error) => {
+        window.alert(error instanceof Error ? error.message : "Unable to send message.");
+      })
+      .finally(() => setSendingChat(false));
+  };
+
+  const loadTasks = () => {
+    setLoadingTasks(true);
+    listTasksApi(token, taskStatusFilter ? { status: taskStatusFilter } : undefined)
+      .then((response) => setTasks(response.tasks || []))
+      .catch((error) => {
+        window.alert(error instanceof Error ? error.message : "Unable to load tasks.");
+      })
+      .finally(() => setLoadingTasks(false));
+  };
+
+  useEffect(() => {
+    if (activeTab === "tasks") {
+      loadTasks();
+      if (account?.role === "superadmin" && admins.length === 0) {
+        loadAdmins();
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab, taskStatusFilter]);
+
+  const handleCreateTask = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newTaskForm.title.trim()) {
+      window.alert("Please enter a task title.");
+      return;
+    }
+
+    setCreatingTaskItem(true);
+    createTaskApi(token, {
+      title: newTaskForm.title.trim(),
+      description: newTaskForm.description.trim(),
+      priority: newTaskForm.priority,
+      dueAt: newTaskForm.dueAt || undefined,
+    })
+      .then((response) => {
+        if (newTaskForm.assignedTo) {
+          return assignTaskApi(token, response.task._id, newTaskForm.assignedTo);
+        }
+        return response;
+      })
+      .then(() => {
+        setNewTaskForm(emptyNewTaskForm);
+        loadTasks();
+      })
+      .catch((error) => {
+        window.alert(error instanceof Error ? error.message : "Unable to create task.");
+      })
+      .finally(() => setCreatingTaskItem(false));
+  };
+
+  const handleAssignTask = (id: string, assignedTo: string) => {
+    setUpdatingTaskId(id);
+    assignTaskApi(token, id, assignedTo || null)
+      .then((response) => {
+        setTasks((prev) => prev.map((t) => (t._id === id ? response.task : t)));
+      })
+      .catch((error) => {
+        window.alert(error instanceof Error ? error.message : "Unable to assign task.");
+      })
+      .finally(() => setUpdatingTaskId(""));
+  };
+
+  const handleUpdateTaskStatus = (id: string, status: "open" | "in_progress" | "done") => {
+    setUpdatingTaskId(id);
+    updateTaskStatusApi(token, id, status)
+      .then((response) => {
+        setTasks((prev) => prev.map((t) => (t._id === id ? response.task : t)));
+      })
+      .catch((error) => {
+        window.alert(error instanceof Error ? error.message : "Unable to update task.");
+      })
+      .finally(() => setUpdatingTaskId(""));
+  };
+
+  const handleDeleteTask = (id: string) => {
+    if (!window.confirm("Delete this task?")) return;
+
+    setUpdatingTaskId(id);
+    deleteTaskApi(token, id)
+      .then(() => {
+        setTasks((prev) => prev.filter((t) => t._id !== id));
+      })
+      .catch((error) => {
+        window.alert(error instanceof Error ? error.message : "Unable to delete task.");
+      })
+      .finally(() => setUpdatingTaskId(""));
+  };
+
+  const [updatingJoinRequestId, setUpdatingJoinRequestId] = useState("");
+
+  const handleJoinRequestStatus = (id: string, status: "pending" | "approved" | "denied") => {
+    if (status === "approved" && !window.confirm("Approve this request? An email will be sent to notify them.")) return;
+    if (status === "denied" && !window.confirm("Deny this request?")) return;
+
+    setUpdatingJoinRequestId(id);
+    updateAdminJoinRequestStatusApi(token, id, status)
+      .then((response) => {
+        setJoinRequests((prev) => prev.map((request) => (request._id === id ? response.request : request)));
+      })
+      .catch((error) => {
+        window.alert(error instanceof Error ? error.message : "Unable to update join request.");
+      })
+      .finally(() => setUpdatingJoinRequestId(""));
+  };
+
+  const [updatingPartnerInquiryId, setUpdatingPartnerInquiryId] = useState("");
+
+  const handlePartnerInquiryStatus = (id: string, status: "pending" | "approved" | "rejected") => {
+    if (status === "approved" && !window.confirm("Approve this partnership inquiry? An email will be sent to notify them.")) return;
+    if (status === "rejected" && !window.confirm("Reject this partnership inquiry?")) return;
+
+    setUpdatingPartnerInquiryId(id);
+    updateAdminPartnerInquiryStatusApi(token, id, status)
+      .then((response) => {
+        setPartnerInquiries((prev) => prev.map((inquiry) => (inquiry._id === id ? response.inquiry : inquiry)));
+      })
+      .catch((error) => {
+        window.alert(error instanceof Error ? error.message : "Unable to update partner inquiry.");
+      })
+      .finally(() => setUpdatingPartnerInquiryId(""));
   };
 
   const filteredPartnerInquiries = useMemo(() => {
@@ -1260,6 +1610,9 @@ const AdminDashboard = () => {
     { label: "Email Automation", id: "automation", icon: Send },
     { label: "Funding", id: "funding", icon: Rocket },
     { label: "Investor Invites", id: "investor-invites", icon: Link2 },
+    { label: "Admin Chat", id: "chat", icon: MessageSquare },
+    { label: "Tasks", id: "tasks", icon: CheckCircle2 },
+    ...(account?.role === "superadmin" ? [{ label: "Team & Access", id: "team", icon: ShieldCheck }] : []),
   ];
 
   return (
@@ -1379,10 +1732,13 @@ const AdminDashboard = () => {
               {activeTab === "funding" && "Funding Applications"}
               {activeTab === "activity" && "Bangalore Event Activity"}
               {activeTab === "investor-invites" && "Investor Invite Links"}
+              {activeTab === "team" && "Team & Access"}
+              {activeTab === "chat" && "Admin Chat"}
+              {activeTab === "tasks" && "Tasks"}
             </h1>
             <p className="mt-3 max-w-3xl text-slate-600">
               {activeTab === "dashboard" && "Welcome back! Here's your admin overview."}
-              {activeTab === "analytics" && "Analyze form activity, content growth, and campaign performance in one place."}
+              {activeTab === "analytics" && "Community breakdown and event registration counts."}
               {activeTab === "events" && "Create, edit, or manage event content"}
               {activeTab === "promotions" && "Add and manage promotional banners for the hero slider (second feature)"}
               {activeTab === "blogs" && "Create, edit, or manage blog posts"}
@@ -1393,16 +1749,19 @@ const AdminDashboard = () => {
               {activeTab === "funding" && "Review and manage startup funding applications."}
               {activeTab === "activity" && "View live registrations for startups and investors from the Bangalore Event."}
               {activeTab === "investor-invites" && "Generate invite-only links for investor registration and manage who they've been shared with."}
+              {activeTab === "team" && "Create admin accounts, manage access, and review admin activity history."}
+              {activeTab === "chat" && "Message other admins in real time."}
+              {activeTab === "tasks" && "Create, assign, and track tasks across the admin team."}
             </p>
           </div>
 
           {/* Dashboard Tab */}
-          {(activeTab === "dashboard" || activeTab === "analytics") && (
+          {activeTab === "dashboard" && (
             <div className="space-y-6">
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                 <StatCard icon={Calendar} label="Active Events" value={events.length} trend={`${events.filter(e => e.isPublished).length} published`} />
                 <StatCard icon={FileText} label="Blog Posts" value={posts.length} trend={`${posts.filter(p => p.isPublished).length} published`} />
-                <StatCard icon={Users} label="Total Members" value={members.length} trend={`${members.filter(m => m.role === "admin").length} admins`} />
+                <StatCard icon={Users} label="Total Members" value={members.length} trend={`${members.filter(m => m.role === "admin" || m.role === "superadmin").length} admins`} />
                 <StatCard icon={AlertCircle} label="Guest Requests" value={interests.length} />
               </div>
 
@@ -1460,21 +1819,6 @@ const AdminDashboard = () => {
                   </Link>
                 </CardContent>
               </Card>
-
-              <AdminAnalyticsOverview
-                events={events}
-                posts={posts}
-                members={members}
-                interests={interests}
-                joinRequests={joinRequests}
-                subscribers={subscribers}
-                partners={partners}
-                galleryImages={galleryImages}
-                testimonials={testimonials}
-                partnerInquiries={partnerInquiries}
-                fundingApplications={fundingApplications}
-                campaigns={campaigns}
-              />
 
               <Card className="border-violet-200 bg-violet-50/70">
                 <CardHeader>
@@ -1640,6 +1984,17 @@ const AdminDashboard = () => {
                 </Card>
               </div>
             </div>
+          )}
+
+          {/* Analytics Tab */}
+          {activeTab === "analytics" && (
+            <AdminAnalyticsOverview
+              members={members}
+              investors={investorLeads}
+              partners={partners}
+              activityStartups={activityStartups}
+              activityInvestors={activityInvestors}
+            />
           )}
 
           {/* Events Tab */}
@@ -2346,7 +2701,7 @@ const AdminDashboard = () => {
                                     Login: {member.lastLoginAt ? new Date(member.lastLoginAt).toLocaleDateString() : "Never"}
                                   </p>
                                 </div>
-                                {member.role !== "admin" && member.role !== "super-admin" && (
+                                {member.role !== "admin" && member.role !== "superadmin" && (
                                   <Button
                                     variant="ghost"
                                     size="icon"
@@ -2384,7 +2739,7 @@ const AdminDashboard = () => {
                       </div>
                       <div className="rounded-lg bg-purple-50 p-3">
                         <p className="text-xs font-medium text-purple-600">Admins</p>
-                        <p className="text-2xl font-bold text-purple-900">{members.filter(m => m.role === "admin").length}</p>
+                        <p className="text-2xl font-bold text-purple-900">{members.filter(m => m.role === "admin" || m.role === "superadmin").length}</p>
                       </div>
                     </CardContent>
                   </Card>
@@ -2439,31 +2794,73 @@ const AdminDashboard = () => {
                   {joinRequests.length === 0 ? (
                     <p className="text-center text-slate-500 py-8">No join requests yet</p>
                   ) : (
-                    joinRequests.map((request) => (
-                      <div key={request._id} className="border border-slate-200 rounded-lg p-4 hover:bg-slate-50 transition">
-                        <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-                          <div className="flex-1">
-                            <h4 className="font-semibold text-slate-900">{request.name}</h4>
-                            <p className="text-sm text-slate-500 mt-1">{request.email} · {request.phone}</p>
-                            <p className="text-xs text-slate-500 mt-2">{request.occupation} · {request.companyName} · {request.city}</p>
-                            <p className="text-sm text-slate-600 mt-2 italic">"{request.whyJoin}"</p>
-                            <p className="text-xs text-slate-400 mt-2">Source: {request.referralSource}</p>
+                    joinRequests.map((request) => {
+                      const status = request.status || "pending";
+                      const isUpdating = updatingJoinRequestId === request._id;
+                      return (
+                        <div key={request._id} className="border border-slate-200 rounded-lg p-4 hover:bg-slate-50 transition">
+                          <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                            <div className="flex-1">
+                              <h4 className="font-semibold text-slate-900">{request.name}</h4>
+                              <p className="text-sm text-slate-500 mt-1">{request.email} · {request.phone}</p>
+                              <p className="text-xs text-slate-500 mt-2">{request.occupation} · {request.companyName} · {request.city}</p>
+                              <p className="text-sm text-slate-600 mt-2 italic">"{request.whyJoin}"</p>
+                              <p className="text-xs text-slate-400 mt-2">Source: {request.referralSource}</p>
+                            </div>
+                            <div className="text-right text-xs text-slate-500">
+                              <p>{request.createdAt ? new Date(request.createdAt).toLocaleString() : "Unknown date"}</p>
+                              <Badge
+                                className="mt-2 capitalize"
+                                variant={status === "approved" ? "default" : status === "denied" ? "destructive" : "secondary"}
+                              >
+                                {status}
+                              </Badge>
+                            </div>
                           </div>
-                          <div className="text-right text-xs text-slate-500">
-                            <p>{request.createdAt ? new Date(request.createdAt).toLocaleString() : "Unknown date"}</p>
-                            {request.status && <Badge className="mt-2">{request.status}</Badge>}
+                          <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
+                            <div className="flex flex-wrap gap-3 text-sm">
+                              {request.linkedinProfile && (
+                                <a className="text-primary hover:underline" href={request.linkedinProfile} target="_blank" rel="noreferrer">LinkedIn</a>
+                              )}
+                              {request.website && (
+                                <a className="text-primary hover:underline" href={request.website} target="_blank" rel="noreferrer">Website</a>
+                              )}
+                            </div>
+                            <div className="flex flex-wrap gap-2">
+                              <Button
+                                size="sm"
+                                variant={status === "pending" ? "secondary" : "outline"}
+                                disabled={isUpdating || status === "pending"}
+                                onClick={() => handleJoinRequestStatus(request._id, "pending")}
+                                className="gap-1.5"
+                              >
+                                <Clock3 className="h-3.5 w-3.5" />
+                                Pending
+                              </Button>
+                              <Button
+                                size="sm"
+                                disabled={isUpdating || status === "approved"}
+                                onClick={() => handleJoinRequestStatus(request._id, "approved")}
+                                className="gap-1.5 bg-green-600 hover:bg-green-700 text-white"
+                              >
+                                <CheckCircle2 className="h-3.5 w-3.5" />
+                                Approve
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="destructive"
+                                disabled={isUpdating || status === "denied"}
+                                onClick={() => handleJoinRequestStatus(request._id, "denied")}
+                                className="gap-1.5"
+                              >
+                                <Ban className="h-3.5 w-3.5" />
+                                Deny
+                              </Button>
+                            </div>
                           </div>
                         </div>
-                        <div className="mt-3 flex flex-wrap gap-3 text-sm">
-                          {request.linkedinProfile && (
-                            <a className="text-primary hover:underline" href={request.linkedinProfile} target="_blank" rel="noreferrer">LinkedIn</a>
-                          )}
-                          {request.website && (
-                            <a className="text-primary hover:underline" href={request.website} target="_blank" rel="noreferrer">Website</a>
-                          )}
-                        </div>
-                      </div>
-                    ))
+                      );
+                    })
                   )}
                 </CardContent>
               </Card>
@@ -2518,7 +2915,24 @@ const AdminDashboard = () => {
                             <div className="flex flex-wrap items-center gap-2">
                               <h3 className="text-lg font-bold text-slate-900">{inquiry.companyName}</h3>
                               <Badge variant="secondary">{inquiry.partnershipType}</Badge>
-                              <Badge>{inquiry.status}</Badge>
+                              <select
+                                value={inquiry.status === "reviewed" ? "pending" : inquiry.status}
+                                disabled={updatingPartnerInquiryId === inquiry._id}
+                                onChange={(e) =>
+                                  handlePartnerInquiryStatus(inquiry._id, e.target.value as "pending" | "approved" | "rejected")
+                                }
+                                className={`rounded-full border px-3 py-1 text-xs font-semibold capitalize cursor-pointer disabled:opacity-50 ${
+                                  inquiry.status === "approved"
+                                    ? "border-green-200 bg-green-50 text-green-700"
+                                    : inquiry.status === "rejected"
+                                    ? "border-red-200 bg-red-50 text-red-700"
+                                    : "border-amber-200 bg-amber-50 text-amber-700"
+                                }`}
+                              >
+                                <option value="pending">Pending</option>
+                                <option value="approved">Approve</option>
+                                <option value="rejected">Deny</option>
+                              </select>
                             </div>
                             <p className="mt-1 text-sm text-slate-600">
                               {inquiry.contactPerson} · {inquiry.email} · {inquiry.phone || "No phone"}
@@ -4007,6 +4421,459 @@ const AdminDashboard = () => {
                       </tbody>
                     </table>
                   </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
+          {/* Team & Access Tab (superadmin only) */}
+          {activeTab === "team" && (
+            account?.role !== "superadmin" ? (
+              <Card>
+                <CardContent className="py-12 text-center text-slate-500">
+                  Only super admins can manage team access.
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="space-y-6">
+                <Card className="border-2 border-violet-200 bg-violet-50">
+                  <CardHeader className="pb-4">
+                    <CardTitle>Give Admin Access</CardTitle>
+                    <CardDescription>
+                      Creates an account with a generated password and emails the login details automatically.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="bg-white rounded-b-lg p-4">
+                    <form onSubmit={handleCreateAdmin} className="space-y-4">
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        <Input
+                          placeholder="Full name"
+                          value={newAdminForm.fullName}
+                          onChange={(e) => setNewAdminForm((c) => ({ ...c, fullName: e.target.value }))}
+                          required
+                        />
+                        <Input
+                          type="email"
+                          placeholder="Email address"
+                          value={newAdminForm.email}
+                          onChange={(e) => setNewAdminForm((c) => ({ ...c, email: e.target.value }))}
+                          required
+                        />
+                        <Input
+                          placeholder="Phone number"
+                          value={newAdminForm.phone}
+                          onChange={(e) => setNewAdminForm((c) => ({ ...c, phone: e.target.value }))}
+                          required
+                        />
+                        <Input
+                          placeholder="City"
+                          value={newAdminForm.city}
+                          onChange={(e) => setNewAdminForm((c) => ({ ...c, city: e.target.value }))}
+                          required
+                        />
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <select
+                          value={newAdminForm.role}
+                          onChange={(e) => setNewAdminForm((c) => ({ ...c, role: e.target.value as "admin" | "superadmin" }))}
+                          className="rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
+                        >
+                          <option value="admin">Admin</option>
+                          <option value="superadmin">Super Admin</option>
+                        </select>
+                        <Button type="submit" disabled={creatingAdmin} className="gap-2">
+                          <KeyRound className="h-4 w-4" />
+                          {creatingAdmin ? "Creating..." : "Create & Email Credentials"}
+                        </Button>
+                      </div>
+                    </form>
+                  </CardContent>
+                </Card>
+
+                {justCreatedAdmin && (
+                  <Card className="border-2 border-green-200 bg-green-50">
+                    <CardContent className="p-5">
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <p className="font-semibold text-slate-900">{justCreatedAdmin.message}</p>
+                          <p className="mt-2 text-sm text-slate-600">
+                            Email: <span className="font-mono">{justCreatedAdmin.account.email}</span>
+                          </p>
+                          <p className="text-sm text-slate-600">
+                            Temporary password: <span className="font-mono font-bold">{justCreatedAdmin.generatedPassword}</span>
+                          </p>
+                          {!justCreatedAdmin.emailSent && (
+                            <p className="mt-2 text-sm font-medium text-amber-700">
+                              The email failed to send — copy this password and share it manually.
+                            </p>
+                          )}
+                        </div>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            navigator.clipboard?.writeText(justCreatedAdmin.generatedPassword).catch(() => {});
+                          }}
+                          className="gap-2 shrink-0"
+                        >
+                          <Copy className="h-4 w-4" />
+                          Copy Password
+                        </Button>
+                      </div>
+                      <Button size="sm" variant="ghost" className="mt-3" onClick={() => setJustCreatedAdmin(null)}>
+                        Dismiss
+                      </Button>
+                    </CardContent>
+                  </Card>
+                )}
+
+                <Card>
+                  <CardHeader className="bg-slate-50 border-b">
+                    <CardTitle>Admins ({admins.length})</CardTitle>
+                    <CardDescription>Manage roles or remove admin access.</CardDescription>
+                  </CardHeader>
+                  <CardContent className="p-0">
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left text-sm">
+                        <thead className="bg-slate-50 text-slate-500 border-b">
+                          <tr>
+                            <th className="p-4 font-medium">Name</th>
+                            <th className="p-4 font-medium">Email</th>
+                            <th className="p-4 font-medium">Role</th>
+                            <th className="p-4 font-medium">Status</th>
+                            <th className="p-4 font-medium"></th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100">
+                          {loadingAdmins ? (
+                            <tr><td colSpan={5} className="p-8 text-center text-slate-500">Loading admins...</td></tr>
+                          ) : admins.length === 0 ? (
+                            <tr><td colSpan={5} className="p-8 text-center text-slate-500">No admins found.</td></tr>
+                          ) : (
+                            admins.map((admin) => {
+                              const isSelf = admin.email === account?.email;
+                              const isUpdating = updatingAdminId === admin._id;
+                              return (
+                                <tr key={admin._id} className="hover:bg-slate-50">
+                                  <td className="p-4 font-semibold text-slate-900">
+                                    {admin.fullName} {isSelf && <span className="text-xs text-slate-400">(you)</span>}
+                                  </td>
+                                  <td className="p-4 text-slate-700">{admin.email}</td>
+                                  <td className="p-4">
+                                    <select
+                                      value={admin.role}
+                                      disabled={isSelf || isUpdating}
+                                      onChange={(e) => handleUpdateAdminRole(admin._id, e.target.value as "admin" | "superadmin")}
+                                      className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold capitalize disabled:opacity-50"
+                                    >
+                                      <option value="admin">Admin</option>
+                                      <option value="superadmin">Super Admin</option>
+                                    </select>
+                                  </td>
+                                  <td className="p-4">
+                                    <Badge variant={admin.isActive ? "default" : "secondary"}>{admin.isActive ? "Active" : "Inactive"}</Badge>
+                                  </td>
+                                  <td className="p-4 text-right">
+                                    <Button
+                                      size="sm"
+                                      variant="destructive"
+                                      disabled={isSelf || isUpdating}
+                                      onClick={() => handleDeleteAdmin(admin._id, admin.fullName)}
+                                      className="gap-1.5"
+                                    >
+                                      <Trash2 className="h-3.5 w-3.5" />
+                                      Remove
+                                    </Button>
+                                  </td>
+                                </tr>
+                              );
+                            })
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader className="bg-slate-50 border-b">
+                    <CardTitle>Activity History</CardTitle>
+                    <CardDescription>What every admin has done across the dashboard, most recent first.</CardDescription>
+                  </CardHeader>
+                  <CardContent className="p-0">
+                    <div className="max-h-[500px] overflow-y-auto overflow-x-auto">
+                      <table className="w-full text-left text-sm">
+                        <thead className="sticky top-0 bg-slate-50 text-slate-500 border-b">
+                          <tr>
+                            <th className="p-4 font-medium">Admin</th>
+                            <th className="p-4 font-medium">Action</th>
+                            <th className="p-4 font-medium">Target</th>
+                            <th className="p-4 font-medium">Status</th>
+                            <th className="p-4 font-medium">When</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100">
+                          {loadingAuditLogs ? (
+                            <tr><td colSpan={5} className="p-8 text-center text-slate-500">Loading activity...</td></tr>
+                          ) : auditLogs.length === 0 ? (
+                            <tr><td colSpan={5} className="p-8 text-center text-slate-500">No activity recorded yet.</td></tr>
+                          ) : (
+                            auditLogs.map((log) => (
+                              <tr key={log._id} className="hover:bg-slate-50">
+                                <td className="p-4">
+                                  <p className="font-medium text-slate-900">{log.actorName}</p>
+                                  <p className="text-xs text-slate-400 capitalize">{log.actorRole}</p>
+                                </td>
+                                <td className="p-4 font-mono text-xs text-slate-700">{log.action}</td>
+                                <td className="p-4 text-slate-600">
+                                  {log.targetCollection}
+                                  {log.targetId ? ` · ${log.targetId.slice(-6)}` : ""}
+                                </td>
+                                <td className="p-4">
+                                  <Badge variant={(log.statusCode ?? 0) < 400 ? "default" : "destructive"}>
+                                    {log.statusCode ?? "—"}
+                                  </Badge>
+                                </td>
+                                <td className="p-4 text-xs text-slate-500">{new Date(log.createdAt).toLocaleString()}</td>
+                              </tr>
+                            ))
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            )
+          )}
+
+          {/* Admin Chat Tab */}
+          {activeTab === "chat" && (
+            <Card className="flex h-[70vh] flex-col">
+              <CardHeader className="border-b">
+                <CardTitle>Admin Chat</CardTitle>
+                <CardDescription>Shared channel for all admins and super admins.</CardDescription>
+              </CardHeader>
+              <CardContent className="flex-1 space-y-3 overflow-y-auto p-4">
+                {chatMessages.length === 0 ? (
+                  <p className="py-12 text-center text-slate-500">No messages yet. Say hello!</p>
+                ) : (
+                  chatMessages.map((msg) => {
+                    const isSelf = msg.senderId === account?.id;
+                    const mentionsMe = Boolean(account?.id && msg.mentions?.includes(account.id));
+                    const nameParts = msg.message.split(/(@[A-Za-z]+(?:\s[A-Za-z]+)?)/g);
+                    return (
+                      <div key={msg._id} className={`flex ${isSelf ? "justify-end" : "justify-start"}`}>
+                        <div
+                          className={`max-w-[75%] rounded-2xl px-4 py-2.5 ${
+                            isSelf ? "bg-violet-600 text-white" : "bg-slate-100 text-slate-900"
+                          } ${mentionsMe ? "ring-2 ring-amber-400" : ""}`}
+                        >
+                          {!isSelf && (
+                            <p className="mb-0.5 text-xs font-semibold opacity-70">
+                              {msg.senderName} <span className="capitalize">· {msg.senderRole}</span>
+                            </p>
+                          )}
+                          {mentionsMe && (
+                            <p className="mb-1 text-[10px] font-bold uppercase tracking-wide text-amber-500">You were tagged</p>
+                          )}
+                          <p className="text-sm break-words">
+                            {nameParts.map((part, idx) =>
+                              part.startsWith("@") ? (
+                                <span key={idx} className={`font-semibold ${isSelf ? "text-violet-100" : "text-violet-700"}`}>
+                                  {part}
+                                </span>
+                              ) : (
+                                <span key={idx}>{part}</span>
+                              ),
+                            )}
+                          </p>
+                          <p className={`mt-1 text-[10px] ${isSelf ? "text-violet-200" : "text-slate-400"}`}>
+                            {new Date(msg.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+                <div ref={chatEndRef} />
+              </CardContent>
+              <form onSubmit={handleSendChatMessage} className="relative flex items-center gap-2 border-t p-3">
+                {mentionMatches.length > 0 && (
+                  <div className="absolute bottom-full left-3 mb-1 w-64 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg">
+                    {mentionMatches.map((p) => (
+                      <button
+                        key={p._id}
+                        type="button"
+                        onClick={() => handlePickMention(p)}
+                        className="flex w-full items-center justify-between px-3 py-2 text-left text-sm hover:bg-slate-50"
+                      >
+                        <span className="font-medium text-slate-900">{p.fullName}</span>
+                        <span className="text-xs capitalize text-slate-400">{p.role}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+                <Input
+                  placeholder="Message the team... (type @ to tag someone)"
+                  value={chatInput}
+                  onChange={(e) => handleChatInputChange(e.target.value)}
+                  disabled={sendingChat}
+                  className="flex-1"
+                />
+                <Button type="submit" disabled={sendingChat || !chatInput.trim()} className="gap-2">
+                  <Send className="h-4 w-4" />
+                  Send
+                </Button>
+              </form>
+            </Card>
+          )}
+
+          {/* Tasks Tab */}
+          {activeTab === "tasks" && (
+            <div className="space-y-6">
+              {account?.role === "superadmin" && (
+                <Card className="border-2 border-violet-200 bg-violet-50">
+                  <CardHeader className="pb-4">
+                    <CardTitle>Create Task</CardTitle>
+                    <CardDescription>Assign it to an admin now, or leave unassigned and assign later.</CardDescription>
+                  </CardHeader>
+                  <CardContent className="bg-white rounded-b-lg p-4">
+                    <form onSubmit={handleCreateTask} className="space-y-4">
+                      <Input
+                        placeholder="Task title"
+                        value={newTaskForm.title}
+                        onChange={(e) => setNewTaskForm((c) => ({ ...c, title: e.target.value }))}
+                        required
+                      />
+                      <Textarea
+                        placeholder="Description (optional)"
+                        value={newTaskForm.description}
+                        onChange={(e) => setNewTaskForm((c) => ({ ...c, description: e.target.value }))}
+                        className="min-h-20"
+                      />
+                      <div className="grid gap-4 sm:grid-cols-3">
+                        <select
+                          value={newTaskForm.priority}
+                          onChange={(e) => setNewTaskForm((c) => ({ ...c, priority: e.target.value as "low" | "medium" | "high" }))}
+                          className="rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
+                        >
+                          <option value="low">Low priority</option>
+                          <option value="medium">Medium priority</option>
+                          <option value="high">High priority</option>
+                        </select>
+                        <Input
+                          type="date"
+                          value={newTaskForm.dueAt}
+                          onChange={(e) => setNewTaskForm((c) => ({ ...c, dueAt: e.target.value }))}
+                        />
+                        <select
+                          value={newTaskForm.assignedTo}
+                          onChange={(e) => setNewTaskForm((c) => ({ ...c, assignedTo: e.target.value }))}
+                          className="rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
+                        >
+                          <option value="">Unassigned</option>
+                          {admins.map((admin) => (
+                            <option key={admin._id} value={admin._id}>{admin.fullName}</option>
+                          ))}
+                        </select>
+                      </div>
+                      <Button type="submit" disabled={creatingTaskItem} className="gap-2">
+                        <Plus className="h-4 w-4" />
+                        {creatingTaskItem ? "Creating..." : "Create Task"}
+                      </Button>
+                    </form>
+                  </CardContent>
+                </Card>
+              )}
+
+              <Card>
+                <CardHeader className="bg-slate-50 border-b">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle>Tasks ({tasks.length})</CardTitle>
+                      <CardDescription>
+                        {account?.role === "superadmin" ? "Assign, track, and manage tasks." : "Tasks assigned across the team."}
+                      </CardDescription>
+                    </div>
+                    <select
+                      value={taskStatusFilter}
+                      onChange={(e) => setTaskStatusFilter(e.target.value)}
+                      className="rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
+                    >
+                      <option value="">All statuses</option>
+                      <option value="open">Open</option>
+                      <option value="in_progress">In Progress</option>
+                      <option value="done">Done</option>
+                    </select>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-3 p-4">
+                  {loadingTasks ? (
+                    <p className="py-8 text-center text-slate-500">Loading tasks...</p>
+                  ) : tasks.length === 0 ? (
+                    <p className="py-8 text-center text-slate-500">No tasks yet.</p>
+                  ) : (
+                    tasks.map((task) => {
+                      const isUpdating = updatingTaskId === task._id;
+                      return (
+                        <div key={task._id} className="rounded-xl border border-slate-200 p-4">
+                          <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                            <div className="flex-1">
+                              <div className="flex flex-wrap items-center gap-2">
+                                <h4 className="font-semibold text-slate-900">{task.title}</h4>
+                                <Badge variant={task.priority === "high" ? "destructive" : task.priority === "medium" ? "default" : "secondary"} className="capitalize">
+                                  {task.priority}
+                                </Badge>
+                              </div>
+                              {task.description && <p className="mt-1 text-sm text-slate-600">{task.description}</p>}
+                              <p className="mt-2 text-xs text-slate-500">
+                                Assigned to: {task.assignedTo?.fullName || "Unassigned"}
+                                {task.dueAt && ` · Due ${new Date(task.dueAt).toLocaleDateString()}`}
+                                {" · Created by "}{task.createdBy?.fullName || "—"}
+                              </p>
+                            </div>
+                            <div className="flex flex-wrap items-center gap-2">
+                              <select
+                                value={task.status}
+                                disabled={isUpdating}
+                                onChange={(e) => handleUpdateTaskStatus(task._id, e.target.value as "open" | "in_progress" | "done")}
+                                className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold capitalize disabled:opacity-50"
+                              >
+                                <option value="open">Open</option>
+                                <option value="in_progress">In Progress</option>
+                                <option value="done">Done</option>
+                              </select>
+                              {account?.role === "superadmin" && (
+                                <>
+                                  <select
+                                    value={task.assignedTo?._id || ""}
+                                    disabled={isUpdating}
+                                    onChange={(e) => handleAssignTask(task._id, e.target.value)}
+                                    className="rounded-md border border-slate-200 bg-white px-2 py-1 text-xs disabled:opacity-50"
+                                  >
+                                    <option value="">Unassigned</option>
+                                    {admins.map((admin) => (
+                                      <option key={admin._id} value={admin._id}>{admin.fullName}</option>
+                                    ))}
+                                  </select>
+                                  <Button
+                                    size="sm"
+                                    variant="destructive"
+                                    disabled={isUpdating}
+                                    onClick={() => handleDeleteTask(task._id)}
+                                    className="gap-1.5"
+                                  >
+                                    <Trash2 className="h-3.5 w-3.5" />
+                                  </Button>
+                                </>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
                 </CardContent>
               </Card>
             </div>

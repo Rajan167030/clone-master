@@ -24,6 +24,7 @@ import {
   getPublicEventBySlugApi,
   type DynamicEvent,
 } from "@/lib/api";
+import { optimizeCloudinaryUrl } from "@/lib/cloudinary";
 import NotFound from "./NotFound";
 
 const EventDetails = () => {
@@ -109,11 +110,11 @@ const EventDetails = () => {
               <div className="relative h-[380px] md:h-[420px]">
                 {event.mobileBannerImage ? (
                   <>
-                    <img src={event.mobileBannerImage} alt={event.bannerAlt || event.title} className="block md:hidden h-full w-full object-cover" />
-                    <img src={event.bannerImage} alt={event.bannerAlt || event.title} className="hidden md:block h-full w-full object-cover" />
+                    <img src={optimizeCloudinaryUrl(event.mobileBannerImage, 900)} alt={event.bannerAlt || event.title} decoding="async" className="block md:hidden h-full w-full object-cover" />
+                    <img src={optimizeCloudinaryUrl(event.bannerImage, 1400)} alt={event.bannerAlt || event.title} decoding="async" className="hidden md:block h-full w-full object-cover" />
                   </>
                 ) : (
-                  <img src={event.bannerImage} alt={event.bannerAlt || event.title} className="h-full w-full object-cover" />
+                  <img src={optimizeCloudinaryUrl(event.bannerImage, 1400)} alt={event.bannerAlt || event.title} decoding="async" className="h-full w-full object-cover" />
                 )}
                 <div className="absolute inset-0 bg-gradient-to-t from-background via-background/45 to-transparent" />
                 <div className="absolute bottom-0 left-0 w-full p-6 md:p-8">

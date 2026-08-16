@@ -3,19 +3,16 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import { getPublicSliderEventsApi, getPublicSliderPromotionsApi } from "@/lib/api";
+import { optimizeCloudinaryUrl } from "@/lib/cloudinary";
 
-const cloudinaryImages = {
-  slide1: "https://res.cloudinary.com/founders-connect/image/upload/c_fill,q_auto,f_auto/hero/slide1.jpg",
-  slide2: "https://res.cloudinary.com/founders-connect/image/upload/c_fill,q_auto,f_auto/hero/slide2.jpg",
-  slide3: "https://res.cloudinary.com/founders-connect/image/upload/c_fill,q_auto,f_auto/hero/slide3.jpg",
-};
+const HERO_IMAGE = "/hero-founders-connect.webp";
 
 const fallbackSlides = [
   {
     title: "Founders Connect",
     highlight: "Startup Meetup 2026",
     link: "/events/founders-connect-dehradun-edition-v1",
-    image: cloudinaryImages.slide1,
+    image: HERO_IMAGE,
     alt: "Founders Connect startup meetup event",
     buttonLabel: "Join now",
   },
@@ -23,7 +20,7 @@ const fallbackSlides = [
     title: "",
     highlight: "",
     link: "/joinus",
-    image: "/Screenshot 2026-04-23 004018.png",
+    image: HERO_IMAGE,
     alt: "Join Founders Connect",
     buttonLabel: "Join now",
   },
@@ -31,7 +28,7 @@ const fallbackSlides = [
     title: "",
     highlight: "",
     link: "/joinus",
-    image: "/Screenshot 2026-04-23 004018.png",
+    image: HERO_IMAGE,
     alt: "Join Founders Connect",
     buttonLabel: "Join now",
   },
@@ -63,7 +60,7 @@ const HeroSlider = ({ className }: { className?: string }) => {
             title: "Founders Connect",
             highlight: "Startup Meetup 2026",
             link: "/events/founders-connect-dehradun-edition-v1",
-            image: "/Screenshot 2026-04-23 004018.png",
+            image: HERO_IMAGE,
             alt: "Founders Connect startup meetup event",
             buttonLabel: "Join now",
           }
@@ -76,7 +73,7 @@ const HeroSlider = ({ className }: { className?: string }) => {
             title: event.title,
             highlight: event.subtitle || event.title,
             link: `/events/${event.slug}`,
-            image: event.bannerImage || cloudinaryImages.slide1,
+            image: optimizeCloudinaryUrl(event.bannerImage, 1600) || HERO_IMAGE,
             alt: event.bannerAlt || event.title,
             buttonLabel: "Join now",
           }));
@@ -90,7 +87,7 @@ const HeroSlider = ({ className }: { className?: string }) => {
             title: promo.title,
             highlight: promo.description || promo.title,
             link: promo.linkUrl || "",
-            image: promo.imageUrl,
+            image: optimizeCloudinaryUrl(promo.imageUrl, 1600),
             alt: promo.altText || promo.title,
             buttonLabel: promo.buttonLabel || "View More",
           }));
@@ -137,6 +134,8 @@ const HeroSlider = ({ className }: { className?: string }) => {
                 <img
                   src={currentSlide.image}
                   alt=""
+                  loading={current === 0 ? "eager" : "lazy"}
+                  decoding="async"
                   className="absolute inset-0 w-full h-full object-cover scale-[1.15] blur-3xl opacity-60 saturate-150"
                   aria-hidden="true"
                 />
@@ -146,6 +145,10 @@ const HeroSlider = ({ className }: { className?: string }) => {
                   alt={currentSlide.alt}
                   width={1600}
                   height={900}
+                  loading={current === 0 ? "eager" : "lazy"}
+                  decoding="async"
+                  // @ts-expect-error fetchPriority is a valid DOM attribute not yet in React's img typings
+                  fetchpriority={current === 0 ? "high" : "auto"}
                   initial={{ scale: 1.05 }}
                   animate={{ scale: 1 }}
                   transition={{ duration: 0.7 }}

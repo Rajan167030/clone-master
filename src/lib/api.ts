@@ -214,23 +214,11 @@ export type AdminInvestorDetail = {
   fullName: string;
   email: string;
   phone: string;
-  city: string;
-  role: "investor";
-  referralCode?: string;
-  referredBy?: string;
-  isActive: boolean;
-  profileId?: string;
-  headline?: string;
-  profilePhoto?: string;
-  lastLoginAt?: string | null;
+  vcName: string;
+  investmentInterest: string;
+  inviteToken?: string;
   createdAt: string;
   updatedAt: string;
-  roleDetails: {
-    investmentRange?: { min: number; max: number; currency: string };
-    focusSector?: string[];
-    portfolioSize?: number;
-    investorId?: string;
-  };
 };
 
 export type AdminMemberDetail = {
@@ -426,7 +414,8 @@ export type AdminJoinRequest = {
   city: string;
   whyJoin: string;
   referralSource: string;
-  status?: string;
+  status?: "pending" | "approved" | "denied";
+  reviewedAt?: string | null;
   createdAt?: string;
   updatedAt?: string;
 };
@@ -440,6 +429,19 @@ export const registerApi = (payload: RegisterPayload) =>
 export const validateInvestorInviteApi = (token: string) =>
   request<{ valid: boolean; message?: string }>(`/auth/investor-invite/${encodeURIComponent(token)}`, {
     method: "GET",
+  });
+
+export const submitInvestorLeadApi = (payload: {
+  fullName: string;
+  email: string;
+  phone?: string;
+  vcName: string;
+  investmentInterest: string;
+  inviteToken: string;
+}) =>
+  request<{ message: string; lead: AdminInvestorDetail }>("/auth/investor-lead", {
+    method: "POST",
+    body: JSON.stringify(payload),
   });
 
 export const listAdminInvestorInvitesApi = (token: string) =>
@@ -966,6 +968,17 @@ export const getAdminPartnerInquiriesApi = (token: string) =>
     headers: { Authorization: `Bearer ${token}` },
   });
 
+export const updateAdminPartnerInquiryStatusApi = (
+  token: string,
+  id: string,
+  status: "pending" | "approved" | "rejected",
+) =>
+  request<{ message: string; inquiry: PartnerInquiry }>(`/admin/partner-inquiries/${id}/status`, {
+    method: "PATCH",
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ status }),
+  });
+
 export const getAdminPartnerTypesApi = (token: string) =>
   request<{ types: { slug: string; name: string }[] }>("/admin/partner-types", {
     method: "GET",
@@ -976,6 +989,17 @@ export const getAdminJoinRequestsApi = (token: string) =>
   request<{ requests: AdminJoinRequest[] }>("/admin/join-requests", {
     method: "GET",
     headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const updateAdminJoinRequestStatusApi = (
+  token: string,
+  id: string,
+  status: "pending" | "approved" | "denied",
+) =>
+  request<{ message: string; request: AdminJoinRequest }>(`/admin/join-requests/${id}/status`, {
+    method: "PATCH",
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ status }),
   });
 
 export const createAdminPartnerApi = (
@@ -1475,3 +1499,169 @@ export const getBangaloreInvestorsApi = async (): Promise<ActivityInvestorProfil
   }
   return [];
 };
+
+// --- Admin team management, audit log, and admin chat ---
+
+export type AdminAccountSummary = {
+  _id: string;
+  fullName: string;
+  email: string;
+  role: "admin" | "superadmin";
+  isActive: boolean;
+  assignedTasks?: string[];
+};
+
+export type CreateAdminResponse = {
+  message: string;
+  account: AdminAccountSummary;
+  generatedPassword: string;
+  emailSent: boolean;
+};
+
+export const listAdminsApi = (token: string) =>
+  request<{ admins: AdminAccountSummary[] }>("/admin/super/admins", {
+    method: "GET",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const createAdminApi = (
+  token: string,
+  payload: { fullName: string; email: string; phone: string; city: string; role: "admin" | "superadmin" },
+) =>
+  request<CreateAdminResponse>("/admin/super/admins", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify(payload),
+  });
+
+export const updateAdminRoleApi = (token: string, id: string, role: "admin" | "superadmin") =>
+  request<{ message: string; account: AdminAccountSummary }>(`/admin/super/admins/${id}/role`, {
+    method: "PATCH",
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ role }),
+  });
+
+export const deleteAdminAccountApi = (token: string, id: string, hard = false) =>
+  request<{ message: string }>(`/admin/super/admins/${id}${hard ? "?hard=true" : ""}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export type AuditLogEntry = {
+  _id: string;
+  actorId: string;
+  actorName: string;
+  actorRole: string;
+  action: string;
+  method: string;
+  path: string;
+  targetCollection: string;
+  targetId: string | null;
+  statusCode: number | null;
+  changes?: Record<string, unknown>;
+  createdAt: string;
+};
+
+export const listAuditLogsApi = (token: string, limit = 200) =>
+  request<{ logs: AuditLogEntry[] }>(`/admin/super/audit-logs?limit=${limit}`, {
+    method: "GET",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export type AdminChatMessage = {
+  _id: string;
+  senderId: string;
+  senderName: string;
+  senderRole: "admin" | "superadmin";
+  message: string;
+  mentions?: string[];
+  createdAt: string;
+};
+
+export type ChatParticipant = {
+  _id: string;
+  fullName: string;
+  email: string;
+  role: "admin" | "superadmin";
+};
+
+export const listChatParticipantsApi = (token: string) =>
+  request<{ participants: ChatParticipant[] }>("/admin/chat/participants", {
+    method: "GET",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const listAdminChatMessagesApi = (token: string, after?: string) =>
+  request<{ messages: AdminChatMessage[] }>(`/admin/chat/messages${after ? `?after=${encodeURIComponent(after)}` : ""}`, {
+    method: "GET",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const sendAdminChatMessageApi = (token: string, message: string, senderName?: string, mentionedIds?: string[]) =>
+  request<{ chatMessage: AdminChatMessage }>("/admin/chat/messages", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ message, senderName, mentionedIds }),
+  });
+
+export type AdminTaskPerson = {
+  _id: string;
+  fullName: string;
+  email: string;
+  role: string;
+};
+
+export type AdminTask = {
+  _id: string;
+  title: string;
+  description: string;
+  assignedTo: AdminTaskPerson | null;
+  createdBy: AdminTaskPerson | null;
+  status: "open" | "in_progress" | "done";
+  priority: "low" | "medium" | "high";
+  dueAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export const listTasksApi = (token: string, filters?: { assignedTo?: string; status?: string }) => {
+  const params = new URLSearchParams();
+  if (filters?.assignedTo) params.set("assignedTo", filters.assignedTo);
+  if (filters?.status) params.set("status", filters.status);
+  const query = params.toString();
+
+  return request<{ tasks: AdminTask[] }>(`/admin/super/tasks${query ? `?${query}` : ""}`, {
+    method: "GET",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+};
+
+export const createTaskApi = (
+  token: string,
+  payload: { title: string; description?: string; priority?: "low" | "medium" | "high"; dueAt?: string },
+) =>
+  request<{ message: string; task: AdminTask }>("/admin/super/tasks", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify(payload),
+  });
+
+export const assignTaskApi = (token: string, id: string, assignedTo: string | null) =>
+  request<{ message: string; task: AdminTask }>(`/admin/super/tasks/${id}/assign`, {
+    method: "PATCH",
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ assignedTo }),
+  });
+
+export const updateTaskStatusApi = (token: string, id: string, status: "open" | "in_progress" | "done") =>
+  request<{ message: string; task: AdminTask }>(`/admin/super/tasks/${id}/status`, {
+    method: "PATCH",
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ status }),
+  });
+
+export const deleteTaskApi = (token: string, id: string) =>
+  request<{ message: string }>(`/admin/super/tasks/${id}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${token}` },
+  });

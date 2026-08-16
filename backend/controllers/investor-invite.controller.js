@@ -1,5 +1,5 @@
 import crypto from "crypto";
-import { InvestorInvite } from "../models/index.js";
+import { InvestorInvite, InvestorLead } from "../models/index.js";
 
 const toSafeInvite = (invite) => ({
   _id: invite._id,
@@ -104,6 +104,72 @@ export const validateInvestorInvite = async (req, res, next) => {
     }
 
     return res.status(200).json({ valid: true });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const submitInvestorLead = async (req, res, next) => {
+  try {
+    const { fullName, email, phone, vcName, investmentInterest, inviteToken } = req.body || {};
+
+    const normalizedToken = String(inviteToken || "").trim();
+    if (!normalizedToken) {
+      return res.status(403).json({ message: "A valid invite link is required to submit this form." });
+    }
+
+    const invite = await InvestorInvite.findOne({ token: normalizedToken });
+    if (!invite || !invite.isActive) {
+      return res.status(403).json({ message: "This invite link is invalid or has been revoked." });
+    }
+    if (invite.expiresAt && new Date(invite.expiresAt) < new Date()) {
+      return res.status(403).json({ message: "This invite link has expired." });
+    }
+
+    const normalizedFullName = String(fullName || "").trim();
+    const normalizedEmail = String(email || "").trim().toLowerCase();
+    const normalizedVcName = String(vcName || "").trim();
+    const normalizedInvestmentInterest = String(investmentInterest || "").trim();
+
+    if (!normalizedFullName || !normalizedEmail || !normalizedVcName || !normalizedInvestmentInterest) {
+      return res.status(400).json({ message: "Name, email, VC/firm name, and investment interest are required." });
+    }
+
+    const lead = await InvestorLead.create({
+      fullName: normalizedFullName,
+      email: normalizedEmail,
+      phone: String(phone || "").trim(),
+      vcName: normalizedVcName,
+      investmentInterest: normalizedInvestmentInterest,
+      inviteToken: normalizedToken,
+    });
+
+    await InvestorInvite.updateOne(
+      { _id: invite._id },
+      { $inc: { usageCount: 1 }, $set: { lastUsedAt: new Date() } },
+    );
+
+    return res.status(201).json({
+      message: "Thank you! Your details have been submitted.",
+      lead: {
+        _id: lead._id,
+        fullName: lead.fullName,
+        email: lead.email,
+        phone: lead.phone,
+        vcName: lead.vcName,
+        investmentInterest: lead.investmentInterest,
+        createdAt: lead.createdAt,
+      },
+    });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const listAdminInvestorLeads = async (req, res, next) => {
+  try {
+    const leads = await InvestorLead.find({}).sort({ createdAt: -1 }).lean();
+    return res.status(200).json({ investors: leads });
   } catch (error) {
     return next(error);
   }
