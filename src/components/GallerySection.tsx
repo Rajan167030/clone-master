@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { X } from "lucide-react";
 import { getPublicGalleryApi, type GalleryImage } from "@/lib/api";
 import { optimizeCloudinaryUrl } from "@/lib/cloudinary";
 
@@ -113,6 +114,7 @@ const fallbackImages: GalleryTile[] = [
 const GallerySection = ({ className }: { className?: string }) => {
   const [images, setImages] = useState<GalleryImage[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedImage, setSelectedImage] = useState<GalleryTile | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -135,6 +137,23 @@ const GallerySection = ({ className }: { className?: string }) => {
       mounted = false;
     };
   }, []);
+
+  useEffect(() => {
+    if (!selectedImage) return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setSelectedImage(null);
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [selectedImage]);
 
   const displayImages = (images.length > 0 ? images : fallbackImages) as GalleryTile[];
 
@@ -175,7 +194,17 @@ const GallerySection = ({ className }: { className?: string }) => {
                   {[...displayImages, ...displayImages, ...displayImages].map((image, index) => (
                     <div
                       key={`${image._id}-${index}`}
-                      className="group relative rounded-2xl overflow-hidden cursor-pointer shadow-md hover:shadow-xl transition-all duration-300 mx-3 w-[340px] sm:w-[420px] h-[240px] sm:h-[300px] shrink-0"
+                      role="button"
+                      tabIndex={0}
+                      aria-label={`View full image: ${image.title}`}
+                      onClick={() => setSelectedImage(image)}
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter" || event.key === " ") {
+                          event.preventDefault();
+                          setSelectedImage(image);
+                        }
+                      }}
+                      className="group relative rounded-2xl overflow-hidden cursor-pointer shadow-md hover:shadow-xl transition-all duration-300 mx-3 w-[340px] sm:w-[420px] h-[240px] sm:h-[300px] shrink-0 outline-none focus-visible:ring-2 focus-visible:ring-primary"
                     >
                       {/* Image */}
                       <img
@@ -211,7 +240,17 @@ const GallerySection = ({ className }: { className?: string }) => {
                   {[...displayImages, ...displayImages, ...displayImages].reverse().map((image, index) => (
                     <div
                       key={`${image._id}-rev-${index}`}
-                      className="group relative rounded-2xl overflow-hidden cursor-pointer shadow-md hover:shadow-xl transition-all duration-300 mx-3 w-[340px] sm:w-[420px] h-[240px] sm:h-[300px] shrink-0"
+                      role="button"
+                      tabIndex={0}
+                      aria-label={`View full image: ${image.title}`}
+                      onClick={() => setSelectedImage(image)}
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter" || event.key === " ") {
+                          event.preventDefault();
+                          setSelectedImage(image);
+                        }
+                      }}
+                      className="group relative rounded-2xl overflow-hidden cursor-pointer shadow-md hover:shadow-xl transition-all duration-300 mx-3 w-[340px] sm:w-[420px] h-[240px] sm:h-[300px] shrink-0 outline-none focus-visible:ring-2 focus-visible:ring-primary"
                     >
                       {/* Image */}
                       <img
@@ -241,6 +280,42 @@ const GallerySection = ({ className }: { className?: string }) => {
           )}
         </div>
       </div>
+
+      {/* Lightbox: click a tile above to view its full image */}
+      {selectedImage && (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 p-4 backdrop-blur-sm animate-fade-in"
+          onClick={() => setSelectedImage(null)}
+          role="dialog"
+          aria-modal="true"
+          aria-label={selectedImage.title}
+        >
+          <button
+            type="button"
+            onClick={() => setSelectedImage(null)}
+            aria-label="Close"
+            className="absolute right-4 top-4 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/20 sm:right-6 sm:top-6"
+          >
+            <X size={22} />
+          </button>
+
+          <figure
+            className="flex max-h-full max-w-full flex-col items-center gap-4"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <img
+              src={optimizeCloudinaryUrl(selectedImage.imageUrl, 1600)}
+              alt={selectedImage.title}
+              className="max-h-[80vh] max-w-[90vw] rounded-lg object-contain shadow-2xl"
+            />
+            {selectedImage.title && (
+              <figcaption className="text-center text-sm text-white/80 sm:text-base">
+                {selectedImage.title}
+              </figcaption>
+            )}
+          </figure>
+        </div>
+      )}
     </section>
   );
 };

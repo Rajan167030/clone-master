@@ -287,7 +287,7 @@ export default function FundingApplication() {
         }
       `}</style>
 
-      <section className="pt-32 pb-24">
+      <section className="pt-8 md:pt-10 pb-24">
         <div className="container mx-auto px-4">
           <BackButton className="px-0 mx-0 max-w-none mb-6 animate-reveal-left" />
           

@@ -90,7 +90,7 @@ const About = () => {
   return (
     <div className="min-h-screen bg-background" ref={containerRef}>
       <Navbar />
-      <section className="relative pt-24 pb-16">
+      <section className="relative pt-6 md:pt-8 pb-16">
         <div className="pointer-events-none absolute -left-20 top-12 h-64 w-64 rounded-full bg-blob" />
         <div className="pointer-events-none absolute right-0 top-32 h-80 w-80 rounded-full bg-blob" />
 

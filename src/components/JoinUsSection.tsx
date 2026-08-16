@@ -139,7 +139,7 @@ const JoinUsSection = ({ showSocial = true, className }: { showSocial?: boolean,
   return (
     <section ref={containerRef} className={`relative py-4 md:py-6 ${className}`}>
       <div className="container mx-auto px-4">
-        <div className="mx-auto max-w-[1100px] rounded-[36px] border border-white/10 bg-black px-5 py-8 text-center shadow-[0_30px_90px_rgba(0,0,0,0.45)] md:px-10 md:py-12 relative overflow-hidden">
+        <div className="mx-auto max-w-[1400px] rounded-[36px] border border-white/10 bg-black px-5 py-8 text-center shadow-[0_30px_90px_rgba(0,0,0,0.45)] md:px-10 md:py-12 relative overflow-hidden">
           
           {/* Background Horizon Curve, Purple Backglow & Sparkles Core */}
           <div className="absolute inset-0 overflow-hidden pointer-events-none [mask-image:radial-gradient(50%_50%,white,transparent)] before:absolute before:inset-0 before:bg-[radial-gradient(circle_at_bottom_center,#a855f7,transparent_70%)] before:opacity-60 after:absolute after:top-[50%] after:-left-[25%] after:aspect-[1/0.8] after:w-[150%] after:rounded-[100%] after:border-t-2 after:border-purple-500/80 after:bg-[#0a0a0a] after:shadow-[0_-8px_40px_-5px_rgba(168,85,247,0.45)]">
@@ -169,10 +169,10 @@ const JoinUsSection = ({ showSocial = true, className }: { showSocial?: boolean,
             <div className="mt-8 flex justify-center">
               <Link
                 to="/join-us"
-                className="inline-flex items-center gap-3 rounded-full bg-white px-9 py-4 text-lg font-medium text-black shadow-[0_10px_30px_rgba(255,255,255,0.18)] transition-transform duration-300 hover:-translate-y-0.5 hover:shadow-[0_16px_40px_rgba(255,255,255,0.24)]"
+                className="btn-metallic btn-metallic-silver inline-flex items-center gap-3 rounded-full px-9 py-4 text-lg font-medium text-black transition-transform duration-300 hover:-translate-y-0.5"
               >
-                Join us
-                <span aria-hidden="true" className="text-xl leading-none">
+                <span className="relative z-[2]">Join us</span>
+                <span aria-hidden="true" className="relative z-[2] text-xl leading-none">
                   →
                 </span>
               </Link>

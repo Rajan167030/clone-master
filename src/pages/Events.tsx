@@ -43,7 +43,7 @@ const Events = () => {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      <section className="pt-24 pb-16">
+      <section className="pt-6 md:pt-8 pb-16">
         <div className="container mx-auto px-4">
           <BackButton className="px-0 mx-0 max-w-none mb-6 animate-reveal-left" />
           <div className="mx-auto mb-10 max-w-3xl text-center">

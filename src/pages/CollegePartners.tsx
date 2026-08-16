@@ -43,7 +43,7 @@ const CollegePartners = () => {
       <Navbar />
 
       {/* Hero Section */}
-      <section className="relative overflow-hidden pt-32 pb-20">
+      <section className="relative overflow-hidden pt-8 md:pt-10 pb-20">
         <div className="pointer-events-none absolute -left-20 top-10 h-64 w-64 rounded-full bg-primary/5 blur-3xl" />
         <div className="pointer-events-none absolute -right-20 top-40 h-72 w-72 rounded-full bg-primary/5 blur-3xl" />
         

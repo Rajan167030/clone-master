@@ -76,7 +76,7 @@ const RegistrationHub = () => {
       <Navbar />
 
       {/* Hero Section */}
-      <section className="relative overflow-hidden pt-20 pb-12 px-4">
+      <section className="relative overflow-hidden pt-6 md:pt-8 pb-12 px-4">
         <div className="container mx-auto max-w-6xl">
           <div className="text-center mb-16">
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-6 leading-tight">

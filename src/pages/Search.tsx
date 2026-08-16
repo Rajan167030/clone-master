@@ -145,7 +145,7 @@ const Search = () => {
     <div className="min-h-screen bg-slate-50">
       <Navbar />
 
-      <div className="pt-24 pb-12">
+      <div className="pt-6 md:pt-8 pb-12">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Search Header */}
           <div className="mb-8">

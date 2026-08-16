@@ -38,7 +38,7 @@ const PrivacyPolicy = () => (
   <main className="min-h-screen bg-background">
     <Navbar />
 
-    <section className="px-4 pt-28 pb-16 sm:px-6 lg:px-8">
+    <section className="px-4 pt-6 md:pt-8 pb-16 sm:px-6 lg:px-8">
       <div className="mx-auto w-full max-w-4xl rounded-3xl border border-border bg-card/60 p-6 shadow-sm backdrop-blur sm:p-10">
         <p className="text-xs font-semibold uppercase tracking-[0.22em] text-primary">Legal</p>
         <h1 className="mt-3 font-heading text-4xl font-bold tracking-tight text-foreground sm:text-5xl">

@@ -267,7 +267,7 @@ const JoinUs = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
 
-      <section className="relative overflow-hidden pt-24 pb-20">
+      <section className="relative overflow-hidden pt-6 md:pt-8 pb-20">
         <div className="pointer-events-none absolute -left-20 top-12 h-64 w-64 rounded-full bg-blob" />
         <div className="pointer-events-none absolute right-0 top-32 h-80 w-80 rounded-full bg-blob" />
         <div className="pointer-events-none absolute inset-x-0 top-0 h-72 bg-[radial-gradient(circle_at_top,rgba(124,58,237,0.14),transparent_60%)]" />

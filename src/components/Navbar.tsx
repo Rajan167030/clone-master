@@ -139,8 +139,10 @@ const Navbar = () => {
               </div>
             )}
 
-            <Button asChild className="hidden sm:inline-flex bg-purple-600 hover:bg-purple-700 text-white text-sm">
-              <Link to={topButtonTo}>{topButtonLabel}</Link>
+            <Button asChild className="btn-metallic btn-metallic-purple hidden sm:inline-flex text-white text-sm">
+              <Link to={topButtonTo}>
+                <span className="relative z-[2]">{topButtonLabel}</span>
+              </Link>
             </Button>
 
             {/* Mobile Menu Button */}
@@ -226,8 +228,10 @@ const Navbar = () => {
               </div>
             )}
 
-            <Button asChild className="w-full bg-purple-600 hover:bg-purple-700 text-white text-sm">
-              <Link to={topButtonTo}>{topButtonLabel}</Link>
+            <Button asChild className="btn-metallic btn-metallic-purple w-full text-white text-sm">
+              <Link to={topButtonTo}>
+                <span className="relative z-[2]">{topButtonLabel}</span>
+              </Link>
             </Button>
           </div>
         </div>

@@ -49,7 +49,7 @@ const Gallery = () => {
     <div className="min-h-screen bg-background flex flex-col">
       <Navbar />
       
-      <main className="flex-1 pt-24 pb-16">
+      <main className="flex-1 pt-6 md:pt-8 pb-16">
         <div className="container mx-auto px-4">
           <div className="mx-auto mb-16 max-w-3xl text-center">
             <Badge variant="outline" className="mb-4 bg-primary/10 border-primary/20 text-primary uppercase tracking-widest px-3 py-1 text-xs">

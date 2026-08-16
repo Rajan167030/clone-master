@@ -52,7 +52,7 @@ const BlogDetails = () => {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      <section className="pt-24 pb-16">
+      <section className="pt-6 md:pt-8 pb-16">
         <div className="container mx-auto max-w-4xl px-4">
           <Link to="/blog" className="mb-6 inline-flex items-center gap-2 text-sm font-semibold text-primary hover:underline">
             <ArrowLeft size={15} /> Back to Blog

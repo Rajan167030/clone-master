@@ -114,7 +114,7 @@ const HeroSlider = ({ className }: { className?: string }) => {
 
   return (
     <section className={`relative pt-16 ${className}`}>
-      <div className="container mx-auto px-4 py-8">
+      <div className="mx-auto w-full max-w-[1600px] px-4 py-8">
         <div className="relative rounded-2xl overflow-hidden h-[300px] sm:h-[400px] md:h-[500px] lg:h-[600px] bg-slate-950 shadow-2xl">
           <Link
             to={currentSlide.link}

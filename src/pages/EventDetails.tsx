@@ -97,7 +97,7 @@ const EventDetails = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
 
-      <section className="relative overflow-hidden pt-20">
+      <section className="relative overflow-hidden pt-6 md:pt-8">
         <div className="pointer-events-none absolute -left-20 top-10 h-64 w-64 rounded-full bg-blob" />
         <div className="pointer-events-none absolute -right-20 top-40 h-72 w-72 rounded-full bg-blob" />
 

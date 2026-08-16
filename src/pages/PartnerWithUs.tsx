@@ -255,7 +255,7 @@ const benefits = [
       <Navbar />
 
 
-      <section className="relative min-h-[520px] overflow-hidden pt-24">
+      <section className="relative min-h-[520px] overflow-hidden pt-6 md:pt-8">
         <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=1200&q=80&fit=crop" alt="Founders Connect partnership" className="absolute inset-0 h-full w-full object-cover" />
         <div className="absolute inset-0 bg-slate-950/65" />
         <div className="container relative z-10 mx-auto px-4 py-16">

@@ -40,22 +40,22 @@ const socials = [
  
 ];
 
-const Footer = () => {
+const Footer = ({ className }: { className?: string }) => {
   return (
-    <footer className="relative pt-2 overflow-hidden bg-background">
+    <footer className={`relative pt-2 overflow-hidden bg-background ${className || ""}`}>
       <div className="relative px-4 sm:px-6 lg:px-8">
         <div className="pointer-events-none absolute inset-0 -top-24 bg-gradient-to-b from-transparent to-secondary/20" />
-        <div className="mx-auto w-full max-w-[95%] rounded-[2rem] border border-border/70 bg-secondary/35 px-6 py-5 shadow-[0_20px_50px_-25px_hsl(var(--primary)/0.4),0_25px_60px_-20px_hsl(var(--foreground)/0.25)] backdrop-blur-md sm:px-8 lg:px-10 relative overflow-hidden">
+        <div className="mx-auto w-full max-w-[95%] rounded-[2rem] border border-border/70 bg-secondary/35 px-6 pt-8 pb-5 shadow-[0_20px_50px_-25px_hsl(var(--primary)/0.4),0_25px_60px_-20px_hsl(var(--foreground)/0.25)] backdrop-blur-md sm:px-8 lg:px-10 relative overflow-hidden">
           {/* Purple Glow Effects */}
           <div className="pointer-events-none absolute -top-40 -right-40 h-[40rem] w-[40rem] rounded-full bg-primary/20 blur-[120px]" />
           <div className="pointer-events-none absolute -bottom-40 -left-40 h-[40rem] w-[40rem] rounded-full bg-purple-600/20 blur-[120px]" />
-          
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-12 gap-8 lg:gap-12 mb-10 relative z-10">
-            <div className="sm:col-span-2 md:col-span-4 lg:col-span-4">
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1.6fr_1fr_1fr_1fr_1fr_1.3fr] gap-6 lg:gap-8 mb-4 relative z-10">
+            <div className="sm:col-span-2 lg:col-span-1">
               <div className="mb-6">
-                <img 
-                  src="/founders_connect_global_logo.jpg" 
-                  alt="Founders Connect" 
+                <img
+                  src="/founders_connect_global_logo.jpg"
+                  alt="Founders Connect"
                   className="h-16 md:h-20 w-auto object-contain rounded-xl"
                 />
               </div>
@@ -76,20 +76,11 @@ const Footer = () => {
                   </a>
                 ))}
               </div>
-
-              {/* Newsletter subscribe form */}
-              <div className="mt-8 pt-6 border-t border-border/40 max-w-sm">
-                <h4 className="text-xs font-bold uppercase tracking-[0.2em] text-foreground mb-2">Subscribe to our newsletter</h4>
-                <p className="text-xs text-muted-foreground mb-4 leading-relaxed">Get exclusive invites to founder events and growth insights.</p>
-                {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
-                {/* @ts-ignore */}
-                <SubscribeForm />
-              </div>
             </div>
 
-            <div className="md:col-span-1 lg:col-span-2">
-              <div className="font-heading font-semibold text-foreground mb-5">Explore</div>
-              <ul className="space-y-3 text-sm text-muted-foreground">
+            <div>
+              <div className="font-heading font-semibold text-foreground mb-4">Explore</div>
+              <ul className="space-y-2 text-sm text-muted-foreground">
                 <li><a href="/events" className="hover:text-primary transition-colors">Events</a></li>
                 <li><a href="/membership" className="hover:text-primary transition-colors">Membership</a></li>
                 <li><a href="/blog" className="hover:text-primary transition-colors">Blog</a></li>
@@ -97,9 +88,9 @@ const Footer = () => {
               </ul>
             </div>
 
-            <div className="md:col-span-1 lg:col-span-2">
-              <div className="font-heading font-semibold text-foreground mb-5">Community</div>
-              <ul className="space-y-3 text-sm text-muted-foreground">
+            <div>
+              <div className="font-heading font-semibold text-foreground mb-4">Community</div>
+              <ul className="space-y-2 text-sm text-muted-foreground">
                 <li><a href="#" className="hover:text-primary transition-colors">Founders</a></li>
                 <li><a href="#" className="hover:text-primary transition-colors">Investors</a></li>
                 <li><a href="#" className="hover:text-primary transition-colors">Partners</a></li>
@@ -107,9 +98,9 @@ const Footer = () => {
               </ul>
             </div>
 
-            <div className="md:col-span-1 lg:col-span-2">
-              <div className="font-heading font-semibold text-foreground mb-5">About</div>
-              <ul className="space-y-3 text-sm text-muted-foreground">
+            <div>
+              <div className="font-heading font-semibold text-foreground mb-4">About</div>
+              <ul className="space-y-2 text-sm text-muted-foreground">
                 <li><a href="/about" className="hover:text-primary transition-colors">About Us</a></li>
                 <li><a href="#" className="hover:text-primary transition-colors">Press</a></li>
                 <li><a href="#" className="hover:text-primary transition-colors">Careers</a></li>
@@ -117,9 +108,9 @@ const Footer = () => {
               </ul>
             </div>
 
-            <div className="sm:col-span-2 md:col-span-1 lg:col-span-2">
-              <div className="font-heading font-semibold text-foreground mb-5">Contact Info</div>
-              <ul className="space-y-4 text-sm text-muted-foreground">
+            <div>
+              <div className="font-heading font-semibold text-foreground mb-4">Contact Info</div>
+              <ul className="space-y-2 text-sm text-muted-foreground">
                 <li className="flex items-center gap-3">
                   <span className="text-primary text-base flex-shrink-0">📧</span>
                   <a href="mailto:info@foundersconnect.co.in" className="hover:text-primary transition-colors break-words">
@@ -139,6 +130,14 @@ const Footer = () => {
                   </span>
                 </li>
               </ul>
+            </div>
+
+            <div className="sm:col-span-2 lg:col-span-1">
+              <h4 className="text-xs font-bold uppercase tracking-[0.2em] text-foreground mb-2">Subscribe to our newsletter</h4>
+              <p className="text-xs text-muted-foreground mb-4 leading-relaxed">Get exclusive invites to founder events and growth insights.</p>
+              {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
+              {/* @ts-ignore */}
+              <SubscribeForm />
             </div>
           </div>
 

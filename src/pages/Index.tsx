@@ -97,6 +97,12 @@ const Index = () => {
             opacity: 1,
             duration: 0.8,
             ease: "power3.out",
+            // Removes the inline transform once the reveal finishes — GSAP otherwise
+            // leaves an identity transform behind, which silently breaks any
+            // `position: sticky` section (a transform on an element creates a new
+            // containing block, so sticky positioning starts tracking that element
+            // instead of the viewport).
+            clearProps: "transform",
             scrollTrigger: {
               trigger: section,
               start: "top 80%",
@@ -125,9 +131,16 @@ const Index = () => {
       <UpcomingEventsSection className="gsap-section !py-12 md:!py-16" />
       <BlogSection className="gsap-section !py-12 md:!py-16" />
       <GallerySection className="gsap-section !py-12 md:!py-16" />
-      <Testimonials className="gsap-section !py-12 md:!py-16" />
-      <JoinUsSection showSocial={true} className="gsap-section !py-12 md:!py-16" />
-      <Footer />
+      {/*
+        Sticky-stack scroll effect (a.k.a. "scroll overlap" / "scroll reveal overlay"):
+        each section pins to the top of the viewport via `sticky top-0`, and the next
+        section — sitting on top thanks to a higher z-index — scrolls up and slides
+        over it like a card being dealt onto the one before it. Every section here
+        needs its own opaque background, or the "cover" won't actually be visible.
+      */}
+      <Testimonials className="gsap-section !py-12 md:!py-16 sticky top-0 z-10 bg-background" />
+      <JoinUsSection showSocial={true} className="gsap-section !py-12 md:!py-16 sticky top-0 z-20 bg-background" />
+      <Footer className="relative z-30" />
     </div>
   );
 };
