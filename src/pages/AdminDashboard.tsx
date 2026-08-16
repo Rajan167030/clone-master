@@ -708,13 +708,13 @@ const AdminDashboard = () => {
   };
 
   const handleDeleteAdmin = (id: string, fullName: string) => {
-    if (!window.confirm(`Remove admin access for ${fullName}? They'll be demoted to a regular member.`)) return;
+    if (!window.confirm(`Permanently delete ${fullName}'s admin account? This cannot be undone, and their email will be free to use again.`)) return;
 
     setUpdatingAdminId(id);
-    deleteAdminAccountApi(token, id)
+    deleteAdminAccountApi(token, id, true)
       .then(() => loadAdmins())
       .catch((error) => {
-        window.alert(error instanceof Error ? error.message : "Unable to remove admin.");
+        window.alert(error instanceof Error ? error.message : "Unable to delete admin.");
       })
       .finally(() => setUpdatingAdminId(""));
   };
@@ -1083,6 +1083,19 @@ const AdminDashboard = () => {
       })
       .catch((error) => {
         window.alert(error instanceof Error ? error.message : "Unable to delete member.");
+      });
+  };
+
+  const handlePromoteMemberToAdmin = (id: string, name: string) => {
+    if (!window.confirm(`Make ${name} an admin? They'll keep their existing login/email but gain admin dashboard access.`)) return;
+
+    updateAdminRoleApi(token, id, "admin")
+      .then(() => {
+        window.alert(`${name} is now an admin.`);
+        loadAdminData();
+      })
+      .catch((error) => {
+        window.alert(error instanceof Error ? error.message : "Unable to promote member.");
       });
   };
 
@@ -2702,15 +2715,28 @@ const AdminDashboard = () => {
                                   </p>
                                 </div>
                                 {member.role !== "admin" && member.role !== "superadmin" && (
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    onClick={() => handleDeleteMember(member._id, member.fullName)}
-                                    className="text-red-500 hover:text-red-700 hover:bg-red-50 h-8 w-8 mt-2"
-                                    title="Delete Member"
-                                  >
-                                    <Trash2 className="h-4 w-4" />
-                                  </Button>
+                                  <div className="flex items-center gap-1 mt-2">
+                                    {account?.role === "superadmin" && (
+                                      <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        onClick={() => handlePromoteMemberToAdmin(member._id, member.fullName)}
+                                        className="text-violet-600 hover:text-violet-700 hover:bg-violet-50 h-8 w-8"
+                                        title="Make Admin"
+                                      >
+                                        <ShieldCheck className="h-4 w-4" />
+                                      </Button>
+                                    )}
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      onClick={() => handleDeleteMember(member._id, member.fullName)}
+                                      className="text-red-500 hover:text-red-700 hover:bg-red-50 h-8 w-8"
+                                      title="Delete Member"
+                                    >
+                                      <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                  </div>
                                 )}
                               </div>
                             </div>
@@ -4582,7 +4608,7 @@ const AdminDashboard = () => {
                                       className="gap-1.5"
                                     >
                                       <Trash2 className="h-3.5 w-3.5" />
-                                      Remove
+                                      Delete
                                     </Button>
                                   </td>
                                 </tr>

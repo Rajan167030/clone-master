@@ -172,13 +172,18 @@ export const updateAdminRole = async (req, res, next) => {
     const { role } = req.body || {};
     if (!["admin", "superadmin"].includes(role)) return res.status(400).json({ message: "Invalid role." });
 
-    const account = await Account.findById(id);
-    if (!account) return res.status(404).json({ message: "Account not found." });
+    const existing = await Account.findById(id).lean();
+    if (!existing) return res.status(404).json({ message: "Account not found." });
 
-    account.role = role;
-    await account.save();
+    // Mongoose discriminators lock the "role" field to whichever type the document was
+    // hydrated as, so account.role = role; account.save() silently fails/no-ops when
+    // crossing discriminator types (e.g. investor -> admin, or admin -> superadmin).
+    // Updating through the raw driver bypasses that and persists correctly.
+    await Account.collection.updateOne({ _id: existing._id }, { $set: { role } });
 
-    return res.status(200).json({ message: "Role updated.", account: account.toSafeJSON() });
+    const updated = await Account.findById(id);
+
+    return res.status(200).json({ message: "Role updated.", account: updated.toSafeJSON() });
   } catch (error) {
     return next(error);
   }
