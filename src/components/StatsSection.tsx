@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { TrendingUp, Building2, Users, DollarSign } from "lucide-react";
+import { Building2, Users, CalendarDays, MapPin } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 
 const useCountingEffect = (value: string | number, duration: number = 2000) => {
@@ -79,10 +79,10 @@ const useCountingEffect = (value: string | number, duration: number = 2000) => {
 };
 
 const stats = [
-  { value: "1.5cr", label: "Raised in VC", icon: DollarSign },
-  { value: "50", label: "listed startup", icon: Building2 },
-  { value: "₹315Cr", label: "Angel Capital", icon: TrendingUp },
-  { value: "1,000+", label: "Angel Investors", icon: Users },
+  { value: "30", label: "No of VC / Investor", icon: Users },
+  { value: "10", label: "Total Event", icon: CalendarDays },
+  { value: "5", label: "Chapters", icon: MapPin },
+  { value: "35", label: "Listed Startup", icon: Building2 },
 ];
 
 const StatCard = ({ stat, delay }: { stat: typeof stats[0]; delay: number }) => {

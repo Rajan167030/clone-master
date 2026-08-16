@@ -211,6 +211,18 @@
     0 10px 30px rgba(0, 0, 0, 0.25);
 }
 
+/* Curtain reveal: plays whenever a multi-step form's step content mounts
+   (i.e. re-keyed on step change), so clicking Next/Back always shows the
+   new step being uncovered top-to-bottom, like a curtain lifting away.
+   clip-path (not scale/transform) so form fields never visually distort. */
+@keyframes curtain-reveal {
+  0% { clip-path: inset(0 0 100% 0); }
+  100% { clip-path: inset(0 0 0% 0); }
+}
+.animate-curtain-reveal {
+  animation: curtain-reveal 0.6s cubic-bezier(0.65, 0, 0.35, 1) both;
+}
+
 .btn-metallic-purple {
   background: linear-gradient(180deg, #d8b4fe 0%, #9333ea 25%, #5b1a94 50%, #9333ea 75%, #d8b4fe 100%);
   border: 1px solid rgba(255, 255, 255, 0.25);

@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { ArrowRight, CalendarDays, MapPin } from "lucide-react";
 import { getPublicEventsApi, type DynamicEvent } from "@/lib/api";
 import { optimizeCloudinaryUrl } from "@/lib/cloudinary";
+import EventBannerImage from "@/components/EventBannerImage";
 
 const UpcomingEventsSection = ({ className }: { className?: string }) => {
   const [events, setEvents] = useState<DynamicEvent[]>([]);
@@ -75,12 +76,10 @@ const UpcomingEventsSection = ({ className }: { className?: string }) => {
                 className="group flex flex-col overflow-hidden rounded-2xl border border-border bg-card transition-shadow duration-300 hover:shadow-lg"
               >
                 <div className="relative aspect-[4/3] w-full overflow-hidden bg-muted">
-                  <img
+                  <EventBannerImage
                     src={optimizeCloudinaryUrl(event.bannerImage, 800)}
                     alt={event.bannerAlt || event.title}
-                    loading="lazy"
-                    decoding="async"
-                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                    className="absolute inset-0 transition-transform duration-500 group-hover:scale-[1.03]"
                   />
                   {event.tags[0] && (
                     <span className="absolute left-4 top-4 rounded-full border border-border bg-background/95 px-3 py-1 font-mono text-[11px] font-medium text-foreground backdrop-blur-sm">

@@ -16,6 +16,8 @@ import {
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import EventBannerImage from "@/components/EventBannerImage";
+import EventMapPreview from "@/components/EventMapPreview";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -110,11 +112,11 @@ const EventDetails = () => {
               <div className="relative h-[380px] md:h-[420px]">
                 {event.mobileBannerImage ? (
                   <>
-                    <img src={optimizeCloudinaryUrl(event.mobileBannerImage, 900)} alt={event.bannerAlt || event.title} decoding="async" className="block md:hidden h-full w-full object-cover" />
-                    <img src={optimizeCloudinaryUrl(event.bannerImage, 1400)} alt={event.bannerAlt || event.title} decoding="async" className="hidden md:block h-full w-full object-cover" />
+                    <EventBannerImage src={optimizeCloudinaryUrl(event.mobileBannerImage, 900)} alt={event.bannerAlt || event.title} className="absolute inset-0 block md:hidden" />
+                    <EventBannerImage src={optimizeCloudinaryUrl(event.bannerImage, 1400)} alt={event.bannerAlt || event.title} className="absolute inset-0 hidden md:block" />
                   </>
                 ) : (
-                  <img src={optimizeCloudinaryUrl(event.bannerImage, 1400)} alt={event.bannerAlt || event.title} decoding="async" className="h-full w-full object-cover" />
+                  <EventBannerImage src={optimizeCloudinaryUrl(event.bannerImage, 1400)} alt={event.bannerAlt || event.title} className="absolute inset-0" />
                 )}
                 <div className="absolute inset-0 bg-gradient-to-t from-background via-background/45 to-transparent" />
                 <div className="absolute bottom-0 left-0 w-full p-6 md:p-8">
@@ -166,14 +168,21 @@ const EventDetails = () => {
                   </div>
                   <p className="text-muted-foreground">{event.dateLabel}</p>
                   <p className="text-muted-foreground">{event.locationLabel}</p>
-                  <a
-                    href={event.mapUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="mt-2 inline-flex items-center gap-1 text-primary hover:underline"
-                  >
-                    <MapPin size={14} /> View on map
-                  </a>
+                  {event.mapUrl && (
+                    <div className="mt-3 overflow-hidden rounded-lg border border-border">
+                      <EventMapPreview mapUrl={event.mapUrl} className="h-48 w-full" title={`Map for ${event.title}`} />
+                    </div>
+                  )}
+                  {event.mapUrl && (
+                    <a
+                      href={event.mapUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="mt-2 inline-flex items-center gap-1 text-primary hover:underline"
+                    >
+                      <MapPin size={14} /> View on map
+                    </a>
+                  )}
                 </div>
               </CardContent>
             </Card>

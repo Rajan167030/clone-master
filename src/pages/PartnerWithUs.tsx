@@ -4,7 +4,7 @@ import Footer from "@/components/Footer";
 import EmailVerificationBox from "@/components/EmailVerificationBox";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Copy, Handshake, Megaphone, Network, ShieldCheck, TrendingUp, Users, ChevronRight, ChevronLeft, CheckCircle } from "lucide-react";
+import { Copy, Megaphone, Network, Users, ChevronRight, ChevronLeft, CheckCircle } from "lucide-react";
 import { submitPartnerInquiryApi, getPublicPartnerTypesApi } from "@/lib/api";
 
 const emptyFormData = {
@@ -297,36 +297,7 @@ const benefits = [
 
       <section id="partner-form" className="py-16">
         <div className="container mx-auto px-4">
-          <div className="grid gap-8 lg:grid-cols-[0.8fr_1.2fr]">
-            <div className="space-y-5">
-              <div>
-                <p className="mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-primary">Structured Inquiry</p>
-                <h2 className="font-heading text-3xl font-extrabold text-foreground md:text-4xl">
-                  Share the details once, clearly.
-                </h2>
-                <p className="mt-4 text-muted-foreground">
-                  The admin dashboard will show your submission by company, contact, goal, budget, timeline, and links so the team can act on it quickly.
-                </p>
-              </div>
-
-              <Card>
-                <CardContent className="space-y-4 p-5 text-sm text-muted-foreground">
-                  <div className="flex gap-3">
-                    <ShieldCheck className="mt-0.5 h-5 w-5 text-primary" />
-                    <p>Email verification is required before submission.</p>
-                  </div>
-                  <div className="flex gap-3">
-                    <TrendingUp className="mt-0.5 h-5 w-5 text-primary" />
-                    <p>Use the share button to send this form URL to any partner lead.</p>
-                  </div>
-                  <div className="flex gap-3">
-                    <Handshake className="mt-0.5 h-5 w-5 text-primary" />
-                    <p>Partnership requests are reviewed from the admin dashboard.</p>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
+          <div className="mx-auto max-w-2xl">
             <Card className="border shadow-xl">
               <CardContent className="p-5 sm:p-7">
                 {/* Step Indicator */}
@@ -364,7 +335,7 @@ const benefits = [
                   </div>
                 </div>
 
-                <form onSubmit={handleSubmit} className="space-y-6">
+                <form onSubmit={handleSubmit} key={currentStep} className="space-y-6 animate-curtain-reveal">
                   {/* Step 1: Organization Details */}
                   {currentStep === 1 && (
                     <div>

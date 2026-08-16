@@ -113,9 +113,9 @@ const HeroSlider = ({ className }: { className?: string }) => {
   }, [slides.length]);
 
   return (
-    <section className={`relative pt-16 ${className}`}>
-      <div className="mx-auto w-full max-w-[1600px] px-4 py-8">
-        <div className="relative rounded-2xl overflow-hidden h-[300px] sm:h-[400px] md:h-[500px] lg:h-[600px] bg-slate-950 shadow-2xl">
+    <section className={`relative ${className}`}>
+      <div className="w-full">
+        <div className="relative overflow-hidden h-[300px] sm:h-[400px] md:h-[500px] lg:h-[600px] bg-slate-950">
           <Link
             to={currentSlide.link}
             aria-label={`Open ${currentSlide.highlight}`}

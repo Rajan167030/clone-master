@@ -75,7 +75,7 @@ const Navbar = () => {
         </div>
       </Link>
 
-      <nav className="w-full border-b border-gray-200 bg-white">
+      <nav className="w-full border-b border-white/20 bg-white/60 backdrop-blur-lg backdrop-saturate-150 supports-[backdrop-filter]:bg-white/50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}

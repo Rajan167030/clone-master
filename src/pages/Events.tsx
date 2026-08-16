@@ -4,6 +4,7 @@ import { ArrowRight, CalendarDays, MapPin, Ticket, ExternalLink, Search, Filter 
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import BackButton from "@/components/BackButton";
+import EventBannerImage from "@/components/EventBannerImage";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -92,11 +93,11 @@ const Events = () => {
               <Card key={event.slug} className="overflow-hidden border-border/60 shadow-lg hover-scale flex flex-col">
                 {event.mobileBannerImage ? (
                   <>
-                    <img src={optimizeCloudinaryUrl(event.mobileBannerImage, 800)} alt={event.bannerAlt || event.title} loading="lazy" decoding="async" className="block md:hidden h-52 w-full object-cover" />
-                    <img src={optimizeCloudinaryUrl(event.bannerImage, 800)} alt={event.bannerAlt || event.title} loading="lazy" decoding="async" className="hidden md:block h-48 w-full object-cover" />
+                    <EventBannerImage src={optimizeCloudinaryUrl(event.mobileBannerImage, 800)} alt={event.bannerAlt || event.title} className="relative block md:hidden h-52 w-full" />
+                    <EventBannerImage src={optimizeCloudinaryUrl(event.bannerImage, 800)} alt={event.bannerAlt || event.title} className="relative hidden md:block h-48 w-full" />
                   </>
                 ) : (
-                  <img src={optimizeCloudinaryUrl(event.bannerImage, 800)} alt={event.bannerAlt || event.title} loading="lazy" decoding="async" className="h-48 w-full object-cover" />
+                  <EventBannerImage src={optimizeCloudinaryUrl(event.bannerImage, 800)} alt={event.bannerAlt || event.title} className="relative h-48 w-full" />
                 )}
                 <CardHeader>
                   <div className="flex items-start justify-between gap-3">

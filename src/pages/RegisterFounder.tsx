@@ -319,7 +319,7 @@ const RegisterFounder = () => {
                 </div>
               </div>
 
-              <div className={currentStep === 1 ? "space-y-6" : "hidden"}>
+              <div className={currentStep === 1 ? "space-y-6 animate-curtain-reveal" : "hidden"}>
                 <div className="space-y-2">
                   <label htmlFor="fullName" className="text-sm font-semibold text-gray-700">Full Name <span className="text-red-500">*</span></label>
                   <Input id="fullName" name="fullName" placeholder="John Smith" className="h-12 border-gray-300 focus:ring-purple-500" required />
@@ -367,7 +367,7 @@ const RegisterFounder = () => {
                 </div>
               </div>
 
-              <div className={currentStep === 2 ? "space-y-6" : "hidden"}>
+              <div className={currentStep === 2 ? "space-y-6 animate-curtain-reveal" : "hidden"}>
                 <div className="bg-purple-50 rounded-lg p-4 border border-purple-200">
                   <p className="text-sm font-semibold text-gray-900 mb-4">About Your Startup</p>
 
@@ -417,7 +417,7 @@ const RegisterFounder = () => {
                 </div>
               </div>
 
-              <div className={currentStep === 3 ? "space-y-6" : "hidden"}>
+              <div className={currentStep === 3 ? "space-y-6 animate-curtain-reveal" : "hidden"}>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <label htmlFor="password" className="text-sm font-semibold text-gray-700">Password <span className="text-red-500">*</span></label>

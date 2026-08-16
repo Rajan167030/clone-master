@@ -37,7 +37,7 @@ const ExpandingCardStack = ({ cards, trigger = "click", className }: ExpandingCa
 
   return (
     <ul
-      className={`flex h-80 w-full list-none md:h-96 ${className ?? ""}`}
+      className={`flex w-full list-none flex-col gap-3 md:h-80 md:flex-row md:gap-0 lg:h-96 ${className ?? ""}`}
       onMouseLeave={trigger === "hover" ? () => setActiveIndex(null) : undefined}
     >
       {cards.map((card, index) => {
@@ -55,11 +55,12 @@ const ExpandingCardStack = ({ cards, trigger = "click", className }: ExpandingCa
             onFocus={trigger === "hover" ? () => setActiveIndex(index) : undefined}
             style={{
               flex: `${isActive ? activeGrow : narrowGrow} 1 0%`,
-              marginLeft: index === 0 ? 0 : "-16px",
               zIndex: isActive ? 20 : cards.length - index,
               transition: "flex 0.35s ease, background-color 0.35s ease, color 0.35s ease",
             }}
             className={`group relative min-w-0 cursor-pointer overflow-hidden rounded-2xl border outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-black ${
+              isActive ? "min-h-[260px]" : "min-h-[150px]"
+            } md:min-h-0 ${index === 0 ? "" : "md:-ml-4"} ${
               isActive
                 ? "border-black/10 bg-neutral-100 text-black"
                 : "border-white/10 bg-black text-white"

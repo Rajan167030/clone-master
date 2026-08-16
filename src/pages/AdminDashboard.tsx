@@ -103,6 +103,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import AdminAnalyticsOverview from "@/components/AdminAnalyticsOverview";
+import EventMapPreview from "@/components/EventMapPreview";
 import {
   BarChart3,
   Calendar,
@@ -425,10 +426,12 @@ const AdminDashboard = () => {
   const [uploadingBlogCover, setUploadingBlogCover] = useState(false);
   const [uploadingGalleryImage, setUploadingGalleryImage] = useState(false);
   const [uploadingNoticeBanner, setUploadingNoticeBanner] = useState(false);
+  const [uploadingPartnerLogo, setUploadingPartnerLogo] = useState(false);
   const [eventImageMode, setEventImageMode] = useState<ImageInputMode>("url");
   const [eventMobileImageMode, setEventMobileImageMode] = useState<ImageInputMode>("url");
   const [blogImageMode, setBlogImageMode] = useState<ImageInputMode>("url");
   const [noticeImageMode, setNoticeImageMode] = useState<ImageInputMode>("url");
+  const [partnerLogoMode, setPartnerLogoMode] = useState<ImageInputMode>("url");
 
   const exportToCSV = (data: unknown[], filename = "export") => {
     if (!data || !data.length) {
@@ -1230,6 +1233,57 @@ const AdminDashboard = () => {
       window.alert(message);
     } finally {
       setUploadingEventBanner(false);
+    }
+  };
+
+  const handlePartnerLogoUpload = async (file?: File | null) => {
+    if (!file) return;
+    if (!token) {
+      window.alert("Please log in again before uploading images.");
+      return;
+    }
+
+    setUploadingPartnerLogo(true);
+    try {
+      const signaturePayload = await getCloudinaryUploadSignatureApi(token, {
+        folder: "founders-connect/partners",
+      });
+
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("api_key", signaturePayload.apiKey);
+      formData.append("timestamp", String(signaturePayload.timestamp));
+      formData.append("signature", signaturePayload.signature);
+      formData.append("folder", signaturePayload.folder);
+
+      if (signaturePayload.publicId) {
+        formData.append("public_id", signaturePayload.publicId);
+      }
+
+      const uploadResponse = await fetch(signaturePayload.uploadUrl, {
+        method: "POST",
+        body: formData,
+      });
+
+      const uploadData = (await uploadResponse.json().catch(() => ({}))) as CloudinaryUploadResponse & {
+        error?: { message?: string };
+      };
+
+      if (!uploadResponse.ok || !uploadData.secure_url) {
+        throw new Error(uploadData.error?.message || "Cloudinary upload failed.");
+      }
+
+      setPartnerForm((current) => ({
+        ...current,
+        logoUrl: uploadData.secure_url || "",
+      }));
+
+      window.alert("Logo uploaded successfully.");
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Unable to upload logo.";
+      window.alert(message);
+    } finally {
+      setUploadingPartnerLogo(false);
     }
   };
 
@@ -2050,7 +2104,20 @@ const AdminDashboard = () => {
                       <Input placeholder="Date & Time Label (e.g. Sat, Aug 15, 2026 • 5:00 PM)" value={eventForm.dateLabel} onChange={(e) => setEventForm((c) => ({ ...c, dateLabel: e.target.value }))} />
                       <Input placeholder="Location Label (e.g. Indiranagar, Bangalore)" value={eventForm.locationLabel} onChange={(e) => setEventForm((c) => ({ ...c, locationLabel: e.target.value }))} />
                     </div>
-                    
+
+                    <div className="space-y-2">
+                      <Input
+                        placeholder="Google Maps URL (paste the share link from Google Maps)"
+                        value={eventForm.mapUrl}
+                        onChange={(e) => setEventForm((c) => ({ ...c, mapUrl: e.target.value }))}
+                      />
+                      {eventForm.mapUrl && (
+                        <div className="overflow-hidden rounded-lg border border-slate-200">
+                          <EventMapPreview mapUrl={eventForm.mapUrl} className="h-56 w-full" title="Event location preview" />
+                        </div>
+                      )}
+                    </div>
+
                     <div className="grid gap-4 sm:grid-cols-2">
                       <Input placeholder="External Registration URL (Link to Luma/Eventbrite)" value={eventForm.registrationUrl} onChange={(e) => setEventForm((c) => ({ ...c, registrationUrl: e.target.value }))} />
                       <Input placeholder="Ticket Label (e.g. Free RSVP / Invite Only)" value={eventForm.ticketLabel} onChange={(e) => setEventForm((c) => ({ ...c, ticketLabel: e.target.value }))} />
@@ -3062,15 +3129,74 @@ const AdminDashboard = () => {
                         }}
                       />
                     </div>
-                    <Input
-                      type="text"
-                      placeholder="Logo URL *"
-                      value={partnerForm.logoUrl || ""}
-                      onChange={(e) => {
-                        const value = e.currentTarget.value;
-                        setPartnerForm((current) => ({ ...current, logoUrl: value }));
-                      }}
-                    />
+                    <div className="space-y-2.5 p-3.5 rounded-xl bg-slate-50 border border-slate-200">
+                      <div className="flex items-center justify-between">
+                        <label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                          <Image className="w-4 h-4 text-purple-600" />
+                          Logo *
+                        </label>
+                        <div className="flex gap-1 rounded bg-white p-0.5 border text-[11px]">
+                          <button
+                            type="button"
+                            onClick={() => setPartnerLogoMode("url")}
+                            className={`px-2 py-0.5 rounded font-medium ${partnerLogoMode === "url" ? "bg-purple-600 text-white" : "text-slate-600"}`}
+                          >
+                            URL
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setPartnerLogoMode("upload")}
+                            className={`px-2 py-0.5 rounded font-medium ${partnerLogoMode === "upload" ? "bg-purple-600 text-white" : "text-slate-600"}`}
+                          >
+                            Upload
+                          </button>
+                        </div>
+                      </div>
+
+                      {partnerLogoMode === "url" ? (
+                        <Input
+                          type="text"
+                          placeholder="Logo URL *"
+                          value={partnerForm.logoUrl || ""}
+                          onChange={(e) => {
+                            const value = e.currentTarget.value;
+                            setPartnerForm((current) => ({ ...current, logoUrl: value }));
+                          }}
+                        />
+                      ) : (
+                        <div className="flex items-center gap-2">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            disabled={uploadingPartnerLogo}
+                            onClick={() => document.getElementById("partner-logo-upload")?.click()}
+                            className="text-xs"
+                          >
+                            {uploadingPartnerLogo ? "Uploading..." : "Upload Logo Image"}
+                          </Button>
+                          <input
+                            id="partner-logo-upload"
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              void handlePartnerLogoUpload(file);
+                              e.target.value = "";
+                            }}
+                          />
+                        </div>
+                      )}
+
+                      {partnerForm.logoUrl && (
+                        <img
+                          src={partnerForm.logoUrl}
+                          alt="Logo preview"
+                          className="h-16 max-w-full rounded-lg border bg-white object-contain p-2 shadow-sm"
+                        />
+                      )}
+                    </div>
                     <Input
                       type="text"
                       placeholder="Website URL (optional)"

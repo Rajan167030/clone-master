@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Copy, CheckCircle, MessageCircle, ArrowRight, ShieldCheck, Clock3, ChevronLeft } from "lucide-react";
+import { Copy, CheckCircle, MessageCircle, ArrowRight, ChevronLeft } from "lucide-react";
 import EmailVerificationBox from "@/components/EmailVerificationBox";
 import { Button } from "@/components/ui/button";
 import { submitJoinRequestApi } from "@/lib/api";
@@ -40,24 +40,6 @@ const occupationOptions = [
 ];
 
 
-
-const joiningFlow = [
-  {
-    icon: ShieldCheck,
-    title: "Verified Profiles",
-    description: "Email verification keeps the network authentic and trusted.",
-  },
-  {
-    icon: Clock3,
-    title: "Fast Review",
-    description: "Your form is reviewed by the team before onboarding.",
-  },
-  {
-    icon: MessageCircle,
-    title: "Community Access",
-    description: "Approved members get connected to active founder circles.",
-  },
-];
 
 const joinSteps = [
   { id: 1, title: "Personal" },
@@ -309,14 +291,14 @@ const JoinUs = () => {
 
           {copyMessage && <p className="mt-3 text-center text-sm text-muted-foreground">{copyMessage}</p>}
 
-          <div className="mx-auto grid max-w-7xl gap-6 lg:grid-cols-[1.1fr_0.75fr]">
+          <div className="mx-auto max-w-3xl">
             <Card className="border-2 border-dashed border-muted-foreground/30 bg-white shadow-xl">
               <CardHeader className="text-center">
                 <CardTitle className="text-2xl md:text-3xl">Detailed Join Form</CardTitle>
                 <p className="mt-2 text-muted-foreground">Strong profiles get faster review. Fill accurate details for better matching.</p>
               </CardHeader>
               <CardContent>
-                <form onSubmit={handleSubmit} className="space-y-6">
+                <form onSubmit={handleSubmit} key={currentStep} className="space-y-6 animate-curtain-reveal">
                   <div className="relative">
                     <div className="absolute left-[12%] right-[12%] top-5 h-1 rounded-full bg-gradient-to-r from-sky-100 via-cyan-100 to-indigo-100" />
                     <div
@@ -487,27 +469,6 @@ const JoinUs = () => {
                
               </CardContent>
             </Card>
-
-            <div className="space-y-6">
-              <Card className="border border-border/70 bg-white shadow-lg">
-                <CardHeader>
-                  <CardTitle className="text-xl">What Happens Next</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {joiningFlow.map(({ icon: Icon, title, description }) => (
-                    <div key={title} className="flex items-start gap-3 rounded-xl border border-slate-200 bg-slate-50 p-3">
-                      <div className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                        <Icon size={18} />
-                      </div>
-                      <div>
-                        <p className="text-sm font-semibold text-slate-900">{title}</p>
-                        <p className="mt-1 text-xs leading-relaxed text-slate-600">{description}</p>
-                      </div>
-                    </div>
-                  ))}
-                </CardContent>
-              </Card>
-            </div>
           </div>
 
           {submitSuccess && (

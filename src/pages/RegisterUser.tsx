@@ -266,7 +266,7 @@ const RegisterUser = () => {
                 </div>
               </div>
 
-              <div className={currentStep === 1 ? "space-y-6" : "hidden"}>
+              <div className={currentStep === 1 ? "space-y-6 animate-curtain-reveal" : "hidden"}>
                 <div className="space-y-2">
                   <label htmlFor="fullName" className="text-sm font-semibold text-gray-700">Full Name <span className="text-red-500">*</span></label>
                   <Input id="fullName" name="fullName" placeholder="John Doe" className="h-12 border-gray-300 focus:ring-blue-500" required />
@@ -314,7 +314,7 @@ const RegisterUser = () => {
                 </div>
               </div>
 
-              <div className={currentStep === 2 ? "space-y-6" : "hidden"}>
+              <div className={currentStep === 2 ? "space-y-6 animate-curtain-reveal" : "hidden"}>
                 <div className="space-y-2">
                   <label htmlFor="interest" className="text-sm font-semibold text-gray-700">Areas of Interest <span className="text-red-500">*</span></label>
                   <Input id="interest" name="interest" placeholder="e.g., Startups, Technology, Marketing" className="h-12 border-gray-300 focus:ring-blue-500" required />
@@ -347,7 +347,7 @@ const RegisterUser = () => {
                 </div>
               </div>
 
-              <div className={currentStep === 3 ? "space-y-6" : "hidden"}>
+              <div className={currentStep === 3 ? "space-y-6 animate-curtain-reveal" : "hidden"}>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <label htmlFor="password" className="text-sm font-semibold text-gray-700">Password <span className="text-red-500">*</span></label>

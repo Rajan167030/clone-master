@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 import { getPublicGalleryApi, type GalleryImage } from "@/lib/api";
 import { optimizeCloudinaryUrl } from "@/lib/cloudinary";
@@ -281,41 +282,46 @@ const GallerySection = ({ className }: { className?: string }) => {
         </div>
       </div>
 
-      {/* Lightbox: click a tile above to view its full image */}
-      {selectedImage && (
-        <div
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 p-4 backdrop-blur-sm animate-fade-in"
-          onClick={() => setSelectedImage(null)}
-          role="dialog"
-          aria-modal="true"
-          aria-label={selectedImage.title}
-        >
-          <button
-            type="button"
+      {/* Lightbox: click a tile above to view its full image. Rendered via a
+          portal to document.body so it's never confined by an ancestor's
+          transform (e.g. this section's own GSAP scroll-reveal animation),
+          which would otherwise break `position: fixed` centering. */}
+      {selectedImage &&
+        createPortal(
+          <div
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 p-4 backdrop-blur-sm animate-fade-in"
             onClick={() => setSelectedImage(null)}
-            aria-label="Close"
-            className="absolute right-4 top-4 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/20 sm:right-6 sm:top-6"
+            role="dialog"
+            aria-modal="true"
+            aria-label={selectedImage.title}
           >
-            <X size={22} />
-          </button>
+            <button
+              type="button"
+              onClick={() => setSelectedImage(null)}
+              aria-label="Close"
+              className="absolute right-4 top-4 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/20 sm:right-6 sm:top-6"
+            >
+              <X size={22} />
+            </button>
 
-          <figure
-            className="flex max-h-full max-w-full flex-col items-center gap-4"
-            onClick={(event) => event.stopPropagation()}
-          >
-            <img
-              src={optimizeCloudinaryUrl(selectedImage.imageUrl, 1600)}
-              alt={selectedImage.title}
-              className="max-h-[80vh] max-w-[90vw] rounded-lg object-contain shadow-2xl"
-            />
-            {selectedImage.title && (
-              <figcaption className="text-center text-sm text-white/80 sm:text-base">
-                {selectedImage.title}
-              </figcaption>
-            )}
-          </figure>
-        </div>
-      )}
+            <figure
+              className="flex max-h-full max-w-full flex-col items-center gap-4"
+              onClick={(event) => event.stopPropagation()}
+            >
+              <img
+                src={optimizeCloudinaryUrl(selectedImage.imageUrl, 1600)}
+                alt={selectedImage.title}
+                className="max-h-[80vh] max-w-[90vw] rounded-lg object-contain shadow-2xl"
+              />
+              {selectedImage.title && (
+                <figcaption className="text-center text-sm text-white/80 sm:text-base">
+                  {selectedImage.title}
+                </figcaption>
+              )}
+            </figure>
+          </div>,
+          document.body
+        )}
     </section>
   );
 };

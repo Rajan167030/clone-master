@@ -13,12 +13,9 @@ import {
   submitFundingApplicationApi,
   type FundingApplicationPayload,
 } from "@/lib/api";
-import { 
-  CheckCircle2, 
-  ArrowLeft,
-  ShieldCheck,
-  Zap,
-  Users
+import {
+  CheckCircle2,
+  ArrowLeft
 } from "lucide-react";
 import { Link } from "react-router-dom";
 
@@ -249,10 +246,6 @@ export default function FundingApplication() {
           animation: pageRevealRight 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
           opacity: 0;
         }
-        .animate-step-reveal {
-          animation: stepReveal 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-          opacity: 0;
-        }
         @keyframes pageRevealLeft {
           0% {
             opacity: 0;
@@ -273,60 +266,13 @@ export default function FundingApplication() {
             transform: translateX(0) scale(1);
           }
         }
-        @keyframes stepReveal {
-          0% {
-            opacity: 0;
-            transform: translateY(20px) scale(0.99);
-            filter: blur(2px);
-          }
-          100% {
-            opacity: 1;
-            transform: translateY(0) scale(1);
-            filter: blur(0);
-          }
-        }
       `}</style>
 
       <section className="pt-8 md:pt-10 pb-24">
         <div className="container mx-auto px-4">
           <BackButton className="px-0 mx-0 max-w-none mb-6 animate-reveal-left" />
           
-          <div className="grid gap-12 lg:grid-cols-[1fr_1.8fr]">
-            <div className="space-y-8 animate-reveal-left" style={{ animationDelay: "150ms" }}>
-              <div className="rounded-3xl bg-white p-8 shadow-sm border border-slate-100">
-                <h1 className="font-heading text-3xl font-bold">Apply for Funding</h1>
-                <p className="mt-4 text-muted-foreground leading-relaxed">
-                  Join 100+ startups who have leveraged our network to scale. Please provide precise details about your traction and business model.
-                </p>
-                <div className="mt-8 space-y-6">
-                  {[
-                    { icon: ShieldCheck, title: "Secure & Confidential", desc: "Your data is only shared with verified institutional investors." },
-                    { icon: Zap, title: "Fast Feedback", desc: "Average response time is 48-72 hours for high-intent startups." },
-                    { icon: Users, title: "VC Access", desc: "Direct route to top Tier-1 and Tier-2 VCs in India." }
-                  ].map((item, i) => (
-                    <div key={i} className="flex gap-4">
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                        <item.icon size={20} />
-                      </div>
-                      <div>
-                        <h4 className="font-bold">{item.title}</h4>
-                        <p className="text-sm text-slate-500">{item.desc}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="relative overflow-hidden rounded-3xl group">
-                <img 
-                  src="/investor_handshake_1778315491253.png" 
-                  alt="Partnership" 
-                  className="h-64 w-full object-cover transition duration-700 group-hover:scale-110"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-primary/20 to-transparent" />
-              </div>
-            </div>
-
+          <div className="mx-auto max-w-3xl">
             <Card className="border-none shadow-2xl shadow-slate-200/50 lg:px-6 animate-reveal-right" style={{ animationDelay: "300ms" }}>
               <CardHeader className="pb-8">
                 <div className="flex items-center gap-2 mb-2">
@@ -350,7 +296,7 @@ export default function FundingApplication() {
                   </div>
                 </div>
 
-                <form onSubmit={handleSubmit} key={currentStep} className="grid gap-6 md:grid-cols-2 animate-step-reveal">
+                <form onSubmit={handleSubmit} key={currentStep} className="grid gap-6 md:grid-cols-2 animate-curtain-reveal">
                   {currentStep === 1 && (
                     <>
                       <div className="md:col-span-2 space-y-2">
