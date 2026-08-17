@@ -17,6 +17,12 @@ const RegisterInvestor = () => {
   const [inviteError, setInviteError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [showSplash, setShowSplash] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setShowSplash(false), 5000);
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     if (!inviteToken) {
@@ -84,6 +90,20 @@ const RegisterInvestor = () => {
         setIsLoading(false);
       });
   };
+
+  if (showSplash) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-gradient-to-b from-green-50 via-white to-gray-50">
+        <img
+          src="/founders_connect_global_logo.jpg"
+          alt="Founders Connect"
+          className="h-24 w-24 animate-pulse rounded-2xl object-cover shadow-xl"
+        />
+        <p className="text-sm font-semibold tracking-[0.2em] text-green-700 uppercase">Founders Connect</p>
+        <Loader2 className="h-6 w-6 animate-spin text-green-600" />
+      </div>
+    );
+  }
 
   if (inviteStatus === "checking") {
     return (

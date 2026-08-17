@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, Calendar, Clock3 } from "lucide-react";
 import { getPublicBlogsApi, type DynamicBlogPost } from "@/lib/api";
 
 const fallbackPosts: DynamicBlogPost[] = [
@@ -47,6 +46,11 @@ const fallbackPosts: DynamicBlogPost[] = [
 
 const initialOf = (name: string) => (name || "F").trim().charAt(0).toUpperCase();
 
+// Full literal Tailwind class strings (not built from interpolated values) so
+// the JIT scanner can pick them up — cycled per card index.
+const CARD_ROTATIONS = ["rotate-[-2.2deg]", "rotate-[1.6deg]", "rotate-[-1.3deg]"];
+const TAPE_COLORS = ["bg-[#E8A93D]/75", "bg-[#6B8F71]/75", "bg-[#E4572E]/75"];
+
 const BlogSection = ({ className }: { className?: string }) => {
   const [posts, setPosts] = useState<DynamicBlogPost[]>([]);
   const [loading, setLoading] = useState(true);
@@ -76,96 +80,111 @@ const BlogSection = ({ className }: { className?: string }) => {
   const displayPosts = (posts.length ? posts : fallbackPosts).slice(0, 3);
 
   return (
-    <section className={`py-12 sm:py-16 md:py-24 lg:py-32 ${className}`}>
+    <section
+      className={`relative bg-[#FAF7F0] bg-[radial-gradient(circle,#EFE9D8_1px,transparent_1px)] bg-[length:22px_22px] py-12 sm:py-16 md:py-24 lg:py-32 ${className}`}
+    >
       <div className="container mx-auto px-4">
         {/* Section Header */}
-        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6 mb-10 md:mb-14 border-b border-border pb-8">
-          <div className="max-w-2xl">
-            <p className="font-mono text-xs uppercase tracking-[0.2em] text-muted-foreground mb-3">
-              Journal
-            </p>
-            <h2 className="font-heading font-semibold text-3xl sm:text-4xl text-foreground tracking-tight">
-              Notes from the field
-            </h2>
-            <p className="text-sm sm:text-base text-muted-foreground mt-3">
-              Fundraising playbooks, community stories, and startup execution from the Founders Connect ecosystem.
-            </p>
-          </div>
-          <Link
-            to="/blog"
-            className="group inline-flex shrink-0 items-center gap-1.5 text-sm font-medium text-foreground border-b border-foreground/30 pb-0.5 transition-colors duration-200 hover:border-foreground w-fit"
-          >
-            View all articles
-            <ArrowRight size={15} className="transition-transform duration-200 group-hover:translate-x-1" />
-          </Link>
+        <div className="mx-auto mb-14 max-w-2xl text-center md:mb-20">
+          <p className="mb-3 inline-flex items-center gap-2 font-['IBM_Plex_Mono'] text-xs font-semibold uppercase tracking-[0.22em] text-[#6B8F71]">
+            <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-[#6B8F71]" />
+            Notes from the field
+          </p>
+          <h2 className="font-['Space_Grotesk'] text-3xl font-bold tracking-tight text-[#1B1B1F] sm:text-4xl md:text-5xl">
+            From the <span className="text-[#E4572E]">blog</span>
+          </h2>
         </div>
 
         {loading ? (
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-x-8 gap-y-16 min-[900px]:grid-cols-3">
             {[...Array(3)].map((_, i) => (
-              <div key={i} className="h-[420px] rounded-2xl bg-muted/50 animate-pulse" />
+              <div key={i} className="h-[440px] animate-pulse rounded-sm bg-white/70" />
             ))}
           </div>
         ) : (
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {displayPosts.map((post) => (
-              <Link
-                key={post.slug}
-                to={`/blog/${post.slug}`}
-                className="group flex flex-col overflow-hidden rounded-2xl border border-border bg-card transition-shadow duration-300 hover:shadow-lg"
-              >
-                {/* Cover image with badge */}
-                <div className="relative aspect-[16/11] w-full overflow-hidden bg-muted">
-                  <img
-                    src={post.coverImage}
-                    alt={post.title}
-                    loading="lazy"
-                    decoding="async"
-                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
-                  />
-                  {post.tags[0] && (
-                    <span className="absolute left-4 top-4 rounded-full border border-border bg-background/95 px-3 py-1 font-mono text-[11px] font-medium text-foreground backdrop-blur-sm">
-                      {post.tags[0]}
-                    </span>
-                  )}
-                </div>
+          <div className="grid grid-cols-1 gap-x-8 gap-y-16 min-[900px]:grid-cols-3">
+            {displayPosts.map((post, index) => {
+              const rotation = CARD_ROTATIONS[index % CARD_ROTATIONS.length];
+              const tapeColor = TAPE_COLORS[index % TAPE_COLORS.length];
+              const category = (post.tags[0] || "notes").toLowerCase();
 
-                {/* Content */}
-                <div className="flex flex-1 flex-col p-6">
-                  <div className="mb-3 flex items-center gap-3 font-mono text-xs text-muted-foreground">
-                    <span className="inline-flex items-center gap-1.5">
-                      <Calendar size={13} /> {post.date}
-                    </span>
-                    <span className="text-border">·</span>
-                    <span className="inline-flex items-center gap-1.5">
-                      <Clock3 size={13} /> {post.readTime}
-                    </span>
+              return (
+                <Link
+                  key={post.slug}
+                  to={`/blog/${post.slug}`}
+                  className={`group relative block bg-white p-3 pb-4 shadow-[0_10px_24px_rgba(27,27,31,0.14)] transition-all duration-[280ms] ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-1.5 hover:rotate-0 hover:shadow-[0_20px_38px_rgba(27,27,31,0.24)] focus-visible:-translate-y-1.5 focus-visible:rotate-0 focus-visible:shadow-[0_20px_38px_rgba(27,27,31,0.24)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#E4572E] motion-reduce:transition-none motion-reduce:transform-none ${rotation}`}
+                >
+                  {/* Pushpin */}
+                  <span
+                    aria-hidden="true"
+                    className="absolute -top-2 right-7 z-20 h-4 w-4 rounded-full bg-[#E4572E] shadow-[inset_-2px_-2px_3px_rgba(0,0,0,0.35),inset_2px_2px_2px_rgba(255,255,255,0.5),0_2px_4px_rgba(0,0,0,0.3)]"
+                  />
+
+                  {/* Washi tape */}
+                  <span
+                    aria-hidden="true"
+                    className={`absolute -left-4 -top-3 z-10 rotate-[-7deg] px-3 py-1 font-['Caveat'] text-base font-semibold lowercase text-[#1B1B1F]/80 ${tapeColor}`}
+                  >
+                    {category}
+                  </span>
+
+                  {/* Photo, framed like a Polaroid */}
+                  <div className="relative overflow-hidden bg-[#F1EDE2]">
+                    <img
+                      src={post.coverImage}
+                      alt={post.title}
+                      loading="lazy"
+                      decoding="async"
+                      className="aspect-[4/3] w-full object-cover"
+                    />
                   </div>
 
-                  <h3 className="font-heading text-lg font-semibold leading-snug text-foreground line-clamp-2 mb-2 group-hover:text-primary transition-colors duration-200">
+                  {/* Meta */}
+                  <div className="mt-3 font-['IBM_Plex_Mono'] text-[11px] text-[#6B6558]">
+                    {post.date} · {post.readTime}
+                  </div>
+
+                  {/* Title */}
+                  <h3 className="mt-1.5 line-clamp-2 font-['Space_Grotesk'] text-[19px] font-bold leading-snug text-[#1B1B1F]">
                     {post.title}
                   </h3>
-                  <p className="text-sm text-muted-foreground line-clamp-3 leading-relaxed">
+
+                  {/* Excerpt */}
+                  <p className="mt-2 line-clamp-3 font-['Inter'] text-[13.5px] leading-relaxed text-[#6B6558]">
                     {post.excerpt}
                   </p>
 
-                  <div className="mt-auto pt-5 border-t border-border flex items-center justify-between">
-                    <div className="flex items-center gap-2.5">
-                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-semibold text-foreground">
+                  {/* Tear line */}
+                  <div className="my-4 border-t border-dashed border-[#1B1B1F]/20" />
+
+                  {/* Footer */}
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex min-w-0 items-center gap-2">
+                      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#1B1B1F] font-['IBM_Plex_Mono'] text-[10px] font-semibold text-white">
                         {initialOf(post.author)}
                       </span>
-                      <span className="text-sm font-medium text-foreground truncate">{post.author}</span>
+                      <span className="truncate font-['Inter'] text-xs font-medium text-[#1B1B1F]">
+                        {post.author}
+                      </span>
                     </div>
-                    <span className="inline-flex items-center gap-1 text-sm font-medium text-foreground shrink-0">
-                      Read
-                      <ArrowRight size={14} className="transition-transform duration-200 group-hover:translate-x-1" />
+                    <span className="shrink-0 font-['IBM_Plex_Mono'] text-[11px] font-semibold uppercase tracking-[0.12em] text-[#E4572E]">
+                      Read →
                     </span>
                   </div>
-                </div>
-              </Link>
-            ))}
+                </Link>
+              );
+            })}
           </div>
         )}
+
+        <div className="mt-14 text-center md:mt-20">
+          <Link
+            to="/blog"
+            className="inline-flex items-center gap-1.5 font-['IBM_Plex_Mono'] text-xs font-semibold uppercase tracking-[0.18em] text-[#1B1B1F]/70 underline decoration-dashed decoration-[#1B1B1F]/30 underline-offset-4 transition-colors hover:text-[#E4572E] hover:decoration-[#E4572E] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#E4572E]"
+          >
+            View the full notebook →
+          </Link>
+        </div>
       </div>
     </section>
   );
