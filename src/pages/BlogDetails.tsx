@@ -12,6 +12,7 @@ import { useSEO, useStructuredData } from "@/hooks/useSEO";
 const BlogDetails = () => {
   const { slug = "" } = useParams();
   const [post, setPost] = useState<DynamicBlogPost | null>(null);
+  const [loading, setLoading] = useState(true);
 
   const seoTitle = post?.title || "Blog Post";
   const seoDescription = post?.excerpt || "Read the latest insights from Founders Connect.";
@@ -42,8 +43,16 @@ const BlogDetails = () => {
   });
 
   useEffect(() => {
-    getPublicBlogBySlugApi(slug).then((response) => setPost(response.post)).catch(() => setPost(null));
+    setLoading(true);
+    getPublicBlogBySlugApi(slug)
+      .then((response) => setPost(response.post))
+      .catch(() => setPost(null))
+      .finally(() => setLoading(false));
   }, [slug]);
+
+  if (loading) {
+    return null;
+  }
 
   if (!post) {
     return <NotFound />;
