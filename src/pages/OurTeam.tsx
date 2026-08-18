@@ -1,8 +1,10 @@
+import { useEffect, useState } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import BackButton from "@/components/BackButton";
 import PixelTransition from "@/components/ui/PixelTransition";
 import { useSEO } from "@/hooks/useSEO";
+import { getPublicTeamMembersApi, type TeamMember } from "@/lib/api";
 
 const Linkedin = ({ className, size = 16 }: { className?: string; size?: number }) => (
   <svg 
@@ -16,7 +18,7 @@ const Linkedin = ({ className, size = 16 }: { className?: string; size?: number 
   </svg>
 );
 
-const teamMembers = [
+const DEFAULT_TEAM_MEMBERS = [
   {
     name: "Ashish Shah",
     role: "Visionary Leader",
@@ -68,10 +70,26 @@ const teamMembers = [
 ];
 
 const OurTeam = () => {
+  const [members, setMembers] = useState<Array<{ name: string; role: string; imageUrl: string; linkedinUrl?: string }>>([]);
+  const [loading, setLoading] = useState(true);
+
   useSEO({
     title: "Our Team",
     description: "Meet the talented team behind our success.",
   });
+
+  useEffect(() => {
+    getPublicTeamMembersApi()
+      .then((res) => {
+        if (res.members && res.members.length > 0) {
+          setMembers(res.members);
+        } else {
+          setMembers(DEFAULT_TEAM_MEMBERS);
+        }
+      })
+      .catch(() => setMembers(DEFAULT_TEAM_MEMBERS))
+      .finally(() => setLoading(false));
+  }, []);
 
   return (
     <div className="min-h-screen bg-background font-body text-foreground">
@@ -87,41 +105,45 @@ const OurTeam = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 justify-center">
-          {teamMembers.map((member) => (
-            <PixelTransition
-              key={member.name}
-              firstContent={
-                <img src={member.imageUrl} alt={member.name} className="w-full h-full object-cover" />
-              }
-              secondContent={
-                <div className="w-full h-full flex flex-col items-center justify-center bg-purple-950 bg-opacity-80 p-4 text-center">
-                  <h3 className="font-heading text-2xl font-bold text-white">{member.name}</h3>
-                  <p className="text-sm text-purple-200 mt-1">{member.role}</p>
-                  {member.linkedinUrl && (
-                    <a
-                      href={member.linkedinUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="mt-4 p-2.5 rounded-full bg-white bg-opacity-10 hover:bg-opacity-25 text-white hover:text-blue-400 transition-all duration-300 transform hover:scale-110 shadow-sm"
-                      title={`Connect with ${member.name} on LinkedIn`}
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <Linkedin className="fill-current" size={20} />
-                    </a>
-                  )}
-                </div>
-              }
-              pixelColor="#8b5cf6"
-              className="mx-auto"
-              aspectRatio="100%"
-            />
-          ))}
-        </div>
+        {loading ? (
+          <div className="py-16 text-center text-muted-foreground">Loading team members...</div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 justify-center">
+            {members.map((member) => (
+              <PixelTransition
+                key={member.name}
+                firstContent={
+                  <img src={member.imageUrl} alt={member.name} className="w-full h-full object-cover" />
+                }
+                secondContent={
+                  <div className="w-full h-full flex flex-col items-center justify-center bg-purple-950 bg-opacity-80 p-4 text-center">
+                    <h3 className="font-heading text-2xl font-bold text-white">{member.name}</h3>
+                    <p className="text-sm text-purple-200 mt-1">{member.role}</p>
+                    {member.linkedinUrl && (
+                      <a
+                        href={member.linkedinUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mt-4 p-2.5 rounded-full bg-white bg-opacity-10 hover:bg-opacity-25 text-white hover:text-blue-400 transition-all duration-300 transform hover:scale-110 shadow-sm"
+                        title={`Connect with ${member.name} on LinkedIn`}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <Linkedin className="fill-current" size={20} />
+                      </a>
+                    )}
+                  </div>
+                }
+                pixelColor="#8b5cf6"
+                className="mx-auto"
+                aspectRatio="100%"
+              />
+            ))}
+          </div>
+        )}
       </main>
       <Footer />
     </div>
   );
 };
 
-export default OurTeam;
+export default OurTeam;

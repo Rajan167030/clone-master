@@ -18,6 +18,7 @@ import { subscribeNewsletter, unsubscribeNewsletter } from "../controllers/newsl
 import { submitJoinRequest } from "../controllers/join.controller.js";
 import { submitPartnerInquiry } from "../controllers/partner-inquiry.controller.js";
 import { submitFundingApplication } from "../controllers/funding.controller.js";
+import { getTeamMembers } from "../controllers/team.controller.js";
 
 const contentRouter = Router();
 
@@ -31,7 +32,9 @@ contentRouter.get("/gallery", listPublicGalleryImages);
 contentRouter.get("/partners", listPublicPartnerLogos);
 contentRouter.get("/speakers-investors", listPublicSpeakerInvestorProfiles);
 contentRouter.get("/testimonials", listPublicTestimonials);
+contentRouter.get("/team", getTeamMembers);
 contentRouter.get("/partner-types", listPublicPartnerTypes);
+
 contentRouter.get("/slider-promotions", listPublicSliderPromotions);
 contentRouter.post("/cloudinary/sign-upload", getPublicCloudinaryUploadSignature);
 contentRouter.post("/newsletter/subscribe", subscribeNewsletter);

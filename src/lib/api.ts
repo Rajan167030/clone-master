@@ -1665,3 +1665,44 @@ export const deleteTaskApi = (token: string, id: string) =>
     method: "DELETE",
     headers: { Authorization: `Bearer ${token}` },
   });
+
+export type TeamMember = {
+  _id: string;
+  name: string;
+  role: string;
+  imageUrl: string;
+  linkedinUrl?: string;
+  order: number;
+  isActive: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+};
+
+export const getPublicTeamMembersApi = () =>
+  request<{ members: TeamMember[] }>("/content/team");
+
+export const getAdminTeamMembersApi = (token: string) =>
+  request<{ members: TeamMember[] }>("/admin/team", {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const createAdminTeamMemberApi = (token: string, payload: Partial<TeamMember>) =>
+  request<{ message: string; member: TeamMember }>("/admin/team", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify(payload),
+  });
+
+export const updateAdminTeamMemberApi = (token: string, id: string, payload: Partial<TeamMember>) =>
+  request<{ message: string; member: TeamMember }>(`/admin/team/${id}`, {
+    method: "PATCH",
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify(payload),
+  });
+
+export const deleteAdminTeamMemberApi = (token: string, id: string) =>
+  request<{ message: string }>(`/admin/team/${id}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+

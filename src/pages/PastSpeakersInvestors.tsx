@@ -213,7 +213,7 @@ const PastSpeakersInvestors = () => {
             ) : displaySpeakers.length === 0 ? (
               <EmptyState message="No speaker profiles have been added yet." />
             ) : (
-              <div className="grid grid-cols-1 justify-items-center gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3">
+              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-5 sm:gap-6 justify-items-center">
                 {displaySpeakers.map((speaker, i) => (
                   <PremiumProfileCard
                     key={speaker.slug}
@@ -222,7 +222,7 @@ const PastSpeakersInvestors = () => {
                     photoAlt={speaker.photoAlt || speaker.name}
                     badge={speaker.company ? getCompanyBadge(speaker.company) : "SPK"}
                     fallbackLabel="Independent"
-                    accent="teal"
+                    accent="indigo"
                     onCardClick={() => setSelectedProfile(speaker)}
                   />
                 ))}
@@ -259,7 +259,7 @@ const PastSpeakersInvestors = () => {
             ) : displayInvestors.length === 0 ? (
               <EmptyState message="No investor profiles have been added yet." />
             ) : (
-              <div className="grid grid-cols-1 justify-items-center gap-6 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-5 sm:gap-6 justify-items-center">
                 {displayInvestors.map((investor, i) => (
                   <PremiumProfileCard
                     key={investor.slug}
@@ -277,6 +277,7 @@ const PastSpeakersInvestors = () => {
           </div>
         </div>
       </section>
+
 
       {/* ── CTA ── */}
       <section className="py-10 sm:py-14 md:py-20">
@@ -382,9 +383,10 @@ const PremiumProfileCard = ({
 }) => {
   const styles = ACCENT_STYLES[accent];
   const widthClasses = wide
-    ? "max-w-[300px] sm:max-w-[340px] md:max-w-[380px]"
-    : "max-w-[260px] sm:max-w-[280px] md:max-w-[300px]";
+    ? "w-full max-w-[320px]"
+    : "w-full max-w-[260px]";
   const aspectClass = wide ? "aspect-[4/3]" : "aspect-[3/4]";
+
 
   return (
     <article

@@ -32,7 +32,9 @@ export { EmailVerification } from "./email-verification.model.js";
 export { InvestorInvite } from "./investor-invite.model.js";
 export { InvestorLead } from "./investor-lead.model.js";
 export { AdminMessage } from "./admin-message.model.js";
+export { default as TeamMember } from "./team.model.js";
 export { default as EmailTemplate } from "./template.model.js";
 export { default as Campaign } from "./campaign.model.js";
 export { default as SendLog } from "./send-log.model.js";
 export { default as Suppression } from "./suppression.model.js";
+

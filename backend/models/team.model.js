@@ -15,12 +15,22 @@ const teamMemberSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  linkedinUrl: {
+    type: String,
+    default: "",
+    trim: true,
+  },
   order: {
     type: Number,
     default: 0,
+  },
+  isActive: {
+    type: Boolean,
+    default: true,
   },
 }, { timestamps: true });
 
 const TeamMember = mongoose.model("TeamMember", teamMemberSchema);
 
 export default TeamMember;
+

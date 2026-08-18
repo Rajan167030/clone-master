@@ -89,6 +89,13 @@ import { auditLogger } from "../middlewares/audit.middleware.js";
 import { listAuditLogs } from "../controllers/audit.controller.js";
 import { sendAdminMessage, listAdminMessages, listChatParticipants } from "../controllers/admin-chat.controller.js";
 
+import {
+  getAdminTeamMembers,
+  createTeamMember,
+  updateTeamMember,
+  deleteTeamMember,
+} from "../controllers/team.controller.js";
+
 const adminRouter = Router();
 
 adminRouter.use(requireAuth, requireAdmin);
@@ -99,10 +106,17 @@ adminRouter.post("/members", createAdminMember);
 adminRouter.delete("/members/:id", deleteAdminMember);
 adminRouter.post("/cloudinary/sign-upload", getCloudinaryUploadSignature);
 
+adminRouter.get("/team", getAdminTeamMembers);
+adminRouter.post("/team", createTeamMember);
+adminRouter.patch("/team/:id", updateTeamMember);
+adminRouter.put("/team/:id", updateTeamMember);
+adminRouter.delete("/team/:id", deleteTeamMember);
+
 adminRouter.get("/events", listAdminEvents);
 adminRouter.post("/events", createAdminEvent);
 adminRouter.patch("/events/:slug", updateAdminEvent);
 adminRouter.delete("/events/:slug", deleteAdminEvent);
+
 
 adminRouter.get("/speaker-investors", listAdminSpeakerInvestorProfiles);
 adminRouter.post("/speaker-investors", createAdminSpeakerInvestorProfile);

@@ -20,7 +20,10 @@ import AdminInvestors from "./pages/AdminInvestors.tsx";
 import AdminMembers from "./pages/AdminMembers.tsx";
 import AdminLogin from "./pages/AdminLogin.tsx";
 
+const AdminSpeakerInvestors = lazy(() => import("./pages/AdminSpeakerInvestors.tsx"));
+const AdminTeam = lazy(() => import("./pages/AdminTeam.tsx"));
 const About = lazy(() => import("./pages/About.tsx"));
+
 const Blog = lazy(() => import("./pages/Blog.tsx"));
 const BlogDetails = lazy(() => import("./pages/BlogDetails.tsx"));
 const Events = lazy(() => import("./pages/Events.tsx"));
@@ -114,7 +117,16 @@ const App = () => (
                 </ProtectedRoute>
               )}
             />
+            <Route
+              path="/admin/team"
+              element={(
+                <ProtectedRoute allowedRoles={["admin", "superadmin"]}>
+                  <AdminTeam />
+                </ProtectedRoute>
+              )}
+            />
             <Route path="/events" element={<Events />} />
+
             <Route path="/events/:slug" element={<EventDetails />} />
             <Route path="/product" element={<ProductPage />} />
             <Route path="/team" element={<OurTeam />} />
