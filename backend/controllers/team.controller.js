@@ -1,5 +1,9 @@
 import TeamMember from "../models/team.model.js";
-import asyncHandler from "express-async-handler";
+
+const asyncHandler = (fn) => (req, res, next) => {
+  Promise.resolve(fn(req, res, next)).catch(next);
+};
+
 
 // @desc    Get all active team members (Public)
 // @route   GET /api/team or GET /api/content/team

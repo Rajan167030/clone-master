@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { ExternalLink, Search, Filter } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -56,6 +56,8 @@ const getEventStatus = (dateLabel: string): "upcoming" | "past" => {
 const initialOf = (name: string) => (name || "F").trim().charAt(0).toUpperCase();
 
 const Events = () => {
+  const navigate = useNavigate();
+
   // SEO Hook
   useSEO({
     title: "Upcoming Events | Founders Connect",
@@ -96,8 +98,8 @@ const Events = () => {
             <h1 className="font-['Space_Grotesk'] text-4xl font-extrabold tracking-tight text-[#1B1B1F] md:text-5xl">
               Discover curated founder-first <span className="text-[#E4572E]">events.</span>
             </h1>
-            <p className="mt-4 font-['Inter'] text-[#6B6558]">
-              Every event is linked to an external registration platform (Luma, Eventbrite, etc.) for a seamless RSVP experience.
+            <p className="mt-4 font-[#6B6558] text-sm md:text-base">
+              Click any event card to view full details or register directly.
             </p>
           </div>
 
@@ -145,7 +147,11 @@ const Events = () => {
               return (
                 <div
                   key={event.slug}
-                  className={`group relative flex flex-col bg-white p-3 pb-4 shadow-[0_10px_24px_rgba(27,27,31,0.14)] transition-all duration-[280ms] ease-[cubic-bezier(0.22,1,0.36,1)] hover:z-10 hover:-translate-y-1.5 hover:rotate-0 hover:shadow-[0_20px_38px_rgba(27,27,31,0.24)] focus-within:z-10 focus-within:-translate-y-1.5 focus-within:rotate-0 focus-within:shadow-[0_20px_38px_rgba(27,27,31,0.24)] motion-reduce:transition-none motion-reduce:transform-none ${rotation}`}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => navigate(`/events/${event.slug}`)}
+                  onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && navigate(`/events/${event.slug}`)}
+                  className={`group relative flex flex-col bg-white p-3 pb-4 cursor-pointer shadow-[0_10px_24px_rgba(27,27,31,0.14)] transition-all duration-[280ms] ease-[cubic-bezier(0.22,1,0.36,1)] hover:z-10 hover:-translate-y-1.5 hover:rotate-0 hover:shadow-[0_20px_38px_rgba(27,27,31,0.24)] focus-within:z-10 focus-within:-translate-y-1.5 focus-within:rotate-0 focus-within:shadow-[0_20px_38px_rgba(27,27,31,0.24)] motion-reduce:transition-none motion-reduce:transform-none ${rotation}`}
                 >
                   {/* Pushpin */}
                   <span
@@ -241,6 +247,7 @@ const Events = () => {
                     <div className="flex shrink-0 items-center gap-3">
                       <Link
                         to={`/events/${event.slug}`}
+                        onClick={(e) => e.stopPropagation()}
                         className="font-['IBM_Plex_Mono'] text-[11px] font-semibold uppercase tracking-[0.1em] text-[#1B1B1F]/70 underline decoration-dashed decoration-[#1B1B1F]/30 underline-offset-4 transition-colors hover:text-[#1B1B1F] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#E4572E]"
                       >
                         Details
@@ -249,6 +256,7 @@ const Events = () => {
                         href={event.registrationUrl}
                         target="_blank"
                         rel="noreferrer"
+                        onClick={(e) => e.stopPropagation()}
                         className="inline-flex items-center gap-1 font-['IBM_Plex_Mono'] text-[11px] font-semibold uppercase tracking-[0.1em] text-[#E4572E] transition-colors hover:text-[#c8471f] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#E4572E]"
                       >
                         Register <ExternalLink size={12} />
@@ -267,3 +275,4 @@ const Events = () => {
 };
 
 export default Events;
+

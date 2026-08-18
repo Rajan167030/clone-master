@@ -30,17 +30,13 @@ app.use(
         'http://localhost:3000'
       ];
 
-      if (allowedOrigins.includes(origin)) {
-        return callback(null, true);
-      }
-
-      // For development, allow all localhost origins
-      if (origin.includes('localhost')) {
+      if (allowedOrigins.includes(origin) || origin.includes('localhost') || origin.endsWith('.vercel.app')) {
         return callback(null, true);
       }
 
       return callback(new Error('Not allowed by CORS'));
     },
+
     credentials: true,
   }),
 );

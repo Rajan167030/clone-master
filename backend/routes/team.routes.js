@@ -5,14 +5,17 @@ import {
   updateTeamMember,
   deleteTeamMember,
 } from "../controllers/team.controller.js";
-import { protect, admin } from "../middlewares/auth.middleware.js";
+import { requireAuth } from "../middlewares/auth.middleware.js";
+import { requireAdmin } from "../middlewares/admin.middleware.js";
 
 const router = express.Router();
 
-router.route("/").get(getTeamMembers).post(protect, admin, createTeamMember);
+router.route("/").get(getTeamMembers).post(requireAuth, requireAdmin, createTeamMember);
 router
   .route("/:id")
-  .put(protect, admin, updateTeamMember)
-  .delete(protect, admin, deleteTeamMember);
+  .put(requireAuth, requireAdmin, updateTeamMember)
+  .patch(requireAuth, requireAdmin, updateTeamMember)
+  .delete(requireAuth, requireAdmin, deleteTeamMember);
 
 export default router;
+

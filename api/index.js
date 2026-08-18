@@ -16,32 +16,18 @@ export default async function handler(req, res) {
       return res.status(200).end();
     }
 
-    // Initialize MongoDB connection if not ready
-    if (!mongoReady && !mongoError) {
-      try {
-        console.log('Initializing MongoDB connection...');
-        await connectMongo();
-        mongoReady = true;
-        console.log('MongoDB connected successfully');
-      } catch (error) {
-        console.error('MongoDB connection failed:', error);
-        mongoError = error;
-        return res.status(500).json({
-          message: "Database connection failed",
-          error: error?.message || "Unknown database error",
-          timestamp: new Date().toISOString()
-        });
-      }
-    }
-
-    // If MongoDB failed previously, return error
-    if (mongoError) {
+    // Ensure MongoDB connection is active
+    try {
+      await connectMongo();
+    } catch (dbErr) {
+      console.error('MongoDB connection error in serverless handler:', dbErr);
       return res.status(500).json({
         message: "Database connection failed",
-        error: mongoError.message,
+        error: dbErr?.message || "Database error",
         timestamp: new Date().toISOString()
       });
     }
+
 
     // Handle the request with the Express app
     return app(req, res);
