@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import EventLocationVisualizer from "@/components/EventLocationVisualizer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -405,7 +406,13 @@ const BangaloreActivity: React.FC = () => {
 
       {/* Main Container */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 flex-1 w-full space-y-10">
-        
+
+        {/* Event Venue & Map Visualizer Section */}
+        <EventLocationVisualizer
+          locationLabel="Indiranagar & Koramangala Hubs, Bengaluru, Karnataka, India"
+          eventTitle="Bangalore Startup & Investor Connect Session"
+        />
+
         {/* Step 1: Role Selection */}
         {!selectedRole && (
           <div className="space-y-6">

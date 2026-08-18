@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ExternalLink, Search, Filter } from "lucide-react";
+import { ExternalLink, Search, Filter, MapPin } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import BackButton from "@/components/BackButton";
@@ -202,10 +202,21 @@ const Events = () => {
                   </div>
 
                   {/* Meta */}
-                  <div className="mt-3 font-['IBM_Plex_Mono'] text-[11px] text-[#6B6558]">
-                    {event.dateLabel}
-                    {event.locationLabel ? ` · ${event.locationLabel}` : ""}
-                    {event.ticketLabel ? ` · ${event.ticketLabel}` : ""}
+                  <div className="mt-3 flex flex-wrap items-center gap-2 font-['IBM_Plex_Mono'] text-[11px] text-[#6B6558]">
+                    <span>{event.dateLabel}</span>
+                    {event.locationLabel && (
+                      <a
+                        href={event.mapUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.locationLabel)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        className="inline-flex items-center gap-1 font-semibold text-[#E4572E] hover:underline"
+                        title="Visualize location on Google Maps"
+                      >
+                        <MapPin size={12} /> {event.locationLabel}
+                      </a>
+                    )}
+                    {event.ticketLabel ? <span>· {event.ticketLabel}</span> : null}
                   </div>
 
                   {/* Title */}

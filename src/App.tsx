@@ -15,7 +15,6 @@ import NotFound from "./pages/NotFound.tsx";
 import AIChatbot from "@/components/AIChatbot";
 import ProtectedRoute from "./components/ProtectedRoute.tsx";
 import AdminDashboard from "./pages/AdminDashboard.tsx";
-import AdminSpeakerInvestors from "./pages/AdminSpeakerInvestors.tsx";
 import AdminInvestors from "./pages/AdminInvestors.tsx";
 import AdminMembers from "./pages/AdminMembers.tsx";
 import AdminLogin from "./pages/AdminLogin.tsx";

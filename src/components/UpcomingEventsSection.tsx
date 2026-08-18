@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, ExternalLink } from "lucide-react";
+import { ArrowRight, ExternalLink, MapPin } from "lucide-react";
 import { getPublicEventsApi, type DynamicEvent } from "@/lib/api";
 import { optimizeCloudinaryUrl } from "@/lib/cloudinary";
 import EventBannerImage from "@/components/EventBannerImage";
@@ -166,10 +166,21 @@ const UpcomingEventsSection = ({ className }: { className?: string }) => {
                     </span>
                   </div>
 
-                  <div className="mt-3 font-['IBM_Plex_Mono'] text-[11px] text-[#6B6558]">
-                    {event.dateLabel}
-                    {event.locationLabel ? ` - ${event.locationLabel}` : ""}
-                    {event.ticketLabel ? ` - ${event.ticketLabel}` : ""}
+                  <div className="mt-3 flex flex-wrap items-center gap-2 font-['IBM_Plex_Mono'] text-[11px] text-[#6B6558]">
+                    <span>{event.dateLabel}</span>
+                    {event.locationLabel && (
+                      <a
+                        href={event.mapUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.locationLabel)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        className="inline-flex items-center gap-1 font-semibold text-[#E4572E] hover:underline"
+                        title="Visualize location on Google Maps"
+                      >
+                        <MapPin size={12} /> {event.locationLabel}
+                      </a>
+                    )}
+                    {event.ticketLabel ? <span>· {event.ticketLabel}</span> : null}
                   </div>
 
                   <h3 className="mt-1.5 line-clamp-2 font-['Space_Grotesk'] text-[19px] font-bold leading-snug text-[#1B1B1F]">

@@ -21,6 +21,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import EventBannerImage from "@/components/EventBannerImage";
 import EventMapPreview from "@/components/EventMapPreview";
+import EventLocationVisualizer from "@/components/EventLocationVisualizer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -39,6 +40,7 @@ import {
   type DynamicEvent,
 } from "@/lib/api";
 import { optimizeCloudinaryUrl } from "@/lib/cloudinary";
+import { getDisplayLocationLabel } from "@/lib/googleMaps";
 import NotFound from "./NotFound";
 import { useToast } from "@/hooks/use-toast";
 
@@ -212,7 +214,7 @@ const EventDetails = () => {
               </div>
               <div className="flex items-center gap-2 rounded-xl bg-muted/50 border border-border px-4 py-2.5">
                 <MapPin size={18} className="text-primary shrink-0" />
-                <span className="font-medium">{event.locationLabel}</span>
+                <span className="font-medium">{getDisplayLocationLabel(event.locationLabel)}</span>
               </div>
             </div>
 
@@ -283,6 +285,13 @@ const EventDetails = () => {
                 ))}
               </CardContent>
             </Card>
+
+            {/* Venue Location & Google Maps Visualizer Section */}
+            <EventLocationVisualizer
+              mapUrl={event.mapUrl}
+              locationLabel={event.locationLabel}
+              eventTitle={event.title}
+            />
 
             <Card className="shadow-lg">
               <CardHeader>
@@ -368,7 +377,7 @@ const EventDetails = () => {
                     Date & Location
                   </div>
                   <p className="text-muted-foreground">{event.dateLabel}</p>
-                  <p className="text-muted-foreground">{event.locationLabel}</p>
+                  <p className="text-muted-foreground font-medium">{getDisplayLocationLabel(event.locationLabel)}</p>
                   <div className="mt-3 overflow-hidden rounded-lg border border-border">
                     <EventMapPreview
                       mapUrl={event.mapUrl}
