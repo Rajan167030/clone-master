@@ -9,6 +9,28 @@ type GalleryTile = GalleryImage & {
   spanClass?: string;
 };
 
+const formatFrameId = (index: number) => `FC-${String(index + 1).padStart(3, "0")}`;
+
+const getRollCode = (index: number) => `${String(24 + (index % 6)).padStart(2, "0")}A`;
+
+const getVenue = (image: GalleryTile) => image.eventName || image.title || "Community";
+
+const getDateLabel = (image: GalleryTile) => {
+  if (!image.createdAt) return "Undated";
+
+  const parsed = new Date(image.createdAt);
+  if (Number.isNaN(parsed.getTime())) return image.createdAt;
+
+  return parsed.toLocaleDateString("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+};
+
+const getAltText = (image: GalleryTile) =>
+  image.altText || image.caption || `${getVenue(image)} community moment`;
+
 // Fallback Indian meetup/event images with different aspect ratios for masonry
 const fallbackImages: GalleryTile[] = [
   {
@@ -157,124 +179,95 @@ const GallerySection = ({ className }: { className?: string }) => {
   }, [selectedImage]);
 
   const displayImages = (images.length > 0 ? images : fallbackImages) as GalleryTile[];
+  const currentYear = new Date().getFullYear();
+
+  const renderFilmFrame = (image: GalleryTile, index: number, keyPrefix: string, isDuplicate = false) => {
+    const venue = getVenue(image);
+    const dateLabel = getDateLabel(image);
+
+    return (
+      <div key={`${keyPrefix}-${image._id}-${index}`} className="filmstrip-frame group" aria-hidden={isDuplicate || undefined}>
+        <div className="mb-2 flex items-center justify-between font-['IBM_Plex_Mono'] text-[11px] font-semibold uppercase tracking-[0.16em] text-[#6B6862]">
+          <span>{formatFrameId(index % displayImages.length)}</span>
+          <span className="text-[#c9861a]">{getRollCode(index)}</span>
+        </div>
+
+        <button
+          type="button"
+          aria-label={`View full image from ${venue}`}
+          tabIndex={isDuplicate ? -1 : 0}
+          disabled={isDuplicate}
+          onClick={isDuplicate ? undefined : () => setSelectedImage(image)}
+          className="block w-full outline-none focus-visible:ring-2 focus-visible:ring-[#F5A623] focus-visible:ring-offset-2 focus-visible:ring-offset-white disabled:cursor-default"
+        >
+          <span className="block aspect-[3/2] border-2 border-[#141414] bg-[#141414] p-1 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.1)]">
+            <img
+              src={optimizeCloudinaryUrl(image.imageUrl, 900)}
+              alt={getAltText(image)}
+              loading="lazy"
+              decoding="async"
+              className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.025]"
+            />
+          </span>
+        </button>
+
+        <div className="mt-3 flex items-center justify-between gap-4 font-['IBM_Plex_Mono'] text-[11px]">
+          <span className="min-w-0 truncate border border-[#F5A623]/45 bg-[#F5A623]/10 px-2.5 py-1 font-semibold uppercase tracking-[0.12em] text-[#8A5A09]">
+            {venue}
+          </span>
+          <span className="shrink-0 text-[#6B6862]">{dateLabel}</span>
+        </div>
+      </div>
+    );
+  };
 
   return (
-    <section className={`py-12 sm:py-16 md:py-24 lg:py-32 ${className}`}>
+    <section className={`bg-white py-12 sm:py-16 md:py-24 lg:py-32 ${className || ""}`}>
       <div className="container mx-auto px-4">
         {/* Section Header */}
         <div className="text-center max-w-2xl mx-auto mb-12 md:mb-16">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 mb-4">
-            <span className="text-[10px] md:text-[11px] font-semibold uppercase tracking-widest text-primary">
-              Gallery
+          <div className="mb-4 font-['IBM_Plex_Mono'] text-[11px] font-semibold uppercase tracking-[0.24em] text-[#c9861a]">
+            <span>
+              Roll {String(Math.max(1, Math.ceil(displayImages.length / 12))).padStart(3, "0")} - Developed {currentYear}
             </span>
           </div>
-          <h2 className="font-heading font-bold text-3xl sm:text-4xl md:text-5xl text-foreground tracking-tight">
-            Community <span className="text-gradient">Moments</span>
+          <h2 className="font-['Archivo_Black'] text-4xl font-black uppercase tracking-normal text-[#141414] sm:text-5xl md:text-6xl">
+            Community Moments
           </h2>
-          <p className="text-sm sm:text-base text-muted-foreground mt-3 md:mt-4">
+          <p className="font-['Inter'] text-sm sm:text-base text-[#6B6862] mt-3 md:mt-4">
             Capturing the energy and collaboration from our events and meetups.
           </p>
         </div>
 
-        {/* Marquee Gallery */}
+        {/* Contact-sheet filmstrip gallery */}
         <div className="w-full overflow-hidden">
           {loading ? (
-            <div className="flex gap-4 overflow-hidden py-4">
+            <div className="filmstrip-reel flex gap-5 overflow-hidden p-5">
               {[...Array(6)].map((_, i) => (
-                <div key={i} className="w-[340px] h-[240px] bg-muted/50 animate-pulse rounded-2xl shrink-0" />
+                <div key={i} className="h-[360px] w-[min(460px,78vw)] shrink-0 animate-pulse bg-[#EDEAE0]" />
               ))}
             </div>
           ) : (
-            <div className="flex flex-col gap-6">
-              {/* Row 1 - Moving Left */}
-              <div className="relative flex overflow-hidden">
-                <div className="absolute left-0 top-0 bottom-0 w-24 sm:w-48 bg-gradient-to-r from-background to-transparent z-10 pointer-events-none" />
-                <div className="absolute right-0 top-0 bottom-0 w-24 sm:w-48 bg-gradient-to-l from-background to-transparent z-10 pointer-events-none" />
+            <div className="flex flex-col gap-[26px]">
+              <div className="filmstrip-reel">
+                <div className="filmstrip-edge-fade filmstrip-edge-left" />
+                <div className="filmstrip-edge-fade filmstrip-edge-right" />
 
-                <div className="animate-marquee flex whitespace-nowrap min-w-full">
-                  {[...displayImages, ...displayImages, ...displayImages].map((image, index) => (
-                    <div
-                      key={`${image._id}-${index}`}
-                      role="button"
-                      tabIndex={0}
-                      aria-label={`View full image: ${image.title}`}
-                      onClick={() => setSelectedImage(image)}
-                      onKeyDown={(event) => {
-                        if (event.key === "Enter" || event.key === " ") {
-                          event.preventDefault();
-                          setSelectedImage(image);
-                        }
-                      }}
-                      className="group relative rounded-2xl overflow-hidden cursor-pointer shadow-md hover:shadow-xl transition-all duration-300 mx-3 w-[340px] sm:w-[420px] h-[240px] sm:h-[300px] shrink-0 outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                    >
-                      {/* Image */}
-                      <img
-                        src={optimizeCloudinaryUrl(image.imageUrl, 900)}
-                        alt={image.title}
-                        loading="lazy"
-                        decoding="async"
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                      />
-
-                      {/* Overlay (title legibility on hover only, no permanent haze) */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-
-                      {/* Title on hover */}
-                      <div className="absolute inset-0 flex items-end p-4 md:p-5">
-                        <div className="translate-y-2 group-hover:translate-y-0 transition-transform duration-300 w-full whitespace-normal">
-                          <h3 className="font-heading font-semibold text-sm md:text-base text-white line-clamp-2 drop-shadow">
-                            {image.title}
-                          </h3>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
+                <div className="filmstrip-track filmstrip-track-left">
+                  {[...displayImages, ...displayImages].map((image, index) =>
+                    renderFilmFrame(image, index, "row-left", index >= displayImages.length)
+                  )}
                 </div>
               </div>
 
-              {/* Row 2 - Moving Right */}
-              <div className="relative flex overflow-hidden">
-                <div className="absolute left-0 top-0 bottom-0 w-24 sm:w-48 bg-gradient-to-r from-background to-transparent z-10 pointer-events-none" />
-                <div className="absolute right-0 top-0 bottom-0 w-24 sm:w-48 bg-gradient-to-l from-background to-transparent z-10 pointer-events-none" />
+              <div className="filmstrip-reel">
+                <div className="filmstrip-edge-fade filmstrip-edge-left" />
+                <div className="filmstrip-edge-fade filmstrip-edge-right" />
 
-                <div className="animate-marquee-reverse flex whitespace-nowrap min-w-full">
-                  {[...displayImages, ...displayImages, ...displayImages].reverse().map((image, index) => (
-                    <div
-                      key={`${image._id}-rev-${index}`}
-                      role="button"
-                      tabIndex={0}
-                      aria-label={`View full image: ${image.title}`}
-                      onClick={() => setSelectedImage(image)}
-                      onKeyDown={(event) => {
-                        if (event.key === "Enter" || event.key === " ") {
-                          event.preventDefault();
-                          setSelectedImage(image);
-                        }
-                      }}
-                      className="group relative rounded-2xl overflow-hidden cursor-pointer shadow-md hover:shadow-xl transition-all duration-300 mx-3 w-[340px] sm:w-[420px] h-[240px] sm:h-[300px] shrink-0 outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                    >
-                      {/* Image */}
-                      <img
-                        src={optimizeCloudinaryUrl(image.imageUrl, 900)}
-                        alt={image.title}
-                        loading="lazy"
-                        decoding="async"
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                      />
-
-                      {/* Overlay (title legibility on hover only, no permanent haze) */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-
-                      {/* Title on hover */}
-                      <div className="absolute inset-0 flex items-end p-4 md:p-5">
-                        <div className="translate-y-2 group-hover:translate-y-0 transition-transform duration-300 w-full whitespace-normal">
-                          <h3 className="font-heading font-semibold text-sm md:text-base text-white line-clamp-2 drop-shadow">
-                            {image.title}
-                          </h3>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
+                <div className="filmstrip-track filmstrip-track-right">
+                  {[...displayImages, ...displayImages].map((image, index) =>
+                    renderFilmFrame(image, index, "row-right", index >= displayImages.length)
+                  )}
                 </div>
               </div>
             </div>
@@ -310,7 +303,7 @@ const GallerySection = ({ className }: { className?: string }) => {
             >
               <img
                 src={optimizeCloudinaryUrl(selectedImage.imageUrl, 1600)}
-                alt={selectedImage.title}
+                alt={getAltText(selectedImage)}
                 className="max-h-[80vh] max-w-[90vw] rounded-lg object-contain shadow-2xl"
               />
               {selectedImage.title && (

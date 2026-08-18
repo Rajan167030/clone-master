@@ -1,5 +1,6 @@
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { Rocket, User, ArrowLeft, KeyRound, Mail, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Eye, EyeOff, KeyRound, Mail } from "lucide-react";
+import { QRCodeSVG } from "qrcode.react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -14,11 +15,79 @@ interface LoginProps {
   role?: "user" | "founder";
 }
 
+type QrLoginStatus = "waiting" | "scanned" | "approved" | "expired" | "denied";
+
+type QrLoginBadgeProps = {
+  qrValue: string;
+  status: QrLoginStatus;
+  onExpire?: () => void;
+};
+
+const statusCopy: Record<QrLoginStatus, string> = {
+  waiting: "waiting for scan...",
+  scanned: "phone detected",
+  approved: "approved - logging in",
+  expired: "expired - refresh needed",
+  denied: "denied - try again",
+};
+
+const QrLoginBadge = ({ qrValue, status, onExpire }: QrLoginBadgeProps) => (
+  <section className="flex flex-col items-center motion-safe:transition-transform motion-safe:duration-300">
+    <div className="h-[70px] w-8 bg-[repeating-linear-gradient(115deg,#4C1D95_0_11px,#6D28D9_11px_22px)] shadow-[0_12px_28px_rgba(76,29,149,0.24)]" />
+    <div className="relative z-10 -mt-1 mb-[-10px] h-8 w-16 rounded-md bg-gradient-to-b from-[#F4F1FA] to-[#CFC6DF] shadow-[inset_0_1px_1px_rgba(255,255,255,0.8),0_6px_14px_rgba(76,29,149,0.22)]">
+      <span className="absolute left-1/2 top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full border border-[#9A8CB7] bg-[#F3EFFA] shadow-inner" />
+    </div>
+
+    <div className="login-paper-card w-full max-w-[360px] rotate-[-2.5deg] overflow-hidden rounded-2xl bg-white shadow-[0_24px_50px_rgba(76,29,149,0.22)] motion-safe:transition-all motion-safe:duration-250 hover:-translate-y-[3px] hover:rotate-[-0.5deg]">
+      <div className="bg-gradient-to-r from-[#4C1D95] to-[#6D28D9] px-6 py-5 text-center text-white">
+        <h2 className="font-['Caveat'] text-4xl font-bold leading-none">scan me!</h2>
+        <p className="mt-1 font-['IBM_Plex_Mono'] text-[11px] uppercase tracking-[0.16em] text-white/80">
+          - login in 2 seconds -
+        </p>
+      </div>
+
+      <div className="px-6 py-6 text-center">
+        <div className="mx-auto w-full max-w-[230px] border-[10px] border-white bg-white p-3 shadow-[0_0_0_1px_#E4DEF2,0_14px_30px_rgba(76,29,149,0.14)]">
+          <QRCodeSVG
+            value={qrValue}
+            size={190}
+            level="M"
+            includeMargin
+            aria-label="Scan with your phone to log in"
+            role="img"
+            className="h-full w-full"
+          />
+        </div>
+
+        <p className="mx-auto mt-5 max-w-[240px] font-['Caveat'] text-2xl font-semibold leading-tight text-[#635C77]">
+          open your camera & point it here
+        </p>
+
+        <div aria-live="polite" className="mt-4 flex flex-col items-center gap-2">
+          <span className="border border-[#C4B5FD] bg-[#F3EFFA] px-3 py-1 font-['IBM_Plex_Mono'] text-[11px] font-semibold uppercase tracking-[0.14em] text-[#4C1D95]">
+            {statusCopy[status]}
+          </span>
+          {status === "expired" && onExpire && (
+            <button
+              type="button"
+              onClick={onExpire}
+              className="font-['IBM_Plex_Mono'] text-[11px] font-semibold uppercase tracking-[0.12em] text-[#6D28D9] underline decoration-dashed underline-offset-4"
+            >
+              refresh qr
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  </section>
+);
+
 const Login = ({ role = "user" }: LoginProps) => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [searchParams] = useSearchParams();
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const redirectTo = searchParams.get("redirect") || "/dashboard";
 
   // State for handling the view: login, forgot, verify, reset
@@ -139,100 +208,76 @@ const Login = ({ role = "user" }: LoginProps) => {
       .finally(() => setIsLoading(false));
   };
 
+  const qrValue = typeof window === "undefined" ? "https://foundersconnect.co.in/login" : window.location.href;
+
   return (
-    <main className="relative min-h-screen flex items-center justify-center bg-slate-50/50 px-4 py-12 sm:px-6 sm:py-8 lg:px-10 lg:py-8 overflow-hidden font-body">
-      {/* Ambient glowing blobs */}
-      <div className="pointer-events-none absolute -left-20 top-12 h-96 w-96 rounded-full bg-violet-500/10 blur-[100px] animate-pulse" />
-      <div className="pointer-events-none absolute right-0 bottom-12 h-[450px] w-[450px] rounded-full bg-indigo-500/5 blur-[120px] animate-pulse" style={{ animationDuration: "8s" }} />
-      <div className="pointer-events-none absolute left-1/3 top-1/3 h-[300px] w-[300px] rounded-full bg-purple-500/5 blur-[80px]" />
+    <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#F3EFFA] bg-[radial-gradient(circle,#E9E1F7_1px,transparent_1px)] bg-[length:22px_22px] px-4 py-16 font-['Inter'] text-[#1B1B1F] sm:px-6 lg:px-10">
+      <BackButton className="absolute left-4 top-6 z-50 px-0 sm:left-8" />
 
-      {/* Floating Back Button */}
-      <BackButton className="absolute left-4 sm:left-8 top-6 z-50 px-0" />
+      <div className="relative z-10 mx-auto flex w-full max-w-5xl flex-col items-center justify-center gap-12 min-[700px]:flex-row min-[700px]:gap-14">
+        {view === "login" && (
+          <QrLoginBadge
+            qrValue={qrValue}
+            status="waiting"
+            onExpire={() => {
+              toast({
+                title: "QR refresh",
+                description: "QR refresh is handled by the login provider when connected.",
+              });
+            }}
+          />
+        )}
 
-      <div className="relative z-10 mx-auto grid min-h-[calc(100vh-6rem)] w-full max-w-6xl items-center gap-10 lg:grid-cols-2 pt-12 sm:pt-6">
-        {/* Left Hero Brand Panel */}
-        <section className="flex min-h-[30vh] flex-col justify-center space-y-6 pb-6 sm:min-h-0 sm:pb-0 animate-reveal-left">
-          <div className="flex items-center">
-            <div className="bg-white p-3 rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.06)] border border-slate-100 flex items-center justify-center max-w-[220px]">
-              <img
-                src="/founders_connect_global_logo.jpg"
-                alt="Founders Connect Logo"
-                className="h-14 w-auto object-contain bg-transparent mix-blend-multiply"
-              />
-            </div>
-          </div>
-
-          <p className="text-lg font-bold uppercase tracking-[0.24em] text-violet-600">Welcome back</p>
-          <h1 className="text-balance text-5xl font-heading font-extrabold leading-tight text-slate-900 sm:text-6xl">
-            Ecosystem built for{" "}
-            <span className="block bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
-              growth and impact.
-            </span>
-          </h1>
-          <p className="max-w-xl text-lg text-slate-500 leading-relaxed">
-            Empowering India's most ambitious founders, investors, and builders to meet, collaborate, and scale together.
-          </p>
-        </section>
-
-        {/* Right Glassmorphic Form Panel */}
-        <section className="rounded-3xl border border-violet-100 bg-white/80 p-6 shadow-[0_30px_80px_-30px_rgba(139,92,246,0.18)] backdrop-blur-xl sm:p-8 animate-reveal-right">
+        <section className="login-paper-card relative w-full max-w-[430px] rotate-[2deg] rounded-[4px] border border-[#E4DEF2] bg-white p-6 shadow-[0_22px_45px_rgba(76,29,149,0.16)] motion-safe:transition-all motion-safe:duration-250 hover:-translate-y-[3px] hover:rotate-[0.5deg] sm:p-8">
           
           {view === "login" && (
             <>
-              <h2 className="mb-2 text-center text-3xl font-heading font-extrabold text-slate-900">
-                {role === "founder" ? "Founder Login" : "Member Login"}
-              </h2>
-              <p className="mb-6 text-center text-sm text-slate-500">
-                {role === "founder"
-                  ? "Access your founder dashboard and startup profile"
-                  : "Sign in to your member account"}
+              <span className="absolute -left-4 -top-3 rotate-[-6deg] bg-[rgba(109,40,217,0.85)] px-4 py-1 font-['Caveat'] text-xl font-bold text-white shadow-[0_8px_16px_rgba(76,29,149,0.2)]">
+                member login
+              </span>
+
+              <p className="mb-2 mt-3 font-['IBM_Plex_Mono'] text-[11px] font-semibold uppercase tracking-[0.2em] text-[#635C77]">
+                or the old-fashioned way
+              </p>
+              <h1 className="font-['Space_Grotesk'] text-4xl font-bold tracking-tight text-[#1B1B1F]">
+                Welcome back
+              </h1>
+              <p className="mt-2 text-sm text-[#635C77]">
+                New here?{" "}
+                <Link
+                  to={role === "founder" ? "/register/founder" : "/register/user"}
+                  className="font-semibold text-[#6D28D9] underline-offset-4 hover:underline"
+                >
+                  Create an account
+                </Link>
               </p>
 
-              {role === "user" && (
-                <div className="mb-6 grid grid-cols-2 gap-3">
-                  <Link
-                    to="/login/user"
-                    className="flex flex-col items-center justify-center gap-2 rounded-xl border border-violet-200 bg-violet-50 px-3 py-3 text-violet-700 hover:bg-violet-100/70 transition-all shadow-sm"
-                  >
-                    <User className="h-4 w-4 text-violet-600" />
-                    <span className="text-xs font-semibold uppercase tracking-wider">User</span>
-                  </Link>
-                  <Link
-                    to="/login/founder"
-                    className="flex flex-col items-center justify-center gap-2 rounded-xl border border-violet-200 bg-violet-50 px-3 py-3 text-violet-700 hover:bg-violet-100/70 transition-all shadow-sm"
-                  >
-                    <Rocket className="h-4 w-4 text-violet-600" />
-                    <span className="text-xs font-semibold uppercase tracking-wider">Founder</span>
-                  </Link>
-                </div>
-              )}
-
-              <form className="space-y-4" onSubmit={handleLogin}>
+              <form className="mt-7 space-y-5" onSubmit={handleLogin}>
                 <div className="space-y-2">
-                  <label htmlFor="email" className="text-sm font-semibold text-slate-700">
-                    Email Address
+                  <label htmlFor="email" className="font-['IBM_Plex_Mono'] text-xs font-semibold uppercase tracking-[0.14em] text-[#635C77]">
+                    Email
                   </label>
                   <Input
                     id="email"
                     name="email"
                     type="email"
                     placeholder="name@email.com"
-                    className="h-12 border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 focus:border-violet-500/60 focus:ring-violet-500/30"
+                    className="h-12 rounded-[4px] border-[#E4DEF2] bg-white font-['Inter'] text-[#1B1B1F] placeholder:text-[#635C77]/55 focus-visible:ring-2 focus-visible:ring-[#6D28D9] focus-visible:ring-offset-2"
                     required
                   />
                 </div>
 
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <label htmlFor="password" className="text-sm font-semibold text-slate-700">
+                    <label htmlFor="password" className="font-['IBM_Plex_Mono'] text-xs font-semibold uppercase tracking-[0.14em] text-[#635C77]">
                       Password
                     </label>
                     <button 
                       type="button" 
                       onClick={() => setView("forgot")}
-                      className="text-sm font-semibold text-violet-600 hover:text-violet-500 transition-colors"
+                      className="font-['IBM_Plex_Mono'] text-[11px] font-semibold uppercase tracking-[0.12em] text-[#6D28D9] transition-colors hover:text-[#4C1D95] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#6D28D9]"
                     >
-                      Forgot Password?
+                      Forgot?
                     </button>
                   </div>
                   <Input
