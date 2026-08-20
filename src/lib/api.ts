@@ -1255,6 +1255,7 @@ export type ActivityStartupItem = {
   ratings: ActivityRatingItem[];
   averageScore: number; // 0 to 5 scale
   totalRatingsCount: number;
+  resultRank?: "gold" | "silver" | "bronze" | null;
   createdAt: string;
 };
 
@@ -1448,7 +1449,8 @@ export const getSavedInvestorProfileLocal = (): ActivityInvestorProfile | null =
 export const getBangaloreStartupsApi = async (): Promise<ActivityStartupItem[]> => {
   try {
     const res = await request<{ startups: ActivityStartupItem[] }>("/activity/startups", { method: "GET" });
-    if (res?.startups && Array.isArray(res.startups) && res.startups.length > 0) {
+    if (res?.startups && Array.isArray(res.startups)) {
+      // A successful response — including an empty list (e.g. all startups deleted) — is the source of truth.
       // Map MongoDB _id to id if needed
       const mapped = res.startups.map((item: any) => ({
         ...item,
@@ -1458,7 +1460,7 @@ export const getBangaloreStartupsApi = async (): Promise<ActivityStartupItem[]> 
       return mapped;
     }
   } catch {
-    // Silently fallback to local storage
+    // Only fall back to the local cache when the request itself failed.
   }
   return getBangaloreStartupsLocal();
 };
@@ -1551,6 +1553,34 @@ export const getBangaloreInvestorsApi = async (): Promise<ActivityInvestorProfil
   }
   return [];
 };
+
+export const deleteAdminActivityStartupApi = (token: string, id: string) =>
+  request<{ message: string }>(`/admin/activity/startups/${encodeURIComponent(id)}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const deleteAdminActivityInvestorApi = (token: string, id: string) =>
+  request<{ message: string }>(`/admin/activity/investors/${encodeURIComponent(id)}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const announceAdminActivityResultsApi = (
+  token: string,
+  picks: { goldId?: string | null; silverId?: string | null; bronzeId?: string | null },
+) =>
+  request<{ message: string }>("/admin/activity/results", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify(picks),
+  });
+
+export const resetAdminActivityResultsApi = (token: string) =>
+  request<{ message: string }>("/admin/activity/results", {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${token}` },
+  });
 
 // --- Settings: password, privacy, notifications, deactivation ---
 

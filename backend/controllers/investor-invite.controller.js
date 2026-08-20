@@ -25,6 +25,29 @@ const toSafeInvite = (invite) => ({
 
 const generateInviteCode = () => crypto.randomBytes(9).toString("base64url");
 
+const slugifyLabel = (value) =>
+  String(value || "")
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 40);
+
+// Builds a human-readable invite code from the investor's name/label (e.g. "Rajan Jha" -> "rajan-jha"),
+// falling back to a random code when no label was given. Appends a numeric suffix on collision.
+const generateCodeFromLabel = async (label) => {
+  const base = slugifyLabel(label);
+  if (!base) return generateInviteCode();
+
+  let candidate = base;
+  let attempt = 1;
+  while (await InvestorInvite.exists({ code: candidate })) {
+    attempt += 1;
+    candidate = `${base}-${attempt}`;
+  }
+  return candidate;
+};
+
 const generateInvestorId = () => `SAIS26-INV-${crypto.randomBytes(4).toString("hex").toUpperCase()}`;
 
 const generateInviteReferralCode = (fullName) => {
@@ -54,7 +77,7 @@ export const createAdminInvestorInvite = async (req, res, next) => {
     const { label, expiresInDays } = req.body || {};
 
     const token = crypto.randomBytes(20).toString("hex");
-    const code = generateInviteCode();
+    const code = await generateCodeFromLabel(label);
     const expiresAt =
       Number.isFinite(Number(expiresInDays)) && Number(expiresInDays) > 0
         ? new Date(Date.now() + Number(expiresInDays) * 24 * 60 * 60 * 1000)

@@ -66,6 +66,10 @@ import {
   type RecipientUploadStats,
   getBangaloreStartupsApi,
   getBangaloreInvestorsApi,
+  deleteAdminActivityStartupApi,
+  deleteAdminActivityInvestorApi,
+  announceAdminActivityResultsApi,
+  resetAdminActivityResultsApi,
   type ActivityStartupItem,
   type ActivityInvestorProfile,
   listAdminInvestorInvitesApi,
@@ -134,6 +138,7 @@ import {
   MessageSquare,
   KeyRound,
   Sparkles,
+  Trophy,
 } from "lucide-react";
 
 const emptyEventForm = {
@@ -335,6 +340,31 @@ const AdminDashboard = () => {
   const [partnerTypeFilter, setPartnerTypeFilter] = useState<string>("");
   const [activityStartups, setActivityStartups] = useState<ActivityStartupItem[]>([]);
   const [activityInvestors, setActivityInvestors] = useState<ActivityInvestorProfile[]>([]);
+  const [goldPick, setGoldPick] = useState("");
+  const [silverPick, setSilverPick] = useState("");
+  const [bronzePick, setBronzePick] = useState("");
+  const [isPublishingResults, setIsPublishingResults] = useState(false);
+  const [resultsPicksInitialized, setResultsPicksInitialized] = useState(false);
+
+  // Pre-fill Gold/Silver/Bronze from an existing announcement, else suggest the top 3 by investor score.
+  useEffect(() => {
+    if (resultsPicksInitialized || activityStartups.length === 0) return;
+
+    const alreadyAnnounced = activityStartups.find((s) => s.resultRank === "gold" || s.resultRank === "silver" || s.resultRank === "bronze");
+    if (alreadyAnnounced) {
+      setGoldPick(activityStartups.find((s) => s.resultRank === "gold")?.id || "");
+      setSilverPick(activityStartups.find((s) => s.resultRank === "silver")?.id || "");
+      setBronzePick(activityStartups.find((s) => s.resultRank === "bronze")?.id || "");
+    } else {
+      const topScored = [...activityStartups]
+        .filter((s) => s.totalRatingsCount > 0)
+        .sort((a, b) => b.averageScore - a.averageScore || b.totalRatingsCount - a.totalRatingsCount);
+      setGoldPick(topScored[0]?.id || "");
+      setSilverPick(topScored[1]?.id || "");
+      setBronzePick(topScored[2]?.id || "");
+    }
+    setResultsPicksInitialized(true);
+  }, [activityStartups, resultsPicksInitialized]);
   const [templates, setTemplates] = useState<EmailTemplate[]>([]);
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [selectedCampaignId, setSelectedCampaignId] = useState<string>("");
@@ -4365,6 +4395,102 @@ const AdminDashboard = () => {
                 </div>
               </div>
 
+              {/* Announce Results — Gold / Silver / Bronze */}
+              <Card className="border-2 border-amber-200 bg-amber-50/40">
+                <CardHeader className="border-b border-amber-200">
+                  <CardTitle className="flex items-center gap-2">
+                    <Trophy className="h-5 w-5 text-amber-600" />
+                    Announce Results
+                  </CardTitle>
+                  <CardDescription>
+                    Score comes from investor feedback (average rating). Confirm or adjust the picks below, then publish —
+                    only published results are shown on the public activity page.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="pt-6 space-y-4">
+                  {activityStartups.some((s) => s.resultRank) && (
+                    <div className="flex items-center gap-2 text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-2 rounded-lg">
+                      <CheckCircle2 className="h-4 w-4" />
+                      Results are currently published on the public activity page.
+                    </div>
+                  )}
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    {[
+                      { label: "🥇 Gold", value: goldPick, setter: setGoldPick },
+                      { label: "🥈 Silver", value: silverPick, setter: setSilverPick },
+                      { label: "🥉 Bronze", value: bronzePick, setter: setBronzePick },
+                    ].map((slot) => (
+                      <div key={slot.label} className="space-y-1">
+                        <label className="text-xs font-semibold text-slate-700">{slot.label}</label>
+                        <select
+                          className="w-full h-10 px-3 border border-slate-300 rounded-md bg-white text-sm"
+                          value={slot.value}
+                          onChange={(e) => slot.setter(e.target.value)}
+                        >
+                          <option value="">— None —</option>
+                          {[...activityStartups]
+                            .sort((a, b) => b.averageScore - a.averageScore || b.totalRatingsCount - a.totalRatingsCount)
+                            .map((s) => (
+                              <option key={s.id} value={s.id}>
+                                {s.startupName} — ⭐ {s.averageScore > 0 ? s.averageScore.toFixed(1) : "Unrated"} ({s.totalRatingsCount})
+                              </option>
+                            ))}
+                        </select>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="flex gap-2">
+                    <Button
+                      disabled={isPublishingResults || (!goldPick && !silverPick && !bronzePick)}
+                      onClick={() => {
+                        const picks = [goldPick, silverPick, bronzePick].filter(Boolean);
+                        if (new Set(picks).size !== picks.length) {
+                          window.alert("Gold, Silver, and Bronze must be different startups.");
+                          return;
+                        }
+                        setIsPublishingResults(true);
+                        announceAdminActivityResultsApi(token, { goldId: goldPick, silverId: silverPick, bronzeId: bronzePick })
+                          .then((response) => {
+                            window.alert(response.message);
+                            loadAdminData();
+                          })
+                          .catch((error) => window.alert(error instanceof Error ? error.message : "Unable to publish results."))
+                          .finally(() => setIsPublishingResults(false));
+                      }}
+                      className="gap-2 bg-amber-600 hover:bg-amber-700 text-white"
+                    >
+                      <Trophy className="h-4 w-4" />
+                      Publish Results
+                    </Button>
+                    {activityStartups.some((s) => s.resultRank) && (
+                      <Button
+                        variant="outline"
+                        disabled={isPublishingResults}
+                        onClick={() => {
+                          if (!window.confirm("Reset the published results? They will be hidden from the public page.")) return;
+                          setIsPublishingResults(true);
+                          resetAdminActivityResultsApi(token)
+                            .then((response) => {
+                              window.alert(response.message);
+                              setGoldPick("");
+                              setSilverPick("");
+                              setBronzePick("");
+                              setResultsPicksInitialized(false);
+                              loadAdminData();
+                            })
+                            .catch((error) => window.alert(error instanceof Error ? error.message : "Unable to reset results."))
+                            .finally(() => setIsPublishingResults(false));
+                        }}
+                      >
+                        Reset Results
+                      </Button>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+
               {/* Startups Table */}
               <Card>
                 <CardHeader className="bg-slate-50 border-b">
@@ -4381,12 +4507,13 @@ const AdminDashboard = () => {
                           <th className="p-4 font-medium">Email</th>
                           <th className="p-4 font-medium">Category / Stage</th>
                           <th className="p-4 font-medium">Score</th>
+                          <th className="p-4 font-medium">Actions</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-100">
                         {activityStartups.length === 0 ? (
                           <tr>
-                            <td colSpan={5} className="p-8 text-center text-slate-500">No startups registered yet.</td>
+                            <td colSpan={6} className="p-8 text-center text-slate-500">No startups registered yet.</td>
                           </tr>
                         ) : (
                           activityStartups.map((startup) => (
@@ -4412,6 +4539,26 @@ const AdminDashboard = () => {
                                   <span className="text-xs text-slate-400">({startup.totalRatingsCount || 0})</span>
                                 </div>
                               </td>
+                              <td className="p-4">
+                                <Button
+                                  size="sm"
+                                  variant="destructive"
+                                  onClick={() => {
+                                    if (window.confirm(`Delete startup "${startup.startupName}"? This cannot be undone.`)) {
+                                      deleteAdminActivityStartupApi(token, startup.id)
+                                        .then((response) => {
+                                          window.alert(response.message);
+                                          setActivityStartups((prev) => prev.filter((s) => s.id !== startup.id));
+                                        })
+                                        .catch((error) => window.alert(error instanceof Error ? error.message : "Unable to delete startup."));
+                                    }
+                                  }}
+                                  className="gap-1.5"
+                                >
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                  Delete
+                                </Button>
+                              </td>
                             </tr>
                           ))
                         )}
@@ -4436,12 +4583,13 @@ const AdminDashboard = () => {
                           <th className="p-4 font-medium">Firm</th>
                           <th className="p-4 font-medium">Email</th>
                           <th className="p-4 font-medium">Designation</th>
+                          <th className="p-4 font-medium">Actions</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-100">
                         {activityInvestors.length === 0 ? (
                           <tr>
-                            <td colSpan={4} className="p-8 text-center text-slate-500">No investors registered yet.</td>
+                            <td colSpan={5} className="p-8 text-center text-slate-500">No investors registered yet.</td>
                           </tr>
                         ) : (
                           activityInvestors.map((investor) => (
@@ -4455,6 +4603,26 @@ const AdminDashboard = () => {
                               <td className="p-4">{investor.firmName}</td>
                               <td className="p-4">{investor.email}</td>
                               <td className="p-4">{investor.designation}</td>
+                              <td className="p-4">
+                                <Button
+                                  size="sm"
+                                  variant="destructive"
+                                  onClick={() => {
+                                    if (window.confirm(`Delete investor "${investor.fullName}"? This cannot be undone.`)) {
+                                      deleteAdminActivityInvestorApi(token, investor.id)
+                                        .then((response) => {
+                                          window.alert(response.message);
+                                          setActivityInvestors((prev) => prev.filter((i) => i.id !== investor.id));
+                                        })
+                                        .catch((error) => window.alert(error instanceof Error ? error.message : "Unable to delete investor."));
+                                    }
+                                  }}
+                                  className="gap-1.5"
+                                >
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                  Delete
+                                </Button>
+                              </td>
                             </tr>
                           ))
                         )}
@@ -4479,12 +4647,12 @@ const AdminDashboard = () => {
               <Card className="border-2 border-violet-200 bg-violet-50">
                 <CardHeader className="pb-4">
                   <CardTitle>Generate New Invite Link</CardTitle>
-                  <CardDescription>Optionally label it (e.g. an investor's name) and set an expiry.</CardDescription>
+                  <CardDescription>Enter the investor's name — it becomes the link itself (e.g. "Rajan Jha" → .../invite/rajan-jha).</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4 bg-white rounded-b-lg p-4">
                   <div className="grid gap-4 sm:grid-cols-2">
                     <Input
-                      placeholder="Label (optional) — e.g. Rohan Mehta, Elevate Capital"
+                      placeholder="Investor name — e.g. Rajan Jha"
                       value={newInviteLabel}
                       onChange={(e) => setNewInviteLabel(e.target.value)}
                     />
@@ -4535,7 +4703,9 @@ const AdminDashboard = () => {
                               <tr key={invite._id} className="hover:bg-slate-50">
                                 <td className="p-4">
                                   <p className="font-medium text-slate-900">{invite.label || "Untitled invite"}</p>
-                                  <p className="text-xs text-slate-400 font-mono">{(invite.code || invite.token).slice(0, 16)}...</p>
+                                  <p className="text-xs text-slate-400 font-mono">
+                                    /invite/{(invite.code || invite.token).length > 20 ? `${(invite.code || invite.token).slice(0, 20)}…` : (invite.code || invite.token)}
+                                  </p>
                                 </td>
                                 <td className="p-4">
                                   {!invite.isActive ? (

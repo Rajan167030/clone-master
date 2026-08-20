@@ -143,7 +143,7 @@ router.get("/startups", async (req, res) => {
   try {
     const startups = await ActivityStartup.find()
       .select("-accessToken -accessTokenIssuedAt")
-      .sort({ averageScore: -1, createdAt: -1 });
+      .sort({ createdAt: -1 });
     return res.json({ startups });
   } catch (error) {
     return res.status(500).json({ message: error.message || "Failed to fetch startups." });

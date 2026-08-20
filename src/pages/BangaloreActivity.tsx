@@ -6,32 +6,27 @@ import EventLocationVisualizer from "@/components/EventLocationVisualizer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/use-toast";
 import {
-  Trophy,
   Star,
   Building2,
   FileText,
   UserCheck,
-  Sparkles,
-  Lock,
   ExternalLink,
-  ShieldCheck,
-  Briefcase,
   Layers,
   MapPin,
   CheckCircle2,
   ArrowRight,
   Search,
-  Filter,
   Upload,
   Image as ImageIcon,
-  Award,
   RefreshCw,
+  Trophy,
+  Phone,
+  Mail,
 } from "lucide-react";
 import {
   ActivityStartupItem,
@@ -60,6 +55,12 @@ const SECTORS = [
   "EdTech",
   "Consumer & E-Commerce",
 ];
+
+// Shared "form document" styling — matches the brand's ticket/registration-form look
+// used elsewhere on the site (InvestorDetailsForm, RegisterInvestor).
+const FORM_LABEL_CLASS = "block font-mono text-xs font-bold uppercase tracking-wider text-[#0B0B09]";
+const FORM_INPUT_CLASS =
+  "w-full border-[1.5px] border-[#0B0B09] rounded-none bg-white px-3.5 py-3 font-sans text-sm text-[#0B0B09] placeholder:text-[#6B6558]/60 focus:outline-none focus:ring-0 focus:border-[#0B0B09] focus:shadow-[3px_3px_0px_#4C1D95] transition-all";
 
 const BangaloreActivity: React.FC = () => {
   const { toast } = useToast();
@@ -118,7 +119,7 @@ const BangaloreActivity: React.FC = () => {
   const [ratingComment, setRatingComment] = useState("");
 
   // Pitch Deck Viewer Modal state
-  const [viewDeckStartup, setViewDeckStartup] = useState<ActivityStartupItem | null>(null);
+  const [viewStartupProfile, setViewStartupProfile] = useState<ActivityStartupItem | null>(null);
 
   // Loading state for initial fetch
   const [isLoadingStartups, setIsLoadingStartups] = useState(true);
@@ -129,21 +130,16 @@ const BangaloreActivity: React.FC = () => {
   const [isUploadingDeck, setIsUploadingDeck] = useState(false);
   const [isUploadingInvestorPhoto, setIsUploadingInvestorPhoto] = useState(false);
 
-  // Sort startups by average score descending
+  // Show newest registrations first — ranking is not pre-decided for visitors.
   const sortStartups = (items: ActivityStartupItem[]) => {
-    return [...items].sort((a, b) => {
-      if (b.averageScore !== a.averageScore) {
-        return b.averageScore - a.averageScore;
-      }
-      return b.totalRatingsCount - a.totalRatingsCount;
-    });
+    return [...items].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   };
 
   // Function to refresh live startups from API
   const refreshLiveStartups = async (showLoader = false) => {
     if (showLoader) setIsLoadingStartups(true);
-    const fresh = await getBangaloreStartupsApi();
-    setStartups(sortStartups(fresh));
+    const freshStartups = await getBangaloreStartupsApi();
+    setStartups(sortStartups(freshStartups));
     setLastSyncTime(new Date().toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", second: "2-digit" }));
     setIsLoadingStartups(false);
   };
@@ -374,24 +370,34 @@ const BangaloreActivity: React.FC = () => {
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans">
       <Navbar />
 
-      {/* Hero Header Banner */}
-      <section className="relative text-white py-16 px-4 sm:px-6 lg:px-8 shadow-xl overflow-hidden">
-        <img
-          src="https://res.cloudinary.com/dbgsxczyi/image/upload/v1786221218/founders-connect/events/hlgcvpxdhuu9bdaerg1c.jpg"
-          alt="Startup & Investors Summit, Bangalore"
-          className="absolute inset-0 h-full w-full object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent"></div>
+      {/* Hero Header Banner — image shown in full inside a bordered rectangular frame, nothing cropped off */}
+      <section className="px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6">
+        <div className="max-w-7xl mx-auto relative rounded-none border-2 border-[#0B0B09] bg-slate-950 overflow-hidden aspect-[4/3] sm:aspect-[21/9] shadow-[6px_6px_0px_#0B0B09]">
+          <img
+            src="https://res.cloudinary.com/dbgsxczyi/image/upload/f_auto,q_auto,w_1200/v1786221218/founders-connect/events/hlgcvpxdhuu9bdaerg1c.jpg"
+            srcSet="
+              https://res.cloudinary.com/dbgsxczyi/image/upload/f_auto,q_auto,w_640/v1786221218/founders-connect/events/hlgcvpxdhuu9bdaerg1c.jpg 640w,
+              https://res.cloudinary.com/dbgsxczyi/image/upload/f_auto,q_auto,w_828/v1786221218/founders-connect/events/hlgcvpxdhuu9bdaerg1c.jpg 828w,
+              https://res.cloudinary.com/dbgsxczyi/image/upload/f_auto,q_auto,w_1200/v1786221218/founders-connect/events/hlgcvpxdhuu9bdaerg1c.jpg 1200w,
+              https://res.cloudinary.com/dbgsxczyi/image/upload/f_auto,q_auto,w_1920/v1786221218/founders-connect/events/hlgcvpxdhuu9bdaerg1c.jpg 1920w
+            "
+            sizes="(max-width: 1280px) 100vw, 1280px"
+            alt="Startup & Investors Summit, Bangalore"
+            className="absolute inset-0 h-full w-full object-contain"
+            fetchPriority="high"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/5 to-transparent pointer-events-none"></div>
 
-        <div className="max-w-7xl mx-auto relative z-10">
-          <div className="space-y-4 max-w-3xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/40 backdrop-blur-sm border border-white/20 text-white text-xs sm:text-sm font-semibold tracking-wide uppercase">
-              <MapPin className="w-4 h-4 text-purple-300" />
-              Bangalore Event Special Activity
+          <div className="absolute inset-0 flex flex-col justify-end p-4 sm:p-6 lg:p-8 text-white">
+            <div className="max-w-3xl space-y-3 sm:space-y-4">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/40 backdrop-blur-sm border border-white/20 text-white text-xs sm:text-sm font-semibold tracking-wide uppercase w-fit">
+                <MapPin className="w-4 h-4 text-purple-300" />
+                Bangalore Event Special Activity
+              </div>
+              <p className="text-white text-sm sm:text-lg [text-shadow:0_2px_8px_rgba(0,0,0,0.6)]">
+                Exclusive Bangalore Event Activity Portal. Startup Founders upload pitch decks & logos so investors can evaluate, rate, and discover top-performing startups in real-time.
+              </p>
             </div>
-            <p className="text-white text-base sm:text-lg [text-shadow:0_2px_8px_rgba(0,0,0,0.6)]">
-              Exclusive Bangalore Event Activity Portal. Startup Founders upload pitch decks & logos so investors can evaluate, rate, and discover top-performing startups in real-time.
-            </p>
           </div>
         </div>
       </section>
@@ -399,141 +405,157 @@ const BangaloreActivity: React.FC = () => {
       {/* Main Container */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 flex-1 w-full space-y-10">
 
-        {/* Event Venue & Map Visualizer Section */}
-        <EventLocationVisualizer
-          locationLabel="Indiranagar & Koramangala Hubs, Bengaluru, Karnataka, India"
-          eventTitle="Bangalore Startup & Investor Connect Session"
-        />
+        {/* Event Venue & Startup Registration — one combined section */}
+        <section className="grid grid-cols-1 lg:grid-cols-5 gap-5 sm:gap-6 items-stretch">
+          <div className={selectedRole ? "lg:col-span-5" : "lg:col-span-3"}>
+            <EventLocationVisualizer
+              locationLabel="https://maps.app.goo.gl/G7QZT98YNpR6CGQg6"
+              eventTitle="Startup & Investors summit-2026"
+            />
+          </div>
 
-        {/* Step 1: Startup Registration Entry */}
-        {!selectedRole && (
-          <div className="space-y-6">
-            <div className="text-center max-w-2xl mx-auto space-y-2">
-              <h2 className="text-2xl sm:text-3xl font-bold text-slate-900">Register Your Startup for the Bangalore Event</h2>
-              <p className="text-slate-600 text-sm sm:text-base">
-                Submit your startup details, logo, and pitch deck to get evaluated by our investor panel.
-              </p>
-            </div>
-
-            <div className="max-w-md mx-auto">
-              {/* Startup Founder Card */}
-              <Card
-                className="group relative cursor-pointer border-2 hover:border-purple-500 transition-all duration-300 hover:shadow-xl bg-white overflow-hidden"
+          {!selectedRole && (
+            <div className="lg:col-span-2 flex flex-col">
+              {/* Startup Founder — form-card in the site's ticket/document style */}
+              <div
+                role="button"
+                tabIndex={0}
                 onClick={() => {
                   setSelectedRole("startup");
                   setIsPromoVerified(true);
                 }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    setSelectedRole("startup");
+                    setIsPromoVerified(true);
+                  }
+                }}
+                className="group cursor-pointer flex-1 flex flex-col border-2 border-[#0B0B09] bg-[#FBFAF5] rounded-none shadow-[6px_6px_0px_#0B0B09] hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[8px_8px_0px_#0B0B09] active:translate-x-0 active:translate-y-0 active:shadow-[6px_6px_0px_#0B0B09] transition-all duration-200 ease-out overflow-hidden"
               >
-                <div className="h-3 bg-gradient-to-r from-purple-500 to-indigo-600"></div>
-                <CardHeader className="p-6">
-                  <div className="w-14 h-14 rounded-2xl bg-purple-100 text-purple-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                    <Building2 className="w-8 h-8" />
+                {/* Header Strip */}
+                <div className="flex items-center justify-between border-b-2 border-[#0B0B09] bg-[#FBFAF5] px-4 py-2.5 font-mono text-xs uppercase tracking-wider text-[#0B0B09]">
+                  <span className="font-bold">Form No. FC/BLR-2026</span>
+                  <span className="bg-[#0B0B09] text-white px-2 py-0.5 font-bold">For Founders</span>
+                </div>
+
+                <div className="p-6 flex-1 flex flex-col">
+                  <div className="w-14 h-14 border-2 border-[#0B0B09] bg-purple-50 text-[#4C1D95] flex items-center justify-center mb-4">
+                    <Building2 className="w-7 h-7" />
                   </div>
-                  <CardTitle className="text-2xl font-bold text-slate-900">Startup Founder</CardTitle>
-                  <CardDescription className="text-slate-600 text-sm mt-2">
-                    For founders participating in the Bangalore Event. Submit your startup details, logo, and Pitch Deck to get evaluated by investors.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="px-6 pb-6 pt-0 space-y-3">
-                  <Button className="w-full bg-purple-600 hover:bg-purple-700 text-white font-medium group-hover:gap-3 transition-all">
-                    Register Startup <ArrowRight className="w-4 h-4" />
-                  </Button>
-                </CardContent>
-              </Card>
+                  <h2 className="font-heading text-xl sm:text-2xl font-extrabold uppercase tracking-tight text-[#0B0B09]">
+                    Register Your Startup
+                  </h2>
+                  <p className="mt-2 text-sm text-[#6B6558] font-sans">
+                    For founders participating in the Bangalore Event. Submit your startup details, logo, and pitch deck to get evaluated.
+                  </p>
+
+                  <div className="mt-auto pt-5 flex items-center justify-between font-mono text-xs font-bold uppercase tracking-wider text-[#4C1D95]">
+                    Start Registration
+                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                  </div>
+                </div>
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </section>
 
         {/* Step 3: Startup Founder Form & Details */}
         {selectedRole === "startup" && isPromoVerified && (
-          <div className="space-y-6 max-w-4xl mx-auto">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-2xl font-bold text-slate-900">Bangalore Event Startup Registration</h2>
-                <p className="text-sm text-slate-600">Provide your founder details, startup summary, logo, and Pitch Deck link.</p>
+          <div className="max-w-4xl mx-auto">
+            <div className="border-2 border-[#0B0B09] bg-[#FBFAF5] rounded-none shadow-[6px_6px_0px_#0B0B09] overflow-hidden">
+              {/* Header Strip */}
+              <div className="flex items-center justify-between border-b-2 border-[#0B0B09] bg-[#FBFAF5] px-4 py-2.5 font-mono text-xs uppercase tracking-wider text-[#0B0B09]">
+                <span className="font-bold">Form No. FC/BLR-2026</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsPromoVerified(false);
+                    setSelectedRole(null);
+                  }}
+                  className="text-[#6B6558] hover:text-[#0B0B09] font-bold"
+                >
+                  Cancel
+                </button>
               </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  setIsPromoVerified(false);
-                  setSelectedRole(null);
-                }}
-              >
-                Exit Session
-              </Button>
-            </div>
 
-            {isStartupSubmitted ? (
-              <Card className="border-2 border-emerald-500 bg-emerald-50/40 text-slate-900 p-8 text-center space-y-4">
-                <CheckCircle2 className="w-16 h-16 text-emerald-600 mx-auto" />
-                <h3 className="text-2xl font-bold text-slate-900">Startup Submitted Successfully!</h3>
-                <p className="text-slate-600 max-w-md mx-auto text-sm">
-                  Your startup has been registered for the Bangalore Event Activity session. Investors are now able to view your Pitch Deck and submit evaluations.
-                </p>
-                <div className="flex flex-wrap items-center justify-center gap-4 pt-2">
-                  {founderAccessToken && (
-                    <Button asChild className="bg-emerald-600 hover:bg-emerald-700 text-white">
-                      <Link to={`/sais26/founder/${founderAccessToken}`}>Go to Your SAIS'26 Dashboard</Link>
-                    </Button>
-                  )}
-                  <Button asChild className="bg-purple-600 hover:bg-purple-700 text-white">
-                    <Link to="/sais26">View Investor Leaderboard</Link>
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      setIsStartupSubmitted(false);
-                      setStartupName("");
-                    }}
-                  >
-                    Submit Another Startup
-                  </Button>
-                </div>
-                {founderAccessToken && (
-                  <p className="text-xs text-slate-500 pt-1">
-                    We've also emailed this private dashboard link to {founderEmail || "you"} — save it, it's how you'll get back in.
+              {isStartupSubmitted ? (
+                <div className="p-6 sm:p-10 flex flex-col items-center text-center">
+                  <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-[#4C1D95] to-[#6D28D9] border-2 border-[#0B0B09] text-white shadow-[3px_3px_0px_#0B0B09] mb-4">
+                    <CheckCircle2 className="h-7 w-7" />
+                  </div>
+                  <h3 className="font-heading text-xl sm:text-2xl font-extrabold uppercase tracking-tight text-[#0B0B09]">
+                    Registration Received
+                  </h3>
+                  <p className="mt-2 text-sm text-[#6B6558] max-w-md font-sans">
+                    {startupName || "Your startup"} has been added to the Bangalore Event startup directory.
                   </p>
-                )}
-              </Card>
-            ) : (
-              <Card className="border shadow-md bg-white">
-                <CardHeader className="bg-slate-50 border-b">
-                  <CardTitle className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                    <Building2 className="w-5 h-5 text-purple-600" />
-                    Startup & Founder Information Form
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="p-6">
-                  <form onSubmit={handleStartupSubmit} className="space-y-6">
+                  <div className="flex flex-wrap items-center justify-center gap-3 pt-5">
+                    {founderAccessToken && (
+                      <Button asChild className="bg-[#0B0B09] hover:bg-[#0B0B09]/90 text-white rounded-none font-mono text-xs uppercase tracking-wider">
+                        <Link to={`/sais26/founder/${founderAccessToken}`}>Your SAIS'26 Dashboard</Link>
+                      </Button>
+                    )}
+                    <Button
+                      variant="outline"
+                      className="rounded-none border-2 border-[#0B0B09] font-mono text-xs uppercase tracking-wider text-[#0B0B09] hover:bg-[#0B0B09] hover:text-white"
+                      onClick={() => {
+                        setIsStartupSubmitted(false);
+                        setStartupName("");
+                      }}
+                    >
+                      Submit Another Startup
+                    </Button>
+                  </div>
+                  {founderAccessToken && (
+                    <p className="text-xs text-[#6B6558] pt-4 font-sans">
+                      We've also emailed this private dashboard link to {founderEmail || "you"} — save it, it's how you'll get back in.
+                    </p>
+                  )}
+                </div>
+              ) : (
+                <div className="p-5 sm:p-8">
+                  <div className="mb-6">
+                    <h2 className="font-heading text-xl sm:text-2xl font-extrabold uppercase tracking-tight text-[#0B0B09]">
+                      Startup Registration
+                    </h2>
+                    <p className="mt-1.5 text-sm text-[#6B6558] font-sans">
+                      Founder details, startup summary, logo, and pitch deck.
+                    </p>
+                  </div>
+
+                  <form onSubmit={handleStartupSubmit} className="space-y-7">
                     {/* Section 1: Founder Info */}
                     <div className="space-y-4">
-                      <h4 className="text-sm font-bold text-slate-800 uppercase tracking-wider border-b pb-1">
-                        1. Founder Information
-                      </h4>
+                      <div className="flex items-center gap-2 border-b border-[#0B0B09]/15 pb-2">
+                        <span className="flex h-5 w-5 shrink-0 items-center justify-center bg-[#0B0B09] text-white font-mono text-[10px] font-bold">1</span>
+                        <h4 className="font-mono text-xs font-bold uppercase tracking-wider text-[#0B0B09]">Founder Information</h4>
+                      </div>
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        <div className="space-y-1">
-                          <label className="text-xs font-medium text-slate-700">Full Name *</label>
-                          <Input
+                        <div className="space-y-1.5">
+                          <label className={FORM_LABEL_CLASS}>Full Name <span className="text-[#4C1D95]">*</span></label>
+                          <input
+                            className={FORM_INPUT_CLASS}
                             placeholder="e.g. Ananya Rao"
                             value={founderName}
                             onChange={(e) => setFounderName(e.target.value)}
                             required
                           />
                         </div>
-                        <div className="space-y-1">
-                          <label className="text-xs font-medium text-slate-700">Email Address *</label>
-                          <Input
+                        <div className="space-y-1.5">
+                          <label className={FORM_LABEL_CLASS}>Email <span className="text-[#4C1D95]">*</span></label>
+                          <input
                             type="email"
+                            className={FORM_INPUT_CLASS}
                             placeholder="e.g. founder@startup.in"
                             value={founderEmail}
                             onChange={(e) => setFounderEmail(e.target.value)}
                             required
                           />
                         </div>
-                        <div className="space-y-1">
-                          <label className="text-xs font-medium text-slate-700">Phone Number</label>
-                          <Input
+                        <div className="space-y-1.5">
+                          <label className={FORM_LABEL_CLASS}>Phone <span className="font-normal normal-case text-[#6B6558]">(optional)</span></label>
+                          <input
+                            className={FORM_INPUT_CLASS}
                             placeholder="+91 98765 43210"
                             value={founderPhone}
                             onChange={(e) => setFounderPhone(e.target.value)}
@@ -543,24 +565,26 @@ const BangaloreActivity: React.FC = () => {
                     </div>
 
                     {/* Section 2: Startup Details */}
-                    <div className="space-y-4 pt-2">
-                      <h4 className="text-sm font-bold text-slate-800 uppercase tracking-wider border-b pb-1">
-                        2. Startup Overview
-                      </h4>
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2 border-b border-[#0B0B09]/15 pb-2">
+                        <span className="flex h-5 w-5 shrink-0 items-center justify-center bg-[#0B0B09] text-white font-mono text-[10px] font-bold">2</span>
+                        <h4 className="font-mono text-xs font-bold uppercase tracking-wider text-[#0B0B09]">Startup Overview</h4>
+                      </div>
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        <div className="space-y-1">
-                          <label className="text-xs font-medium text-slate-700">Startup Name *</label>
-                          <Input
+                        <div className="space-y-1.5">
+                          <label className={FORM_LABEL_CLASS}>Startup Name <span className="text-[#4C1D95]">*</span></label>
+                          <input
+                            className={FORM_INPUT_CLASS}
                             placeholder="e.g. Bangalore Dynamics"
                             value={startupName}
                             onChange={(e) => setStartupName(e.target.value)}
                             required
                           />
                         </div>
-                        <div className="space-y-1">
-                          <label className="text-xs font-medium text-slate-700">Sector / Category *</label>
+                        <div className="space-y-1.5">
+                          <label className={FORM_LABEL_CLASS}>Sector <span className="text-[#4C1D95]">*</span></label>
                           <select
-                            className="w-full h-10 px-3 border border-slate-300 rounded-md bg-white text-sm focus:ring-2 focus:ring-purple-500"
+                            className={FORM_INPUT_CLASS}
                             value={category}
                             onChange={(e) => setCategory(e.target.value)}
                           >
@@ -569,10 +593,10 @@ const BangaloreActivity: React.FC = () => {
                             ))}
                           </select>
                         </div>
-                        <div className="space-y-1">
-                          <label className="text-xs font-medium text-slate-700">Funding Stage</label>
+                        <div className="space-y-1.5">
+                          <label className={FORM_LABEL_CLASS}>Funding Stage</label>
                           <select
-                            className="w-full h-10 px-3 border border-slate-300 rounded-md bg-white text-sm focus:ring-2 focus:ring-purple-500"
+                            className={FORM_INPUT_CLASS}
                             value={stage}
                             onChange={(e) => setStage(e.target.value)}
                           >
@@ -584,9 +608,10 @@ const BangaloreActivity: React.FC = () => {
                         </div>
                       </div>
 
-                      <div className="space-y-1">
-                        <label className="text-xs font-medium text-slate-700">Elevator Pitch (One Line) *</label>
-                        <Input
+                      <div className="space-y-1.5">
+                        <label className={FORM_LABEL_CLASS}>Elevator Pitch <span className="text-[#4C1D95]">*</span></label>
+                        <input
+                          className={FORM_INPUT_CLASS}
                           placeholder="e.g. Next-gen autonomous drone logistics built for Indian tier-1 cities."
                           value={tagline}
                           onChange={(e) => setTagline(e.target.value)}
@@ -594,9 +619,10 @@ const BangaloreActivity: React.FC = () => {
                         />
                       </div>
 
-                      <div className="space-y-1">
-                        <label className="text-xs font-medium text-slate-700">Detailed Description *</label>
-                        <Textarea
+                      <div className="space-y-1.5">
+                        <label className={FORM_LABEL_CLASS}>Description <span className="text-[#4C1D95]">*</span></label>
+                        <textarea
+                          className={`${FORM_INPUT_CLASS} min-h-[90px] resize-y`}
                           placeholder="Describe your product, market opportunity, target audience, and business traction..."
                           rows={3}
                           value={description}
@@ -607,34 +633,34 @@ const BangaloreActivity: React.FC = () => {
                     </div>
 
                     {/* Section 3: Pitch Deck & Startup Logo */}
-                    <div className="space-y-4 pt-2">
-                      <h4 className="text-sm font-bold text-slate-800 uppercase tracking-wider border-b pb-1">
-                        3. Startup Logo & Pitch Deck Upload
-                      </h4>
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2 border-b border-[#0B0B09]/15 pb-2">
+                        <span className="flex h-5 w-5 shrink-0 items-center justify-center bg-[#0B0B09] text-white font-mono text-[10px] font-bold">3</span>
+                        <h4 className="font-mono text-xs font-bold uppercase tracking-wider text-[#0B0B09]">Logo &amp; Pitch Deck</h4>
+                      </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                         {/* Startup Logo */}
-                        <div className="space-y-2 p-4 border rounded-xl bg-slate-50">
-                          <label className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
-                            <ImageIcon className="w-4 h-4 text-purple-600" /> Startup Logo (URL or Upload) *
-                          </label>
-                          <Input
+                        <div className="space-y-2 p-4 border-[1.5px] border-[#0B0B09]/20 bg-white">
+                          <label className={FORM_LABEL_CLASS}>Logo <span className="text-[#4C1D95]">*</span></label>
+                          <input
                             type="url"
+                            className={FORM_INPUT_CLASS}
                             placeholder="https://example.com/logo.png"
                             value={logoUrl}
                             onChange={(e) => setLogoUrl(e.target.value)}
                           />
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <span className="text-xs text-slate-400">or upload logo file:</span>
-                            <label className={`inline-flex items-center gap-1.5 cursor-pointer px-3 py-1.5 rounded-lg border text-xs font-medium transition-colors ${
+                          <div className="flex items-center gap-2 flex-wrap pt-1">
+                            <span className="text-xs text-[#6B6558]">or upload:</span>
+                            <label className={`inline-flex items-center gap-1.5 cursor-pointer px-3 py-1.5 border-[1.5px] border-[#0B0B09] font-mono text-[11px] font-bold uppercase tracking-wide transition-colors ${
                               isUploadingLogo
-                                ? "bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed"
-                                : "bg-purple-50 text-purple-700 border-purple-200 hover:bg-purple-100"
+                                ? "bg-slate-100 text-slate-400 cursor-not-allowed"
+                                : "bg-white text-[#0B0B09] hover:bg-[#0B0B09] hover:text-white"
                             }`}>
                               {isUploadingLogo ? (
                                 <><svg className="w-3 h-3 animate-spin" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg> Uploading…</>
                               ) : (
-                                <><Upload className="w-3 h-3" /> Choose Logo Image</>  
+                                <><Upload className="w-3 h-3" /> Choose File</>
                               )}
                               <input
                                 type="file"
@@ -648,35 +674,34 @@ const BangaloreActivity: React.FC = () => {
 
                           {/* Preview Logo */}
                           {logoUrl && (
-                            <div className="flex items-center gap-3 mt-2 p-2 bg-white rounded border">
-                              <img src={logoUrl} alt="Logo Preview" className="w-12 h-12 object-cover rounded-md border" />
-                              <span className="text-xs font-medium text-slate-600">Logo Preview ✅</span>
+                            <div className="flex items-center gap-3 mt-2 p-2 bg-[#FBFAF5] border border-[#0B0B09]/15">
+                              <img src={logoUrl} alt="Logo Preview" className="w-10 h-10 object-cover border border-[#0B0B09]/20" />
+                              <span className="text-xs font-medium text-[#6B6558]">Logo ready</span>
                             </div>
                           )}
                         </div>
 
                         {/* Pitch Deck */}
-                        <div className="space-y-2 p-4 border rounded-xl bg-slate-50">
-                          <label className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
-                            <FileText className="w-4 h-4 text-purple-600" /> Pitch Deck (PDF / Drive URL) *
-                          </label>
-                          <Input
+                        <div className="space-y-2 p-4 border-[1.5px] border-[#0B0B09]/20 bg-white">
+                          <label className={FORM_LABEL_CLASS}>Pitch Deck <span className="text-[#4C1D95]">*</span></label>
+                          <input
                             type="url"
+                            className={FORM_INPUT_CLASS}
                             placeholder="https://drive.google.com/your-pitch-deck.pdf"
                             value={pitchDeckUrl}
                             onChange={(e) => setPitchDeckUrl(e.target.value)}
                           />
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <span className="text-xs text-slate-400">or upload deck PDF:</span>
-                            <label className={`inline-flex items-center gap-1.5 cursor-pointer px-3 py-1.5 rounded-lg border text-xs font-medium transition-colors ${
+                          <div className="flex items-center gap-2 flex-wrap pt-1">
+                            <span className="text-xs text-[#6B6558]">or upload:</span>
+                            <label className={`inline-flex items-center gap-1.5 cursor-pointer px-3 py-1.5 border-[1.5px] border-[#0B0B09] font-mono text-[11px] font-bold uppercase tracking-wide transition-colors ${
                               isUploadingDeck
-                                ? "bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed"
-                                : "bg-purple-50 text-purple-700 border-purple-200 hover:bg-purple-100"
+                                ? "bg-slate-100 text-slate-400 cursor-not-allowed"
+                                : "bg-white text-[#0B0B09] hover:bg-[#0B0B09] hover:text-white"
                             }`}>
                               {isUploadingDeck ? (
                                 <><svg className="w-3 h-3 animate-spin" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg> Uploading…</>
                               ) : (
-                                <><Upload className="w-3 h-3" /> Choose PDF File</>  
+                                <><Upload className="w-3 h-3" /> Choose File</>
                               )}
                               <input
                                 type="file"
@@ -688,20 +713,22 @@ const BangaloreActivity: React.FC = () => {
                             </label>
                           </div>
                           {pitchDeckUrl && !pitchDeckUrl.startsWith("data:") && (
-                            <p className="text-[11px] text-emerald-600 font-medium">✅ Deck uploaded / linked</p>
+                            <p className="text-[11px] text-[#4C1D95] font-medium pt-1">Deck ready</p>
                           )}
-                          <p className="text-[11px] text-slate-500">Provide direct PDF or Google Drive/Doc link for investors to view.</p>
                         </div>
                       </div>
                     </div>
 
-                    <Button type="submit" className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 text-base shadow-lg">
-                      Submit Startup for Bangalore Event Leaderboard 🚀
-                    </Button>
+                    <button
+                      type="submit"
+                      className="w-full bg-gradient-to-r from-[#4C1D95] to-[#6D28D9] text-white font-mono text-sm md:text-base font-bold uppercase tracking-wider border-2 border-[#0B0B09] rounded-none py-3.5 px-6 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[4px_4px_0px_#0B0B09] active:translate-x-0 active:translate-y-0 active:shadow-none transition-all duration-200 ease-out"
+                    >
+                      Submit Registration
+                    </button>
                   </form>
-                </CardContent>
-              </Card>
-            )}
+                </div>
+              )}
+            </div>
           </div>
         )}
 
@@ -875,20 +902,57 @@ const BangaloreActivity: React.FC = () => {
           </div>
         )}
 
-        {/* Step 5: Investor Evaluation Portal & Leaderboard */}
-        {(investorProfile || (selectedRole === "investor" && isPromoVerified)) && investorProfile && (
-          <div className="space-y-8">
-            {/* Investor Welcome Banner */}
-            <div className="bg-gradient-to-r from-slate-900 to-indigo-900 text-white p-6 rounded-2xl shadow-lg flex flex-col md:flex-row items-center justify-between gap-6 border border-indigo-800">
+        {/* Startup Directory — always visible, ranking is never pre-decided by the page itself */}
+        <div className="space-y-10">
+          {startups.some((s) => s.resultRank) && (
+            <div className="space-y-4">
+              <h2 className="text-xl sm:text-2xl font-bold text-slate-900 flex items-center gap-2">
+                <Trophy className="w-5 h-5 sm:w-6 sm:h-6 text-amber-500" />
+                Results
+              </h2>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+                {(["gold", "silver", "bronze"] as const).map((rank) => {
+                  const winner = startups.find((s) => s.resultRank === rank);
+                  if (!winner) return null;
+                  const medal = rank === "gold" ? "🥇" : rank === "silver" ? "🥈" : "🥉";
+                  const ring =
+                    rank === "gold"
+                      ? "border-amber-300 bg-amber-50"
+                      : rank === "silver"
+                      ? "border-slate-300 bg-slate-50"
+                      : "border-orange-300 bg-orange-50";
+                  return (
+                    <Card
+                      key={rank}
+                      onClick={() => setViewStartupProfile(winner)}
+                      className={`cursor-pointer border ${ring} hover:shadow-md transition-shadow`}
+                    >
+                      <CardContent className="p-4 flex items-center gap-3">
+                        <span className="text-2xl">{medal}</span>
+                        <img src={winner.logoUrl} alt={winner.startupName} className="w-10 h-10 rounded-lg object-cover border border-slate-200" />
+                        <div className="min-w-0">
+                          <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">{rank}</p>
+                          <p className="text-sm font-bold text-slate-900 truncate">{winner.startupName}</p>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {investorProfile && (
+            <div className="bg-gradient-to-r from-slate-900 to-indigo-900 text-white p-5 sm:p-6 rounded-2xl shadow-lg flex flex-col md:flex-row items-center justify-between gap-4 sm:gap-6 border border-indigo-800">
               <div className="flex items-center gap-4">
                 <img
                   src={investorProfile.photoUrl}
                   alt={investorProfile.fullName}
-                  className="w-16 h-16 rounded-full border-2 border-indigo-400 object-cover shadow-md"
+                  className="w-14 h-14 sm:w-16 sm:h-16 rounded-full border-2 border-indigo-400 object-cover shadow-md"
                 />
                 <div>
-                  <div className="flex items-center gap-2">
-                    <h3 className="text-xl font-bold text-white">{investorProfile.fullName}</h3>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h3 className="text-lg sm:text-xl font-bold text-white">{investorProfile.fullName}</h3>
                     <Badge className="bg-emerald-500/20 text-emerald-300 border-emerald-500/40 text-xs">
                       Verified Investor
                     </Badge>
@@ -899,12 +963,12 @@ const BangaloreActivity: React.FC = () => {
                 </div>
               </div>
 
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 w-full md:w-auto">
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => setInvestorProfile(null)}
-                  className="bg-white/10 text-white hover:bg-white/20 border-white/20 text-xs"
+                  className="flex-1 md:flex-initial bg-white/10 text-white hover:bg-white/20 border-white/20 text-xs"
                 >
                   Edit Investor Profile
                 </Button>
@@ -914,269 +978,120 @@ const BangaloreActivity: React.FC = () => {
                     setSelectedRole("startup");
                     setIsPromoVerified(true);
                   }}
-                  className="bg-purple-600 hover:bg-purple-700 text-white text-xs"
+                  className="flex-1 md:flex-initial bg-purple-600 hover:bg-purple-700 text-white text-xs"
                 >
                   + Add New Startup
                 </Button>
               </div>
             </div>
+          )}
 
-            {/* Main Tabs: Leaderboard vs All Startups */}
-            <Tabs defaultValue="leaderboard" className="w-full space-y-6">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b pb-4">
-                <TabsList className="bg-slate-200 p-1 rounded-xl">
-                  <TabsTrigger value="leaderboard" className="data-[state=active]:bg-white data-[state=active]:shadow-sm text-xs sm:text-sm font-semibold">
-                    <Trophy className="w-4 h-4 text-amber-500 mr-2" />
-                    Bangalore Leaderboard 🏆
-                  </TabsTrigger>
-                  <TabsTrigger value="all" className="data-[state=active]:bg-white data-[state=active]:shadow-sm text-xs sm:text-sm font-semibold">
-                    <Layers className="w-4 h-4 text-purple-600 mr-2" />
-                    All Startups ({startups.length})
-                  </TabsTrigger>
-                </TabsList>
-
-                {/* Filters */}
-                <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
-                  <div className="relative flex-1 sm:flex-initial">
-                    <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                    <Input
-                      type="text"
-                      placeholder="Search startup..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="pl-9 h-9 text-xs sm:w-48 bg-white"
-                    />
-                  </div>
-                  <select
-                    className="h-9 px-3 text-xs border border-slate-300 rounded-md bg-white text-slate-700 focus:ring-2 focus:ring-purple-500"
-                    value={selectedSector}
-                    onChange={(e) => setSelectedSector(e.target.value)}
-                  >
-                    {SECTORS.map((sec) => (
-                      <option key={sec} value={sec}>{sec}</option>
-                    ))}
-                  </select>
-                </div>
+          {/* Startup Directory */}
+          <div className="space-y-5">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
+              <div>
+                <h2 className="text-xl sm:text-2xl font-bold text-slate-900 flex items-center gap-2">
+                  <Layers className="w-5 h-5 sm:w-6 sm:h-6 text-purple-600" />
+                  Startup Directory ({startups.length})
+                </h2>
+                <p className="text-xs sm:text-sm text-slate-600 mt-0.5">
+                  Newest registrations first. Tap a card to see the full profile, pitch deck & investor feedback.
+                </p>
               </div>
 
-              {/* Tab 1: Leaderboard */}
-              <TabsContent value="leaderboard" className="space-y-6">
-                <div className="bg-gradient-to-r from-amber-500/10 via-purple-500/10 to-indigo-500/10 p-4 rounded-xl border border-amber-200/60 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-amber-500 text-white rounded-full flex items-center justify-center font-bold text-lg shadow">
-                      🏆
-                    </div>
-                    <div>
-                      <h4 className="text-sm font-bold text-slate-900">Real-Time Investor Ranking</h4>
-                      <p className="text-xs text-slate-600">Startups are ordered dynamically by total &amp; average investor ratings. Top rated startups appear on top!</p>
-                    </div>
-                  </div>
-                  {/* Live Sync Indicator */}
-                  <div className="flex items-center gap-3 shrink-0">
-                    <div className="flex items-center gap-1.5 text-xs text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-full">
-                      <span className="relative flex h-2 w-2">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                        <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                      </span>
-                      <span className="font-semibold">LIVE</span>
-                      {lastSyncTime && <span className="text-emerald-600">· {lastSyncTime}</span>}
-                    </div>
-                    <button
-                      onClick={() => void refreshLiveStartups(true)}
-                      className="flex items-center gap-1 text-xs text-slate-600 hover:text-purple-700 bg-white border border-slate-200 px-2.5 py-1.5 rounded-full hover:border-purple-300 transition-colors"
-                      title="Refresh now"
-                    >
-                      <svg className={`w-3 h-3 ${isLoadingStartups ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
-                      Refresh
-                    </button>
-                  </div>
+              <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto justify-between sm:justify-end">
+                <div className="flex items-center gap-1.5 text-xs text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-full">
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                  </span>
+                  <span className="font-semibold">LIVE</span>
+                  {lastSyncTime && <span className="text-emerald-600 hidden xs:inline">· {lastSyncTime}</span>}
                 </div>
+                <button
+                  onClick={() => void refreshLiveStartups(true)}
+                  className="flex items-center gap-1 text-xs text-slate-600 hover:text-purple-700 bg-white border border-slate-200 px-2.5 py-1.5 rounded-full hover:border-purple-300 transition-colors"
+                  title="Refresh now"
+                >
+                  <RefreshCw className={`w-3 h-3 ${isLoadingStartups ? "animate-spin" : ""}`} />
+                  Refresh
+                </button>
+              </div>
+            </div>
 
-                {/* Loading Spinner — only on first load */}
-                {isLoadingStartups && startups.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center py-16 gap-4">
-                    <svg className="w-10 h-10 animate-spin text-purple-600" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                    </svg>
-                    <p className="text-slate-500 text-sm font-medium">Connecting to live database…</p>
-                  </div>
-                ) : filteredStartups.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center py-14 text-center gap-3">
-                    <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center text-3xl">🚀</div>
-                    <p className="text-slate-700 font-semibold">No Startups Registered Yet</p>
-                    <p className="text-slate-400 text-xs max-w-xs">Startups will appear here once founders submit their details during the Bangalore Event Activity.</p>
-                  </div>
-                ) : null}
+            {/* Filters */}
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="relative flex-1 min-w-[140px] sm:flex-initial">
+                <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <Input
+                  type="text"
+                  placeholder="Search startup..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-9 h-9 text-xs w-full sm:w-48 bg-white"
+                />
+              </div>
+              <select
+                className="h-9 px-3 text-xs border border-slate-300 rounded-md bg-white text-slate-700 focus:ring-2 focus:ring-purple-500"
+                value={selectedSector}
+                onChange={(e) => setSelectedSector(e.target.value)}
+              >
+                {SECTORS.map((sec) => (
+                  <option key={sec} value={sec}>{sec}</option>
+                ))}
+              </select>
+            </div>
 
-                <div className="grid grid-cols-1 gap-6">
-                  {filteredStartups.map((startup, index) => {
-                    const isTopThree = index < 3;
-                    const rankBadges = ["🥇 #1 Rank", "🥈 #2 Rank", "🥉 #3 Rank"];
-
-                    return (
-                      <Card
-                        key={startup.id}
-                        className={`transition-all duration-300 border-2 ${
-                          index === 0
-                            ? "border-amber-400 shadow-xl bg-gradient-to-r from-amber-50/30 to-white"
-                            : index === 1
-                            ? "border-slate-300 shadow-lg bg-white"
-                            : index === 2
-                            ? "border-amber-700/30 shadow-md bg-white"
-                            : "border-slate-200 bg-white"
-                        }`}
-                      >
-                        <CardContent className="p-6">
-                          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-                            
-                            {/* Left Info: Rank + Logo + Summary */}
-                            <div className="flex items-start gap-4">
-                              <div className="relative flex-shrink-0">
-                                <img
-                                  src={startup.logoUrl}
-                                  alt={startup.startupName}
-                                  className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl object-cover border-2 border-slate-200 shadow-sm"
-                                />
-                                <Badge
-                                  className={`absolute -top-3 -left-3 font-extrabold shadow ${
-                                    index === 0
-                                      ? "bg-amber-500 text-white text-xs px-2 py-0.5"
-                                      : index === 1
-                                      ? "bg-slate-700 text-white text-xs px-2 py-0.5"
-                                      : index === 2
-                                      ? "bg-amber-800 text-white text-xs px-2 py-0.5"
-                                      : "bg-slate-200 text-slate-700 text-xs"
-                                  }`}
-                                >
-                                  {isTopThree ? rankBadges[index] : `#${index + 1}`}
-                                </Badge>
-                              </div>
-
-                              <div className="space-y-1">
-                                <div className="flex flex-wrap items-center gap-2">
-                                  <h3 className="text-xl font-bold text-slate-900">{startup.startupName}</h3>
-                                  <Badge variant="outline" className="text-xs bg-purple-50 text-purple-700 border-purple-200">
-                                    {startup.category}
-                                  </Badge>
-                                  <Badge variant="secondary" className="text-xs">
-                                    {startup.stage}
-                                  </Badge>
-                                </div>
-                                <p className="text-sm font-medium text-slate-700">{startup.tagline}</p>
-                                <p className="text-xs text-slate-500">
-                                  Founder: <span className="font-semibold text-slate-700">{startup.founderName}</span> ({startup.founderEmail})
-                                </p>
-                              </div>
-                            </div>
-
-                            {/* Center Rating Score */}
-                            <div className="flex flex-row md:flex-col items-center justify-between md:justify-center p-3 bg-slate-50 rounded-xl border border-slate-200 w-full md:w-36 text-center">
-                              <div className="flex items-center gap-1 text-amber-500 font-extrabold text-2xl">
-                                <Star className="w-6 h-6 fill-amber-400 text-amber-400" />
-                                {startup.averageScore > 0 ? startup.averageScore : "N/A"}
-                              </div>
-                              <span className="text-xs font-semibold text-slate-500">
-                                {startup.totalRatingsCount} Investor {startup.totalRatingsCount === 1 ? "Rating" : "Ratings"}
-                              </span>
-                            </div>
-
-                            {/* Action Buttons */}
-                            <div className="flex flex-row md:flex-col gap-2 w-full md:w-auto">
-                              <Button
-                                onClick={() => setViewDeckStartup(startup)}
-                                variant="outline"
-                                className="flex-1 md:flex-initial text-xs border-purple-300 hover:bg-purple-50 text-purple-700 font-semibold"
-                              >
-                                <FileText className="w-4 h-4 mr-1.5" /> View Pitch Deck
-                              </Button>
-
-                              <Button
-                                onClick={() => setRatingTargetStartup(startup)}
-                                className="flex-1 md:flex-initial text-xs bg-indigo-600 hover:bg-indigo-700 text-white font-bold"
-                              >
-                                <Star className="w-4 h-4 mr-1.5 fill-white" /> Rate Startup
-                              </Button>
-                            </div>
-                          </div>
-
-                          {/* Expansion for Ratings comments */}
-                          {startup.ratings && startup.ratings.length > 0 && (
-                            <div className="mt-4 pt-4 border-t border-slate-100">
-                              <span className="text-xs font-bold text-slate-700 uppercase tracking-wider block mb-2">
-                                Recent Investor Feedback:
-                              </span>
-                              <div className="space-y-2">
-                                {startup.ratings.slice(0, 2).map((rev, i) => (
-                                  <div key={i} className="flex items-center justify-between bg-slate-50 p-2.5 rounded-lg text-xs">
-                                    <div className="flex items-center gap-2">
-                                      <img src={rev.investorPhoto || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200"} alt={rev.investorName} className="w-6 h-6 rounded-full object-cover" />
-                                      <span className="font-semibold text-slate-800">{rev.investorName} ({rev.investorFirm}):</span>
-                                      <span className="text-slate-600 italic">"{rev.comment || "Rated startup."}"</span>
-                                    </div>
-                                    <Badge className="bg-amber-100 text-amber-800 border-amber-200">
-                                      {(rev.totalScore / 5).toFixed(1)} ★
-                                    </Badge>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-                        </CardContent>
-                      </Card>
-                    );
-                  })}
-                </div>
-              </TabsContent>
-
-              {/* Tab 2: All Startups Grid */}
-              <TabsContent value="all" className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  {filteredStartups.map((startup) => (
-                    <Card key={startup.id} className="border shadow-md bg-white flex flex-col justify-between hover:shadow-xl transition-all">
-                      <CardHeader className="p-5">
-                        <div className="flex items-center justify-between gap-3 mb-2">
-                          <img src={startup.logoUrl} alt={startup.startupName} className="w-12 h-12 rounded-lg object-cover border" />
-                          <Badge className="bg-purple-100 text-purple-800 border-purple-200 text-xs">
-                            {startup.category}
-                          </Badge>
+            {/* Loading Spinner — only on first load */}
+            {isLoadingStartups && startups.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-16 gap-4">
+                <RefreshCw className="w-8 h-8 sm:w-10 sm:h-10 animate-spin text-purple-600" />
+                <p className="text-slate-500 text-sm font-medium">Connecting to live database…</p>
+              </div>
+            ) : filteredStartups.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-14 text-center gap-3">
+                <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center text-3xl">🚀</div>
+                <p className="text-slate-700 font-semibold">No Startups Registered Yet</p>
+                <p className="text-slate-400 text-xs max-w-xs">Startups will appear here once founders submit their details during the Bangalore Event Activity.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5">
+                {filteredStartups.map((startup) => (
+                  <Card
+                    key={startup.id}
+                    onClick={() => setViewStartupProfile(startup)}
+                    className="border border-slate-200 bg-white hover:shadow-md transition-shadow cursor-pointer flex flex-col"
+                  >
+                    <CardContent className="p-5 flex flex-col flex-1 gap-3">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <img
+                          src={startup.logoUrl}
+                          alt={startup.startupName}
+                          className="w-11 h-11 rounded-lg object-cover border border-slate-200 shrink-0"
+                        />
+                        <div className="min-w-0">
+                          <h3 className="text-sm font-bold text-slate-900 truncate">{startup.startupName}</h3>
+                          <p className="text-[11px] text-slate-500 truncate">{startup.category} · {startup.stage}</p>
                         </div>
-                        <CardTitle className="text-lg font-bold text-slate-900">{startup.startupName}</CardTitle>
-                        <CardDescription className="text-xs text-slate-600 line-clamp-2">{startup.tagline}</CardDescription>
-                      </CardHeader>
-                      <CardContent className="px-5 py-0 space-y-3">
-                        <p className="text-xs text-slate-500 line-clamp-3">{startup.description}</p>
-                        <div className="flex items-center justify-between text-xs text-slate-600 bg-slate-50 p-2 rounded">
-                          <span>Stage: <strong>{startup.stage}</strong></span>
-                          <span className="flex items-center gap-1 font-bold text-amber-600">
-                            <Star className="w-3.5 h-3.5 fill-amber-500 text-amber-500" />
-                            {startup.averageScore > 0 ? startup.averageScore : "Unrated"}
-                          </span>
-                        </div>
-                      </CardContent>
-                      <CardFooter className="p-5 pt-4 border-t mt-4 flex gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setViewDeckStartup(startup)}
-                          className="flex-1 text-xs"
-                        >
-                          Pitch Deck
-                        </Button>
-                        <Button
-                          size="sm"
-                          onClick={() => setRatingTargetStartup(startup)}
-                          className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold"
-                        >
-                          Rate
-                        </Button>
-                      </CardFooter>
-                    </Card>
-                  ))}
-                </div>
-              </TabsContent>
-            </Tabs>
+                      </div>
+
+                      <p className="text-sm text-slate-600 line-clamp-2 flex-1">{startup.tagline}</p>
+
+                      <div className="flex items-center justify-between text-xs text-slate-500 pt-3 border-t border-slate-100">
+                        <span className="truncate">{startup.founderName}</span>
+                        <span className="flex items-center gap-1 font-medium text-slate-700 shrink-0">
+                          <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
+                          {startup.averageScore > 0 ? startup.averageScore.toFixed(1) : "—"}
+                          <span className="text-slate-400">({startup.totalRatingsCount})</span>
+                        </span>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
           </div>
-        )}
+        </div>
 
       </main>
 
@@ -1275,44 +1190,124 @@ const BangaloreActivity: React.FC = () => {
         </Dialog>
       )}
 
-      {/* --- PITCH DECK MODAL DIALOG --- */}
-      {viewDeckStartup && (
-        <Dialog open={!!viewDeckStartup} onOpenChange={() => setViewDeckStartup(null)}>
-          <DialogContent className="w-[95vw] sm:max-w-3xl max-h-[90vh] overflow-y-auto bg-white p-4 sm:p-6 rounded-2xl shadow-2xl space-y-4">
-            <DialogHeader>
-              <DialogTitle className="text-xl font-bold text-slate-900 flex items-center justify-between">
-                <span>Pitch Deck: {viewDeckStartup.startupName}</span>
-                <a
-                  href={viewDeckStartup.pitchDeckUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-xs font-semibold text-purple-600 hover:underline flex items-center gap-1"
-                >
-                  Open in New Tab <ExternalLink className="w-3.5 h-3.5" />
-                </a>
-              </DialogTitle>
-              <DialogDescription className="text-xs text-slate-600">
-                Founder: {viewDeckStartup.founderName} ({viewDeckStartup.founderEmail}) | Category: {viewDeckStartup.category}
-              </DialogDescription>
-            </DialogHeader>
+      {/* --- STARTUP PROFILE MODAL DIALOG --- */}
+      {viewStartupProfile && (
+        <Dialog open={!!viewStartupProfile} onOpenChange={() => setViewStartupProfile(null)}>
+          <DialogContent className="w-[95vw] sm:max-w-2xl max-h-[90vh] overflow-y-auto bg-white p-0 rounded-2xl shadow-2xl">
+            {/* Header */}
+            <div className="bg-gradient-to-r from-purple-600 to-indigo-600 p-5 sm:p-6 text-white">
+              <DialogHeader>
+                <div className="flex items-start gap-4">
+                  <img
+                    src={viewStartupProfile.logoUrl}
+                    alt={viewStartupProfile.startupName}
+                    className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl object-cover border-2 border-white/40 shadow-md shrink-0"
+                  />
+                  <div className="min-w-0">
+                    <DialogTitle className="text-xl sm:text-2xl font-bold text-white">
+                      {viewStartupProfile.startupName}
+                    </DialogTitle>
+                    <DialogDescription className="text-purple-100 text-sm mt-1">
+                      {viewStartupProfile.tagline}
+                    </DialogDescription>
+                    <div className="flex flex-wrap items-center gap-1.5 mt-2">
+                      <Badge className="bg-white/15 border-white/30 text-white text-xs">{viewStartupProfile.category}</Badge>
+                      <Badge className="bg-white/15 border-white/30 text-white text-xs">{viewStartupProfile.stage}</Badge>
+                    </div>
+                  </div>
+                </div>
+              </DialogHeader>
+            </div>
 
-            <div className="border rounded-xl bg-slate-900 h-96 flex flex-col items-center justify-center text-white space-y-4 p-6 text-center">
-              <FileText className="w-16 h-16 text-purple-400 animate-pulse" />
+            <div className="p-5 sm:p-6 space-y-5">
+              {/* Description */}
               <div>
-                <h4 className="text-lg font-bold">{viewDeckStartup.startupName} Pitch Presentation</h4>
-                <p className="text-xs text-slate-400 mt-1 max-w-md">
-                  Click below to view the official presentation deck for this startup.
-                </p>
+                <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">About the Startup</h4>
+                <p className="text-sm text-slate-700 leading-relaxed">{viewStartupProfile.description}</p>
               </div>
-              <Button asChild className="bg-purple-600 hover:bg-purple-700 text-white font-bold">
-                <a href={viewDeckStartup.pitchDeckUrl} target="_blank" rel="noopener noreferrer">
-                  View Pitch Deck PDF <ExternalLink className="w-4 h-4 ml-2" />
-                </a>
-              </Button>
+
+              {/* Founder contact */}
+              <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
+                <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider">Founder</h4>
+                <p className="text-sm font-bold text-slate-900">{viewStartupProfile.founderName}</p>
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2 text-xs text-slate-600">
+                  <span className="flex items-center gap-1.5"><Mail className="w-3.5 h-3.5 text-slate-400" /> {viewStartupProfile.founderEmail}</span>
+                  {viewStartupProfile.founderPhone && (
+                    <span className="flex items-center gap-1.5"><Phone className="w-3.5 h-3.5 text-slate-400" /> {viewStartupProfile.founderPhone}</span>
+                  )}
+                </div>
+              </div>
+
+              {/* Rating summary */}
+              <div className="flex items-center justify-between p-4 bg-amber-50 rounded-xl border border-amber-200">
+                <div className="flex items-center gap-2">
+                  <Star className="w-6 h-6 fill-amber-400 text-amber-400" />
+                  <div>
+                    <p className="text-lg font-extrabold text-amber-700">
+                      {viewStartupProfile.averageScore > 0 ? viewStartupProfile.averageScore.toFixed(1) : "Unrated"}
+                    </p>
+                    <p className="text-[11px] text-amber-600 font-medium">
+                      {viewStartupProfile.totalRatingsCount} Investor {viewStartupProfile.totalRatingsCount === 1 ? "Rating" : "Ratings"}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button asChild variant="outline" size="sm" className="border-purple-300 text-purple-700 hover:bg-purple-50 text-xs">
+                    <a href={viewStartupProfile.pitchDeckUrl} target="_blank" rel="noopener noreferrer">
+                      <FileText className="w-3.5 h-3.5 mr-1.5" /> Pitch Deck <ExternalLink className="w-3 h-3 ml-1.5" />
+                    </a>
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={() => {
+                      if (investorProfile) {
+                        setRatingTargetStartup(viewStartupProfile);
+                        setViewStartupProfile(null);
+                      } else {
+                        toast({
+                          title: "Investor access required",
+                          description: "Only registered SAIS'26 investors can rate startups.",
+                        });
+                      }
+                    }}
+                    className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs"
+                  >
+                    <Star className="w-3.5 h-3.5 mr-1.5 fill-white" /> Rate
+                  </Button>
+                </div>
+              </div>
+
+              {/* Investor feedback */}
+              {viewStartupProfile.ratings && viewStartupProfile.ratings.length > 0 && (
+                <div>
+                  <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Investor Feedback</h4>
+                  <div className="space-y-2">
+                    {viewStartupProfile.ratings.map((rev, i) => (
+                      <div key={i} className="flex items-start justify-between gap-3 bg-slate-50 p-3 rounded-lg border border-slate-100">
+                        <div className="flex items-start gap-2.5 min-w-0">
+                          <img
+                            src={rev.investorPhoto || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200"}
+                            alt={rev.investorName}
+                            className="w-8 h-8 rounded-full object-cover shrink-0"
+                          />
+                          <div className="min-w-0">
+                            <p className="text-xs font-bold text-slate-800">{rev.investorName} <span className="font-normal text-slate-500">· {rev.investorFirm}</span></p>
+                            {rev.comment && <p className="text-xs text-slate-600 italic mt-0.5">"{rev.comment}"</p>}
+                          </div>
+                        </div>
+                        <Badge className="bg-amber-100 text-amber-800 border-amber-200 shrink-0">
+                          {(rev.totalScore / 5).toFixed(1)} ★
+                        </Badge>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </DialogContent>
         </Dialog>
       )}
+
 
       <Footer />
     </div>

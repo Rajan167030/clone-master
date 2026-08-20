@@ -34,6 +34,8 @@ const activityStartupSchema = new mongoose.Schema(
     ],
     averageScore: { type: Number, default: 0 },
     totalRatingsCount: { type: Number, default: 0 },
+    resultRank: { type: String, enum: ["gold", "silver", "bronze", null], default: null, index: true },
+    resultAnnouncedAt: { type: Date, default: null },
     accessToken: { type: String, default: null, unique: true, sparse: true, index: true },
     accessTokenIssuedAt: { type: Date, default: null },
   },

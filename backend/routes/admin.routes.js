@@ -58,6 +58,12 @@ import {
   deleteAdminPartnerType,
 } from "../controllers/partner-type.controller.js";
 import { requireAdmin } from "../middlewares/admin.middleware.js";
+import {
+  deleteAdminActivityStartup,
+  deleteAdminActivityInvestor,
+  announceAdminActivityResults,
+  resetAdminActivityResults,
+} from "../controllers/activity-admin.controller.js";
 import { requireSuperAdmin } from "../middlewares/admin.middleware.js";
 import {
   createTask,
@@ -176,6 +182,11 @@ adminRouter.get("/funding-applications", listAdminFundingApplications);
 
 adminRouter.get("/investors-directory", listAdminInvestorLeads);
 adminRouter.get("/members-directory", listAdminMembersDetailed);
+
+adminRouter.delete("/activity/startups/:id", deleteAdminActivityStartup);
+adminRouter.delete("/activity/investors/:id", deleteAdminActivityInvestor);
+adminRouter.post("/activity/results", announceAdminActivityResults);
+adminRouter.delete("/activity/results", resetAdminActivityResults);
 
 adminRouter.get("/investor-invites", listAdminInvestorInvites);
 adminRouter.post("/investor-invites", createAdminInvestorInvite);

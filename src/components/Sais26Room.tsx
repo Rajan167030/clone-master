@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
 import PitchDeckViewerModal from "@/components/PitchDeckViewerModal";
 import StartupProfileModal from "@/components/StartupProfileModal";
+import InvestorProfileModal from "@/components/InvestorProfileModal";
 import { getAccount } from "@/lib/session";
 import {
   type ActivityInvestorProfile,
@@ -45,6 +46,7 @@ const Sais26Room = ({ viewerRole, authToken, highlightStartupId }: Sais26RoomPro
   const [isLoading, setIsLoading] = useState(true);
   const [viewDeckStartup, setViewDeckStartup] = useState<ActivityStartupItem | null>(null);
   const [profileStartup, setProfileStartup] = useState<ActivityStartupItem | null>(null);
+  const [profileInvestor, setProfileInvestor] = useState<ActivityInvestorProfile | null>(null);
   const [ratingTargetStartup, setRatingTargetStartup] = useState<ActivityStartupItem | null>(null);
   const [ratingScores, setRatingScores] = useState<RatingScores>(DEFAULT_SCORES);
   const [ratingComment, setRatingComment] = useState("");
@@ -224,7 +226,11 @@ const Sais26Room = ({ viewerRole, authToken, highlightStartupId }: Sais26RoomPro
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {investors.map((investor) => (
-                <Card key={(investor as any)._id || investor.id} className="border border-slate-200">
+                <Card
+                  key={(investor as any)._id || investor.id}
+                  onClick={() => setProfileInvestor(investor)}
+                  className="border border-slate-200 hover:border-indigo-300 hover:shadow-md transition-all cursor-pointer"
+                >
                   <CardContent className="p-5 flex items-start gap-3">
                     <img
                       src={investor.photoUrl}
@@ -252,6 +258,7 @@ const Sais26Room = ({ viewerRole, authToken, highlightStartupId }: Sais26RoomPro
 
       <PitchDeckViewerModal startup={viewDeckStartup} onClose={() => setViewDeckStartup(null)} />
       <StartupProfileModal startup={profileStartup} onClose={() => setProfileStartup(null)} />
+      <InvestorProfileModal investor={profileInvestor} onClose={() => setProfileInvestor(null)} />
 
       {ratingTargetStartup && (
         <Dialog open={!!ratingTargetStartup} onOpenChange={() => setRatingTargetStartup(null)}>
