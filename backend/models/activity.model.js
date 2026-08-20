@@ -34,6 +34,8 @@ const activityStartupSchema = new mongoose.Schema(
     ],
     averageScore: { type: Number, default: 0 },
     totalRatingsCount: { type: Number, default: 0 },
+    accessToken: { type: String, default: null, unique: true, sparse: true, index: true },
+    accessTokenIssuedAt: { type: Date, default: null },
   },
   { timestamps: true }
 );
@@ -51,6 +53,8 @@ const activityInvestorSchema = new mongoose.Schema(
     bio: { type: String, default: "" },
     photoUrl: { type: String, required: true },
     promoCodeUsed: { type: String, default: "investor20" },
+    accountId: { type: mongoose.Schema.Types.ObjectId, ref: "Account", default: null, index: true },
+    inviteId: { type: mongoose.Schema.Types.ObjectId, ref: "InvestorInvite", default: null },
   },
   { timestamps: true }
 );

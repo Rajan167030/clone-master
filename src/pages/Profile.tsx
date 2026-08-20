@@ -3,11 +3,12 @@ import { useParams, useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ProfileCard from "@/components/ProfileCard";
+import InvestorIdentityCard from "@/components/InvestorIdentityCard";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MessageSquare, MapPin, Briefcase, Calendar } from "lucide-react";
 import { toast } from "sonner";
-import { getToken } from "@/lib/session";
+import { getAccount, getToken } from "@/lib/session";
 
 interface PublicProfile {
   id: string;
@@ -18,6 +19,12 @@ interface PublicProfile {
   profilePhoto?: string;
   profileId: string;
   roleDetails?: Record<string, any>;
+  cardColors?: {
+    primary?: string;
+    secondary?: string;
+    accent?: string;
+    backgroundColor?: string;
+  };
   createdAt?: string;
 }
 
@@ -123,15 +130,28 @@ const PublicProfile = () => {
         <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
           {/* Profile Card */}
           <div className="lg:col-span-1">
-            <ProfileCard
-              fullName={profile.fullName}
-              role={profile.role}
-              city={profile.city}
-              headline={profile.headline || "Building the future"}
-              profilePhoto={profile.profilePhoto}
-              profileId={profile.profileId}
-              cardColors={profile.cardColors}
-            />
+            {profile.role === "investor" ? (
+              <InvestorIdentityCard
+                fullName={profile.fullName}
+                city={profile.city}
+                headline={profile.headline}
+                profilePhoto={profile.profilePhoto}
+                profileId={profile.profileId}
+                investorId={profile.roleDetails?.investorId}
+                focusSector={profile.roleDetails?.focusSector}
+                cardColors={profile.cardColors}
+              />
+            ) : (
+              <ProfileCard
+                fullName={profile.fullName}
+                role={profile.role}
+                city={profile.city}
+                headline={profile.headline || "Building the future"}
+                profilePhoto={profile.profilePhoto}
+                profileId={profile.profileId}
+                cardColors={profile.cardColors}
+              />
+            )}
           </div>
 
           {/* Profile Details */}
@@ -259,8 +279,12 @@ const PublicProfile = () => {
             )}
 
             {/* Connect Button */}
-            {token && (
-              <Button size="lg" className="w-full bg-purple-600 hover:bg-purple-700">
+            {token && profile.id !== getAccount()?.id && (
+              <Button
+                size="lg"
+                className="w-full bg-purple-600 hover:bg-purple-700"
+                onClick={() => navigate(`/community/messages/${profile.id}`)}
+              >
                 <MessageSquare size={18} className="mr-2" />
                 Connect & Message
               </Button>

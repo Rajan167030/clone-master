@@ -133,6 +133,7 @@ import {
   ShieldCheck,
   MessageSquare,
   KeyRound,
+  Sparkles,
 } from "lucide-react";
 
 const emptyEventForm = {
@@ -586,8 +587,8 @@ const AdminDashboard = () => {
       });
   };
 
-  const getInvestorInviteLink = (inviteToken: string) =>
-    `${window.location.origin}/register/investor?token=${inviteToken}`;
+  const getInvestorInviteLink = (inviteCode: string) =>
+    `${window.location.origin}/invite/${inviteCode}`;
 
   const handleCreateInvestorInvite = () => {
     setCreatingInvite(true);
@@ -598,7 +599,7 @@ const AdminDashboard = () => {
         setInvestorInvites((prev) => [response.invite, ...prev]);
         setNewInviteLabel("");
         setNewInviteExpiryDays("");
-        navigator.clipboard?.writeText(getInvestorInviteLink(response.invite.token)).catch(() => {});
+        navigator.clipboard?.writeText(getInvestorInviteLink(response.invite.code)).catch(() => {});
         window.alert("Invite link created and copied to clipboard.");
       })
       .catch((error) => {
@@ -607,8 +608,8 @@ const AdminDashboard = () => {
       .finally(() => setCreatingInvite(false));
   };
 
-  const handleCopyInviteLink = (inviteToken: string) => {
-    navigator.clipboard?.writeText(getInvestorInviteLink(inviteToken)).catch(() => {});
+  const handleCopyInviteLink = (inviteCode: string) => {
+    navigator.clipboard?.writeText(getInvestorInviteLink(inviteCode)).catch(() => {});
     window.alert("Invite link copied to clipboard.");
   };
 
@@ -1883,6 +1884,10 @@ const AdminDashboard = () => {
                   <Link to="/admin/members" className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium hover:bg-slate-50">
                     <Users className="h-4 w-4" />
                     Members Directory
+                  </Link>
+                  <Link to="/admin/sais26-room" className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium hover:bg-slate-50">
+                    <Sparkles className="h-4 w-4" />
+                    SAIS'26 Room
                   </Link>
                 </CardContent>
               </Card>
@@ -4530,11 +4535,13 @@ const AdminDashboard = () => {
                               <tr key={invite._id} className="hover:bg-slate-50">
                                 <td className="p-4">
                                   <p className="font-medium text-slate-900">{invite.label || "Untitled invite"}</p>
-                                  <p className="text-xs text-slate-400 font-mono">{invite.token.slice(0, 16)}...</p>
+                                  <p className="text-xs text-slate-400 font-mono">{(invite.code || invite.token).slice(0, 16)}...</p>
                                 </td>
                                 <td className="p-4">
                                   {!invite.isActive ? (
                                     <Badge variant="secondary" className="bg-slate-200 text-slate-600">Revoked</Badge>
+                                  ) : invite.usedAt ? (
+                                    <Badge variant="secondary" className="bg-blue-100 text-blue-700">Used</Badge>
                                   ) : expired ? (
                                     <Badge variant="secondary" className="bg-amber-100 text-amber-700">Expired</Badge>
                                   ) : (
@@ -4546,7 +4553,7 @@ const AdminDashboard = () => {
                                 <td className="p-4">{new Date(invite.createdAt).toLocaleDateString()}</td>
                                 <td className="p-4">
                                   <div className="flex items-center justify-end gap-1.5">
-                                    <Button variant="outline" size="sm" onClick={() => handleCopyInviteLink(invite.token)} className="gap-1.5">
+                                    <Button variant="outline" size="sm" onClick={() => handleCopyInviteLink(invite.code)} className="gap-1.5">
                                       <Copy className="h-3.5 w-3.5" />
                                       Copy Link
                                     </Button>

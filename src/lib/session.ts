@@ -20,6 +20,11 @@ export type SessionAccount = {
   };
   nfcId?: string;
   membershipTier?: string; // Added for event/member logic
+  isProfilePublic?: boolean;
+  notificationPrefs?: {
+    productUpdates?: boolean;
+    communityActivity?: boolean;
+  };
 };
 
 export const setSession = (token: string, account: SessionAccount) => {

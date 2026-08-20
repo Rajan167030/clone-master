@@ -4,7 +4,12 @@ import {
   sendEmailVerificationCode,
   verifyEmailCode,
 } from "../controllers/email-verification.controller.js";
-import { validateInvestorInvite, submitInvestorLead } from "../controllers/investor-invite.controller.js";
+import {
+  validateInvestorInvite,
+  submitInvestorLead,
+  validateInviteByCode,
+  registerInvestorViaInvite,
+} from "../controllers/investor-invite.controller.js";
 
 const authRouter = Router();
 
@@ -15,6 +20,8 @@ authRouter.post("/email-verification/send", sendEmailVerificationCode);
 authRouter.post("/email-verification/verify", verifyEmailCode);
 authRouter.get("/investor-invite/:token", validateInvestorInvite);
 authRouter.post("/investor-lead", submitInvestorLead);
+authRouter.get("/invite/:code", validateInviteByCode);
+authRouter.post("/invite/:code/register", registerInvestorViaInvite);
 
 authRouter.post("/forgot-password", forgotPassword);
 authRouter.post("/verify-forgot-password-otp", verifyForgotPasswordOtp);

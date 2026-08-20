@@ -5,6 +5,10 @@ import {
   getMyProfile,
   generateProfileUrl,
   getProfileAnalytics,
+  changePassword,
+  updatePrivacy,
+  updateNotificationPrefs,
+  deactivateAccount,
 } from "../controllers/profile.controller.js";
 import { requireAuth } from "../middlewares/auth.middleware.js";
 
@@ -18,5 +22,9 @@ profileRouter.get("/me", requireAuth, getMyProfile);
 profileRouter.put("/me", requireAuth, updateMyProfile);
 profileRouter.get("/url/generate", requireAuth, generateProfileUrl);
 profileRouter.get("/analytics/scans", requireAuth, getProfileAnalytics);
+profileRouter.post("/change-password", requireAuth, changePassword);
+profileRouter.patch("/privacy", requireAuth, updatePrivacy);
+profileRouter.patch("/notifications", requireAuth, updateNotificationPrefs);
+profileRouter.post("/deactivate", requireAuth, deactivateAccount);
 
 export default profileRouter;

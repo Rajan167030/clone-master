@@ -1,4 +1,4 @@
-import { Dashboard, Account, QRScanAnalytics } from "../models/index.js";
+import { Dashboard, Account, QRScanAnalytics, EventAttendance } from "../models/index.js";
 
 const assignIfDefined = (target, key, value) => {
   if (typeof value !== "undefined") {
@@ -52,20 +52,27 @@ export const getMyDashboard = async (req, res, next) => {
         { key: "profile_scans", title: "Profile QR Scans", value: String(totalScans), color: "green" },
         { key: "communities_joined", title: "Communities Joined", value: "1", color: "amber" },
       ];
-    } else if (role === "founder") {
-      dashboard.kpis = [
-        { key: "pitch_views", title: "Pitch / Card Views", value: String(totalScans), color: "blue" },
-        { key: "referred_signups", title: "Referred Members", value: String(referralsCount), color: "purple" },
-        { key: "profile_completion", title: "Profile Completion", value: `${completion}%`, color: "green" },
-        { key: "funding_target", title: "Funding Target", value: account.roleDetails?.startupName ? "INR 25L" : "INR 0", color: "amber" },
-      ];
-    } else if (role === "investor") {
-      dashboard.kpis = [
-        { key: "profile_scans", title: "Profile QR Scans", value: String(totalScans), color: "blue" },
-        { key: "startups_invested", title: "Startups Invested", value: String(account.roleDetails?.portfolioSize || 0), color: "green" },
-        { key: "referred_members", title: "Referred Members", value: String(referralsCount), color: "purple" },
-        { key: "profile_completion", title: "Profile Completion", value: `${completion}%`, color: "amber" },
-      ];
+    } else if (role === "founder" || role === "investor") {
+      // 5. Count Events Attended (RSVP'd via the Events pages)
+      const eventsAttendedCount = await EventAttendance.countDocuments({ accountId });
+
+      if (role === "founder") {
+        dashboard.kpis = [
+          { key: "pitch_views", title: "Pitch / Card Views", value: String(totalScans), color: "blue" },
+          { key: "referred_signups", title: "Referred Members", value: String(referralsCount), color: "purple" },
+          { key: "profile_completion", title: "Profile Completion", value: `${completion}%`, color: "green" },
+          { key: "funding_target", title: "Funding Target", value: account.roleDetails?.startupName ? "INR 25L" : "INR 0", color: "amber" },
+          { key: "events_attended", title: "Events Attended", value: String(eventsAttendedCount), color: "blue" },
+        ];
+      } else {
+        dashboard.kpis = [
+          { key: "profile_scans", title: "Profile QR Scans", value: String(totalScans), color: "blue" },
+          { key: "startups_invested", title: "Startups Invested", value: String(account.roleDetails?.portfolioSize || 0), color: "green" },
+          { key: "referred_members", title: "Referred Members", value: String(referralsCount), color: "purple" },
+          { key: "profile_completion", title: "Profile Completion", value: `${completion}%`, color: "amber" },
+          { key: "events_attended", title: "Events Attended", value: String(eventsAttendedCount), color: "green" },
+        ];
+      }
     }
 
     return res.status(200).json({ dashboard });

@@ -36,11 +36,15 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
+  cancelEventAttendanceApi,
+  getMyEventAttendanceApi,
   getPublicEventBySlugApi,
+  markEventAttendanceApi,
   type DynamicEvent,
 } from "@/lib/api";
 import { optimizeCloudinaryUrl } from "@/lib/cloudinary";
 import { getDisplayLocationLabel } from "@/lib/googleMaps";
+import { getToken } from "@/lib/session";
 import NotFound from "./NotFound";
 import { useToast } from "@/hooks/use-toast";
 
@@ -49,6 +53,9 @@ const EventDetails = () => {
   const { toast } = useToast();
   const [event, setEvent] = useState<DynamicEvent | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const token = getToken();
+  const [isAttending, setIsAttending] = useState(false);
+  const [isTogglingAttendance, setIsTogglingAttendance] = useState(false);
 
   // Local Registration Modal state
   const [isLocalModalOpen, setIsLocalModalOpen] = useState(false);
@@ -89,6 +96,19 @@ const EventDetails = () => {
     };
   }, [slug]);
 
+  useEffect(() => {
+    if (!token || !slug) return;
+    let isActive = true;
+    getMyEventAttendanceApi(token, slug)
+      .then((res) => {
+        if (isActive) setIsAttending(res.attending);
+      })
+      .catch(() => {});
+    return () => {
+      isActive = false;
+    };
+  }, [token, slug]);
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background">
@@ -124,6 +144,35 @@ const EventDetails = () => {
       title: "Link Copied",
       description: "Event link copied to clipboard.",
     });
+  };
+
+  const handleRegisterClick = async () => {
+    if (!token) {
+      setRegisteredSuccess(false);
+      setIsLocalModalOpen(true);
+      return;
+    }
+
+    setIsTogglingAttendance(true);
+    try {
+      if (isAttending) {
+        await cancelEventAttendanceApi(token, slug);
+        setIsAttending(false);
+        toast({ title: "Attendance removed", description: `You're no longer marked as attending ${event.title}.` });
+      } else {
+        await markEventAttendanceApi(token, slug);
+        setIsAttending(true);
+        toast({ title: "You're attending! 🎉", description: `${event.title} has been added to your dashboard.` });
+      }
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Something went wrong",
+        description: error instanceof Error ? error.message : "Please try again.",
+      });
+    } finally {
+      setIsTogglingAttendance(false);
+    }
   };
 
   const handleLocalRegisterSubmit = (e: FormEvent<HTMLFormElement>) => {
@@ -236,13 +285,14 @@ const EventDetails = () => {
               <Button
                 type="button"
                 size="lg"
-                onClick={() => {
-                  setRegisteredSuccess(false);
-                  setIsLocalModalOpen(true);
-                }}
-                className="gap-2 bg-gradient-primary text-primary-foreground font-semibold shadow-md hover:shadow-lg transition-all"
+                onClick={handleRegisterClick}
+                disabled={isTogglingAttendance}
+                className={`gap-2 font-semibold shadow-md hover:shadow-lg transition-all ${
+                  isAttending ? "bg-emerald-600 hover:bg-emerald-700 text-white" : "bg-gradient-primary text-primary-foreground"
+                }`}
               >
-                <UserCheck size={18} /> Register on App (Local)
+                {isAttending ? <CheckCircle2 size={18} /> : <UserCheck size={18} />}
+                {isAttending ? "You're Attending" : "I'm Attending"}
               </Button>
 
               <Button
@@ -361,13 +411,14 @@ const EventDetails = () => {
                   </Button>
                   <Button
                     type="button"
-                    onClick={() => {
-                      setRegisteredSuccess(false);
-                      setIsLocalModalOpen(true);
-                    }}
-                    className="w-full gap-2 bg-gradient-primary text-primary-foreground font-semibold"
+                    onClick={handleRegisterClick}
+                    disabled={isTogglingAttendance}
+                    className={`w-full gap-2 font-semibold ${
+                      isAttending ? "bg-emerald-600 hover:bg-emerald-700 text-white" : "bg-gradient-primary text-primary-foreground"
+                    }`}
                   >
-                    <UserCheck size={16} /> Register on App (Local)
+                    {isAttending ? <CheckCircle2 size={16} /> : <UserCheck size={16} />}
+                    {isAttending ? "You're Attending" : "I'm Attending"}
                   </Button>
                 </div>
                 
@@ -420,10 +471,11 @@ const EventDetails = () => {
                 <p>{event.ticketLabel}</p>
                 <Button
                   type="button"
-                  onClick={() => setIsLocalModalOpen(true)}
-                  className="w-full bg-gradient-primary text-primary-foreground"
+                  onClick={handleRegisterClick}
+                  disabled={isTogglingAttendance}
+                  className={`w-full ${isAttending ? "bg-emerald-600 hover:bg-emerald-700 text-white" : "bg-gradient-primary text-primary-foreground"}`}
                 >
-                  Register Now
+                  {isAttending ? "You're Attending ✓" : "Register Now"}
                 </Button>
                 <p className="rounded-lg border bg-muted/20 p-3">
                   <span className="font-semibold text-foreground">Refund Policy: </span>

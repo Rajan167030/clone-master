@@ -76,6 +76,11 @@ const BaseAccountSchema = new Schema(
       backgroundColor: { type: String, default: "#ffffff", trim: true }, // Inner card bg
     },
     nfcId: { type: String, default: null, trim: true }, // NFC tag ID if available
+    isProfilePublic: { type: Boolean, default: true },
+    notificationPrefs: {
+      productUpdates: { type: Boolean, default: true },
+      communityActivity: { type: Boolean, default: true },
+    },
   },
   {
     timestamps: true,
@@ -108,6 +113,8 @@ BaseAccountSchema.methods.toSafeJSON = function toSafeJSON() {
     profilePhoto: this.profilePhoto,
     cardColors: this.cardColors,
     nfcId: this.nfcId,
+    isProfilePublic: this.isProfilePublic,
+    notificationPrefs: this.notificationPrefs,
     createdAt: this.createdAt,
     updatedAt: this.updatedAt,
   };

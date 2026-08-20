@@ -40,6 +40,14 @@ const FundingApplication = lazy(() => import("./pages/FundingApplication.tsx"));
 const ProductPage = lazy(() => import("./pages/ProductPage.tsx"));
 const OurTeam = lazy(() => import("./pages/OurTeam.tsx"));
 const BangaloreActivity = lazy(() => import("./pages/BangaloreActivity.tsx"));
+const InvestorInviteRegister = lazy(() => import("./pages/InvestorInviteRegister.tsx"));
+const Sais26Leaderboard = lazy(() => import("./pages/Sais26Leaderboard.tsx"));
+const Sais26RoomPage = lazy(() => import("./pages/Sais26RoomPage.tsx"));
+const FounderRoomEntry = lazy(() => import("./pages/FounderRoomEntry.tsx"));
+const AdminSais26Room = lazy(() => import("./pages/AdminSais26Room.tsx"));
+const Settings = lazy(() => import("./pages/Settings.tsx"));
+const Community = lazy(() => import("./pages/Community.tsx"));
+const CommunityMessages = lazy(() => import("./pages/CommunityMessages.tsx"));
 
 const queryClient = new QueryClient();
 
@@ -60,6 +68,17 @@ const App = () => (
             <Route path="/register/user" element={<RegisterUser />} />
             <Route path="/register/investor" element={<RegisterInvestor />} />
             <Route path="/register/founder" element={<RegisterFounder />} />
+            <Route path="/invite/:code" element={<InvestorInviteRegister />} />
+            <Route path="/sais26" element={<Sais26Leaderboard />} />
+            <Route path="/sais26/founder/:accessToken" element={<FounderRoomEntry />} />
+            <Route
+              path="/sais26/room"
+              element={(
+                <ProtectedRoute allowedRoles={["investor"]} redirectTo="/">
+                  <Sais26RoomPage />
+                </ProtectedRoute>
+              )}
+            />
             <Route path="/admin/login" element={<AdminLogin />} />
             <Route
               path="/dashboard"
@@ -70,6 +89,38 @@ const App = () => (
               )}
             />
             <Route path="/profile/:profileId" element={<Profile />} />
+            <Route
+              path="/settings"
+              element={(
+                <ProtectedRoute allowedRoles={["user", "investor", "founder"]} redirectTo="/">
+                  <Settings />
+                </ProtectedRoute>
+              )}
+            />
+            <Route
+              path="/community"
+              element={(
+                <ProtectedRoute allowedRoles={["user", "investor", "founder"]} redirectTo="/">
+                  <Community />
+                </ProtectedRoute>
+              )}
+            />
+            <Route
+              path="/community/messages"
+              element={(
+                <ProtectedRoute allowedRoles={["user", "investor", "founder"]} redirectTo="/">
+                  <CommunityMessages />
+                </ProtectedRoute>
+              )}
+            />
+            <Route
+              path="/community/messages/:userId"
+              element={(
+                <ProtectedRoute allowedRoles={["user", "investor", "founder"]} redirectTo="/">
+                  <CommunityMessages />
+                </ProtectedRoute>
+              )}
+            />
             <Route path="/about" element={<About />} />
             <Route path="/join-us" element={<JoinUs />} />
             <Route path="/gallery" element={<Gallery />} />
@@ -121,6 +172,14 @@ const App = () => (
               element={(
                 <ProtectedRoute allowedRoles={["admin", "superadmin"]}>
                   <AdminTeam />
+                </ProtectedRoute>
+              )}
+            />
+            <Route
+              path="/admin/sais26-room"
+              element={(
+                <ProtectedRoute allowedRoles={["admin", "superadmin"]}>
+                  <AdminSais26Room />
                 </ProtectedRoute>
               )}
             />

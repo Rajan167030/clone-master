@@ -1,3 +1,4 @@
+import bcrypt from "bcryptjs";
 import { Account, QRScanAnalytics } from "../models/index.js";
 
 /**
@@ -17,6 +18,10 @@ export const getPublicProfile = async (req, res, next) => {
 
     if (!account) {
       return res.status(404).json({ message: "Profile not found." });
+    }
+
+    if (account.isProfilePublic === false) {
+      return res.status(404).json({ message: "This profile is private." });
     }
 
     // Track QR scan in background (don't block response)
@@ -243,10 +248,129 @@ export const getProfileAnalytics = async (req, res, next) => {
   }
 };
 
+/**
+ * Change password for the logged-in account (requires current password).
+ */
+export const changePassword = async (req, res, next) => {
+  try {
+    const userId = req.user?.sub || req.user?.id;
+    const { currentPassword, newPassword } = req.body || {};
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ message: "currentPassword and newPassword are required." });
+    }
+    if (String(newPassword).length < 8) {
+      return res.status(400).json({ message: "New password must be at least 8 characters." });
+    }
+
+    const account = await Account.findById(userId);
+    if (!account) {
+      return res.status(404).json({ message: "Account not found." });
+    }
+
+    const matches = await bcrypt.compare(String(currentPassword), account.passwordHash);
+    if (!matches) {
+      return res.status(401).json({ message: "Current password is incorrect." });
+    }
+
+    account.passwordHash = await bcrypt.hash(String(newPassword), 12);
+    await account.save();
+
+    return res.status(200).json({ message: "Password updated successfully." });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+/**
+ * Toggle whether this account's public profile page (and QR code) is reachable.
+ */
+export const updatePrivacy = async (req, res, next) => {
+  try {
+    const userId = req.user?.sub || req.user?.id;
+    const { isProfilePublic } = req.body || {};
+
+    if (typeof isProfilePublic !== "boolean") {
+      return res.status(400).json({ message: "isProfilePublic must be a boolean." });
+    }
+
+    const account = await Account.findByIdAndUpdate(
+      userId,
+      { $set: { isProfilePublic } },
+      { new: true },
+    );
+
+    if (!account) {
+      return res.status(404).json({ message: "Account not found." });
+    }
+
+    return res.status(200).json({
+      message: "Privacy settings updated.",
+      account: typeof account?.toSafeJSON === "function" ? account.toSafeJSON() : account.toObject(),
+    });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+/**
+ * Update email notification preferences.
+ */
+export const updateNotificationPrefs = async (req, res, next) => {
+  try {
+    const userId = req.user?.sub || req.user?.id;
+    const { productUpdates, communityActivity } = req.body || {};
+
+    const updates = {};
+    if (typeof productUpdates === "boolean") updates["notificationPrefs.productUpdates"] = productUpdates;
+    if (typeof communityActivity === "boolean") updates["notificationPrefs.communityActivity"] = communityActivity;
+
+    const account = await Account.findByIdAndUpdate(userId, { $set: updates }, { new: true });
+
+    if (!account) {
+      return res.status(404).json({ message: "Account not found." });
+    }
+
+    return res.status(200).json({
+      message: "Notification preferences updated.",
+      account: typeof account?.toSafeJSON === "function" ? account.toSafeJSON() : account.toObject(),
+    });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+/**
+ * Deactivate (soft-delete) the logged-in account.
+ */
+export const deactivateAccount = async (req, res, next) => {
+  try {
+    const userId = req.user?.sub || req.user?.id;
+
+    const account = await Account.findByIdAndUpdate(
+      userId,
+      { $set: { isActive: false } },
+      { new: true },
+    );
+
+    if (!account) {
+      return res.status(404).json({ message: "Account not found." });
+    }
+
+    return res.status(200).json({ message: "Your account has been deactivated." });
+  } catch (error) {
+    return next(error);
+  }
+};
+
 export default {
   getPublicProfile,
   updateMyProfile,
   getMyProfile,
   generateProfileUrl,
   getProfileAnalytics,
+  changePassword,
+  updatePrivacy,
+  updateNotificationPrefs,
+  deactivateAccount,
 };

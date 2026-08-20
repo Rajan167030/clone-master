@@ -53,11 +53,14 @@ export type RegisterPayload = {
 export type InvestorInvite = {
   _id: string;
   token: string;
+  code: string;
   label: string;
   isActive: boolean;
   expiresAt: string | null;
   usageCount: number;
   lastUsedAt: string | null;
+  usedAt: string | null;
+  usedByAccountId: string | null;
   createdAt: string;
   updatedAt: string;
 };
@@ -444,6 +447,28 @@ export const submitInvestorLeadApi = (payload: {
     body: JSON.stringify(payload),
   });
 
+export const validateInviteByCodeApi = (code: string) =>
+  request<{ valid: boolean; message?: string; label?: string }>(`/auth/invite/${encodeURIComponent(code)}`, {
+    method: "GET",
+  });
+
+export const registerInvestorViaInviteApi = (
+  code: string,
+  payload: {
+    fullName: string;
+    email: string;
+    password: string;
+    phone?: string;
+    city?: string;
+    firmName: string;
+    sector: string;
+  },
+) =>
+  request<AuthResponse>(`/auth/invite/${encodeURIComponent(code)}/register`, {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+
 export const listAdminInvestorInvitesApi = (token: string) =>
   request<{ invites: InvestorInvite[] }>("/admin/investor-invites", {
     method: "GET",
@@ -555,6 +580,32 @@ export const getPublicSliderEventsApi = () =>
 export const getPublicEventBySlugApi = (slug: string) =>
   request<{ event: DynamicEvent }>(`/content/events/${slug}`, {
     method: "GET",
+  });
+
+export const getMyEventAttendanceApi = (token: string, slug: string) =>
+  request<{ attending: boolean }>(`/content/events/${slug}/attend`, {
+    method: "GET",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const markEventAttendanceApi = (token: string, slug: string) =>
+  request<{ message: string; attending: boolean }>(`/content/events/${slug}/attend`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const cancelEventAttendanceApi = (token: string, slug: string) =>
+  request<{ message: string; attending: boolean }>(`/content/events/${slug}/attend`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export type MyAttendedEvent = { eventSlug: string; eventTitle: string; registeredAt: string };
+
+export const getMyAttendedEventsApi = (token: string) =>
+  request<{ events: MyAttendedEvent[]; count: number }>("/content/events/mine", {
+    method: "GET",
+    headers: { Authorization: `Bearer ${token}` },
   });
 
 export const getPublicBlogsApi = () =>
@@ -1414,10 +1465,10 @@ export const getBangaloreStartupsApi = async (): Promise<ActivityStartupItem[]> 
 
 export const saveBangaloreStartupApi = async (
   startupData: Omit<ActivityStartupItem, "id" | "ratings" | "averageScore" | "totalRatingsCount" | "createdAt">
-): Promise<ActivityStartupItem> => {
+): Promise<ActivityStartupItem & { accessToken?: string }> => {
   const localSaved = saveBangaloreStartupLocal(startupData);
   try {
-    const res = await request<{ startup: ActivityStartupItem }>("/activity/startup", {
+    const res = await request<{ startup: ActivityStartupItem; accessToken?: string }>("/activity/startup", {
       method: "POST",
       body: JSON.stringify({ ...startupData, promoCode: "startup20" }),
     });
@@ -1425,6 +1476,7 @@ export const saveBangaloreStartupApi = async (
       const serverStartup = {
         ...res.startup,
         id: (res.startup as any)._id || res.startup.id || localSaved.id,
+        accessToken: res.accessToken,
       };
       return serverStartup;
     }
@@ -1499,6 +1551,185 @@ export const getBangaloreInvestorsApi = async (): Promise<ActivityInvestorProfil
   }
   return [];
 };
+
+// --- Settings: password, privacy, notifications, deactivation ---
+
+export const changePasswordApi = (token: string, payload: { currentPassword: string; newPassword: string }) =>
+  request<{ message: string }>("/profile/change-password", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify(payload),
+  });
+
+export const updatePrivacyApi = (token: string, isProfilePublic: boolean) =>
+  request<{ message: string; account: SessionAccount }>("/profile/privacy", {
+    method: "PATCH",
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ isProfilePublic }),
+  });
+
+export const updateNotificationPrefsApi = (
+  token: string,
+  payload: { productUpdates?: boolean; communityActivity?: boolean },
+) =>
+  request<{ message: string; account: SessionAccount }>("/profile/notifications", {
+    method: "PATCH",
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify(payload),
+  });
+
+export const deactivateAccountApi = (token: string) =>
+  request<{ message: string }>("/profile/deactivate", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+// --- Community: private feed + direct messages between members ---
+
+export type CommunityComment = {
+  _id: string;
+  authorId: string;
+  authorName: string;
+  authorRole: string;
+  authorPhoto?: string;
+  content: string;
+  createdAt: string;
+};
+
+export type CommunityPost = {
+  _id: string;
+  authorId: string;
+  authorName: string;
+  authorRole: "user" | "investor" | "founder" | "admin" | "superadmin";
+  authorPhoto?: string;
+  authorHeadline?: string;
+  content: string;
+  imageUrl?: string;
+  likeCount: number;
+  likedByMe: boolean;
+  comments: CommunityComment[];
+  createdAt: string;
+  updatedAt: string;
+};
+
+export const getCommunityFeedApi = (token: string, before?: string) =>
+  request<{ posts: CommunityPost[] }>(`/community/posts${before ? `?before=${encodeURIComponent(before)}` : ""}`, {
+    method: "GET",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const createCommunityPostApi = (token: string, payload: { content: string; imageUrl?: string }) =>
+  request<{ message: string; post: CommunityPost }>("/community/posts", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify(payload),
+  });
+
+export const deleteCommunityPostApi = (token: string, id: string) =>
+  request<{ message: string }>(`/community/posts/${id}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const toggleCommunityLikeApi = (token: string, id: string) =>
+  request<{ post: CommunityPost }>(`/community/posts/${id}/like`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const addCommunityCommentApi = (token: string, id: string, content: string) =>
+  request<{ post: CommunityPost }>(`/community/posts/${id}/comments`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ content }),
+  });
+
+export const deleteCommunityCommentApi = (token: string, id: string, commentId: string) =>
+  request<{ post: CommunityPost }>(`/community/posts/${id}/comments/${commentId}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export type CommunityConversation = {
+  userId: string;
+  fullName: string;
+  role: string;
+  profilePhoto?: string;
+  headline?: string;
+  lastMessage: string;
+  lastMessageAt: string;
+  unreadCount: number;
+};
+
+export type CommunityDirectMessage = {
+  _id: string;
+  participants: string[];
+  senderId: string;
+  recipientId: string;
+  text: string;
+  readAt: string | null;
+  createdAt: string;
+};
+
+export const listCommunityConversationsApi = (token: string) =>
+  request<{ conversations: CommunityConversation[] }>("/community/messages", {
+    method: "GET",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const getCommunityThreadApi = (token: string, userId: string) =>
+  request<{
+    participant: { userId: string; fullName: string; role: string; profilePhoto?: string; headline?: string };
+    messages: CommunityDirectMessage[];
+  }>(`/community/messages/${userId}`, {
+    method: "GET",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const sendCommunityMessageApi = (token: string, userId: string, text: string) =>
+  request<{ message: CommunityDirectMessage }>(`/community/messages/${userId}`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ text }),
+  });
+
+// --- SAIS'26 Room: founder access, authenticated room ratings, public leaderboard ---
+
+export type FounderAccessResponse = {
+  startup: ActivityStartupItem;
+  rank: number | null;
+};
+
+export const getFounderAccessDashboardApi = (accessToken: string) =>
+  request<FounderAccessResponse>(`/activity/startup/access/${encodeURIComponent(accessToken)}`, {
+    method: "GET",
+  });
+
+export const submitRoomRatingApi = (
+  token: string,
+  payload: { startupId: string; scores: RatingScores; comment?: string },
+) =>
+  request<{ message: string; startup: ActivityStartupItem }>("/activity/room/rate", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify(payload),
+  });
+
+export type PublicLeaderboardStartup = {
+  rank: number;
+  startupName: string;
+  tagline: string;
+  category: string;
+  stage: string;
+  logoUrl: string;
+  averageScore: number;
+  totalRatingsCount: number;
+};
+
+export const getPublicTopStartupsApi = () =>
+  request<{ startups: PublicLeaderboardStartup[] }>("/activity/leaderboard/top", {
+    method: "GET",
+  });
 
 // --- Admin team management, audit log, and admin chat ---
 

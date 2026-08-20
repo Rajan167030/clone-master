@@ -4,6 +4,7 @@ import { CalendarDays, FileText, Sparkles, X } from "lucide-react";
 import StatCard from "@/components/StatCard";
 import PortfolioTable from "@/components/PortfolioTable";
 import ProfileCard from "@/components/ProfileCard";
+import InvestorIdentityCard from "@/components/InvestorIdentityCard";
 import EditProfileModal from "@/components/EditProfileModal";
 import QRAnalyticsDashboard from "@/components/QRAnalyticsDashboard";
 import Sidebar from "@/components/Sidebar";
@@ -285,6 +286,15 @@ const Dashboard = () => {
             </div>
 
             <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+              {role === "investor" && (
+                <Link
+                  to="/sais26/room"
+                  className="inline-flex items-center justify-center gap-2 rounded-xl border border-purple-200 bg-purple-50 px-4 py-3 text-sm font-bold text-purple-700 shadow-sm transition-all hover:bg-purple-100/70 hover:scale-[1.02] active:scale-95"
+                >
+                  <Sparkles size={16} />
+                  SAIS'26 Room
+                </Link>
+              )}
               {role === "founder" && (
                 <button
                   type="button"
@@ -322,24 +332,41 @@ const Dashboard = () => {
           <div className="mb-6 grid grid-cols-1 gap-6 xl:mb-8 lg:grid-cols-2">
             <div>
               <div className="mb-4">
-                <h2 className="text-xl font-bold text-slate-900">Your Founders Connect Card</h2>
+                <h2 className="text-xl font-bold text-slate-900">
+                  {role === "investor" ? "Your SAIS'26 Investor ID Card" : "Your Founders Connect Card"}
+                </h2>
                 <p className="text-sm text-slate-500">Share your professional network card with QR code</p>
               </div>
               {currentUser && currentUser.email && (
                 <>
-                  <ProfileCard
-                    fullName={currentUser.fullName || "Founder"}
-                    role={role}
-                    city={currentUser.city || "India"}
-                    headline={role === "founder" && currentUser.roleDetails?.startupName
-                      ? `${currentUser.roleDetails.startupName} | ${currentUser.headline || "Building the future"}`
-                      : currentUser.headline}
-                    profilePhoto={currentUser.profilePhoto}
-                    profileId={currentUser.profileId}
-                    cardColors={currentUser.cardColors}
-                    onEdit={() => setIsEditModalOpen(true)}
-                    isEditable={true}
-                  />
+                  {role === "investor" ? (
+                    <InvestorIdentityCard
+                      fullName={currentUser.fullName || "Investor"}
+                      city={currentUser.city}
+                      headline={currentUser.headline}
+                      profilePhoto={currentUser.profilePhoto}
+                      profileId={currentUser.profileId || ""}
+                      investorId={currentUser.roleDetails?.investorId}
+                      focusSector={currentUser.roleDetails?.focusSector}
+                      cardColors={currentUser.cardColors}
+                      onEdit={() => setIsEditModalOpen(true)}
+                      isEditable={true}
+                    />
+                  ) : (
+                    <ProfileCard
+                      fullName={currentUser.fullName || "Founder"}
+                      role={role}
+                      city={currentUser.city || "India"}
+                      headline={role === "founder" && currentUser.roleDetails?.startupName
+                        ? `${currentUser.roleDetails.startupName} | ${currentUser.headline || "Building the future"}`
+                        : currentUser.headline}
+                      profilePhoto={currentUser.profilePhoto}
+                      profileId={currentUser.profileId}
+                      cardColors={currentUser.cardColors}
+                      onEdit={() => setIsEditModalOpen(true)}
+                      isEditable={true}
+                    />
+                  )}
                   <EditProfileModal
                     isOpen={isEditModalOpen}
                     onClose={() => setIsEditModalOpen(false)}

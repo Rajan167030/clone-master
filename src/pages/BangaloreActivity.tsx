@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import EventLocationVisualizer from "@/components/EventLocationVisualizer";
@@ -91,6 +92,7 @@ const BangaloreActivity: React.FC = () => {
   const [pitchDeckUrl, setPitchDeckUrl] = useState("");
   const [logoUrl, setLogoUrl] = useState("");
   const [isStartupSubmitted, setIsStartupSubmitted] = useState(false);
+  const [founderAccessToken, setFounderAccessToken] = useState<string | null>(null);
 
   // Investor Form state
   const [invFullName, setInvFullName] = useState("");
@@ -219,7 +221,7 @@ const BangaloreActivity: React.FC = () => {
     const defaultLogo = logoUrl.trim() || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=300&auto=format&fit=crop&q=80";
     const defaultDeck = pitchDeckUrl.trim() || "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf";
 
-    await saveBangaloreStartupApi({
+    const savedStartup = await saveBangaloreStartupApi({
       founderName,
       founderEmail,
       founderPhone,
@@ -232,6 +234,11 @@ const BangaloreActivity: React.FC = () => {
       logoUrl: defaultLogo,
       pitchDeckUrl: defaultDeck,
     });
+
+    if (savedStartup.accessToken) {
+      setFounderAccessToken(savedStartup.accessToken);
+      localStorage.setItem(`fc_sais26_founder_access_${savedStartup.id}`, savedStartup.accessToken);
+    }
 
     await refreshLiveStartups();
     setIsStartupSubmitted(true);
@@ -368,38 +375,23 @@ const BangaloreActivity: React.FC = () => {
       <Navbar />
 
       {/* Hero Header Banner */}
-      <section className="relative bg-gradient-to-r from-slate-900 via-purple-950 to-indigo-900 text-white py-16 px-4 sm:px-6 lg:px-8 shadow-xl overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-purple-500/20 via-transparent to-transparent opacity-60"></div>
-        
-        <div className="max-w-7xl mx-auto relative z-10">
-          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-            <div className="space-y-4 max-w-3xl">
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-purple-500/20 border border-purple-400/30 text-purple-300 text-xs sm:text-sm font-semibold tracking-wide uppercase">
-                <MapPin className="w-4 h-4 text-purple-400" />
-                Bangalore Event Special Activity
-              </div>
-              <h1 className="text-3xl sm:text-5xl font-extrabold text-white tracking-tight leading-tight">
-                Bangalore Startup & Investor <span className="bg-gradient-to-r from-amber-400 via-purple-300 to-indigo-300 bg-clip-text text-transparent">Connect Session</span>
-              </h1>
-              <p className="text-slate-300 text-base sm:text-lg">
-                Exclusive Bangalore Event Activity Portal. Startup Founders upload pitch decks & logos, while Investors evaluate, rate, and discover top-performing startups in real-time.
-              </p>
-            </div>
+      <section className="relative text-white py-16 px-4 sm:px-6 lg:px-8 shadow-xl overflow-hidden">
+        <img
+          src="https://res.cloudinary.com/dbgsxczyi/image/upload/v1786221218/founders-connect/events/hlgcvpxdhuu9bdaerg1c.jpg"
+          alt="Startup & Investors Summit, Bangalore"
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent"></div>
 
-            {/* Quick Promo Badges */}
-            <div className="flex flex-col gap-2 bg-white/10 backdrop-blur-md p-4 rounded-xl border border-white/10 w-full sm:w-auto">
-              <div className="text-xs font-semibold text-slate-300 uppercase tracking-wider">Required Promo Codes:</div>
-              <div className="flex items-center gap-2 text-xs">
-                <Badge className="bg-emerald-500/20 text-emerald-300 border-emerald-500/30 font-mono">
-                  Startup Code: startup20
-                </Badge>
-              </div>
-              <div className="flex items-center gap-2 text-xs">
-                <Badge className="bg-blue-500/20 text-blue-300 border-blue-500/30 font-mono">
-                  Investor Code: investor20
-                </Badge>
-              </div>
+        <div className="max-w-7xl mx-auto relative z-10">
+          <div className="space-y-4 max-w-3xl">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/40 backdrop-blur-sm border border-white/20 text-white text-xs sm:text-sm font-semibold tracking-wide uppercase">
+              <MapPin className="w-4 h-4 text-purple-300" />
+              Bangalore Event Special Activity
             </div>
+            <p className="text-white text-base sm:text-lg [text-shadow:0_2px_8px_rgba(0,0,0,0.6)]">
+              Exclusive Bangalore Event Activity Portal. Startup Founders upload pitch decks & logos so investors can evaluate, rate, and discover top-performing startups in real-time.
+            </p>
           </div>
         </div>
       </section>
@@ -413,21 +405,24 @@ const BangaloreActivity: React.FC = () => {
           eventTitle="Bangalore Startup & Investor Connect Session"
         />
 
-        {/* Step 1: Role Selection */}
+        {/* Step 1: Startup Registration Entry */}
         {!selectedRole && (
           <div className="space-y-6">
             <div className="text-center max-w-2xl mx-auto space-y-2">
-              <h2 className="text-2xl sm:text-3xl font-bold text-slate-900">Select Your Role for Bangalore Event Activity</h2>
+              <h2 className="text-2xl sm:text-3xl font-bold text-slate-900">Register Your Startup for the Bangalore Event</h2>
               <p className="text-slate-600 text-sm sm:text-base">
-                Choose whether you are participating as a Startup Founder looking to pitch or an Investor reviewing startups.
+                Submit your startup details, logo, and pitch deck to get evaluated by our investor panel.
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            <div className="max-w-md mx-auto">
               {/* Startup Founder Card */}
               <Card
                 className="group relative cursor-pointer border-2 hover:border-purple-500 transition-all duration-300 hover:shadow-xl bg-white overflow-hidden"
-                onClick={() => setSelectedRole("startup")}
+                onClick={() => {
+                  setSelectedRole("startup");
+                  setIsPromoVerified(true);
+                }}
               >
                 <div className="h-3 bg-gradient-to-r from-purple-500 to-indigo-600"></div>
                 <CardHeader className="p-6">
@@ -440,112 +435,12 @@ const BangaloreActivity: React.FC = () => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="px-6 pb-6 pt-0 space-y-3">
-                  <div className="flex items-center gap-2 text-xs font-semibold text-purple-700 bg-purple-50 p-2.5 rounded-lg border border-purple-100">
-                    <ShieldCheck className="w-4 h-4 text-purple-600" />
-                    Requires Promo Code: <span className="font-mono underline">startup20</span>
-                  </div>
                   <Button className="w-full bg-purple-600 hover:bg-purple-700 text-white font-medium group-hover:gap-3 transition-all">
                     Register Startup <ArrowRight className="w-4 h-4" />
                   </Button>
                 </CardContent>
               </Card>
-
-              {/* Investor Card */}
-              <Card
-                className="group relative cursor-pointer border-2 hover:border-indigo-500 transition-all duration-300 hover:shadow-xl bg-white overflow-hidden"
-                onClick={() => setSelectedRole("investor")}
-              >
-                <div className="h-3 bg-gradient-to-r from-indigo-600 to-amber-500"></div>
-                <CardHeader className="p-6">
-                  <div className="w-14 h-14 rounded-2xl bg-indigo-100 text-indigo-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                    <Briefcase className="w-8 h-8" />
-                  </div>
-                  <CardTitle className="text-2xl font-bold text-slate-900">Investor</CardTitle>
-                  <CardDescription className="text-slate-600 text-sm mt-2">
-                    For investors & venture funds. Complete your profile with photo, unlock access to pitch decks, evaluate startups, and view the live Leaderboard.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="px-6 pb-6 pt-0 space-y-3">
-                  <div className="flex items-center gap-2 text-xs font-semibold text-indigo-700 bg-indigo-50 p-2.5 rounded-lg border border-indigo-100">
-                    <ShieldCheck className="w-4 h-4 text-indigo-600" />
-                    Requires Promo Code: <span className="font-mono underline">investor20</span>
-                  </div>
-                  <Button className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium group-hover:gap-3 transition-all">
-                    Investor Access & Ratings <ArrowRight className="w-4 h-4" />
-                  </Button>
-                </CardContent>
-              </Card>
             </div>
-          </div>
-        )}
-
-        {/* Step 2: Promo Code Verification Gate */}
-        {selectedRole && !isPromoVerified && (
-          <div className="max-w-md mx-auto space-y-6">
-            <div className="flex items-center justify-between">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => {
-                  setSelectedRole(null);
-                  setPromoInput("");
-                  setPromoError("");
-                }}
-                className="text-slate-600 hover:text-slate-900"
-              >
-                ← Change Role
-              </Button>
-              <Badge className="capitalize font-semibold bg-purple-100 text-purple-800 border-purple-200">
-                Role: {selectedRole}
-              </Badge>
-            </div>
-
-            <Card className="border shadow-lg bg-white">
-              <CardHeader className="text-center pb-4">
-                <div className="w-12 h-12 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto mb-2">
-                  <Lock className="w-6 h-6" />
-                </div>
-                <CardTitle className="text-xl font-bold text-slate-900">
-                  Enter Promo Code for {selectedRole === "startup" ? "Startup Founder" : "Investor"}
-                </CardTitle>
-                <CardDescription className="text-slate-600 text-xs">
-                  Promo code is required to access the Bangalore Event Activity session.
-                </CardDescription>
-              </CardHeader>
-
-              <CardContent className="space-y-4">
-                <form onSubmit={handleVerifyPromo} className="space-y-4">
-                  <div className="space-y-2">
-                    <label className="text-xs font-semibold text-slate-700 uppercase tracking-wider block">
-                      Bangalore Event Promo Code
-                    </label>
-                    <Input
-                      type="text"
-                      placeholder={selectedRole === "startup" ? "e.g. startup20" : "e.g. investor20"}
-                      value={promoInput}
-                      onChange={(e) => {
-                        setPromoInput(e.target.value);
-                        setPromoError("");
-                      }}
-                      className="font-mono text-center text-base uppercase tracking-widest py-3"
-                    />
-                    {promoError && (
-                      <p className="text-xs font-medium text-red-600 text-center bg-red-50 p-2 rounded border border-red-200">
-                        {promoError}
-                      </p>
-                    )}
-                  </div>
-
-                  <Button type="submit" className="w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2.5">
-                    Verify Promo Code & Continue
-                  </Button>
-                </form>
-              </CardContent>
-
-              <CardFooter className="bg-slate-50 border-t px-6 py-3 text-center text-xs text-slate-500">
-                <span>Hint for testing: Use <strong className="font-mono text-purple-700">{selectedRole === "startup" ? "startup20" : "investor20"}</strong></span>
-              </CardFooter>
-            </Card>
           </div>
         )}
 
@@ -577,14 +472,13 @@ const BangaloreActivity: React.FC = () => {
                   Your startup has been registered for the Bangalore Event Activity session. Investors are now able to view your Pitch Deck and submit evaluations.
                 </p>
                 <div className="flex flex-wrap items-center justify-center gap-4 pt-2">
-                  <Button
-                    onClick={() => {
-                      setSelectedRole("investor");
-                      setIsPromoVerified(true);
-                    }}
-                    className="bg-purple-600 hover:bg-purple-700 text-white"
-                  >
-                    View Investor Evaluation Portal
+                  {founderAccessToken && (
+                    <Button asChild className="bg-emerald-600 hover:bg-emerald-700 text-white">
+                      <Link to={`/sais26/founder/${founderAccessToken}`}>Go to Your SAIS'26 Dashboard</Link>
+                    </Button>
+                  )}
+                  <Button asChild className="bg-purple-600 hover:bg-purple-700 text-white">
+                    <Link to="/sais26">View Investor Leaderboard</Link>
                   </Button>
                   <Button
                     variant="outline"
@@ -596,6 +490,11 @@ const BangaloreActivity: React.FC = () => {
                     Submit Another Startup
                   </Button>
                 </div>
+                {founderAccessToken && (
+                  <p className="text-xs text-slate-500 pt-1">
+                    We've also emailed this private dashboard link to {founderEmail || "you"} — save it, it's how you'll get back in.
+                  </p>
+                )}
               </Card>
             ) : (
               <Card className="border shadow-md bg-white">

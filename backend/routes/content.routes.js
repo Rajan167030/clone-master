@@ -19,12 +19,23 @@ import { submitJoinRequest } from "../controllers/join.controller.js";
 import { submitPartnerInquiry } from "../controllers/partner-inquiry.controller.js";
 import { submitFundingApplication } from "../controllers/funding.controller.js";
 import { getTeamMembers } from "../controllers/team.controller.js";
+import {
+  markEventAttendance,
+  cancelEventAttendance,
+  getMyEventAttendanceStatus,
+  listMyAttendedEvents,
+} from "../controllers/event-attendance.controller.js";
+import { requireAuth } from "../middlewares/auth.middleware.js";
 
 const contentRouter = Router();
 
 contentRouter.get("/events", listPublicEvents);
 contentRouter.get("/events/slider", listPublicSliderEvents);
+contentRouter.get("/events/mine", requireAuth, listMyAttendedEvents);
 contentRouter.get("/events/:slug", getPublicEventBySlug);
+contentRouter.get("/events/:slug/attend", requireAuth, getMyEventAttendanceStatus);
+contentRouter.post("/events/:slug/attend", requireAuth, markEventAttendance);
+contentRouter.delete("/events/:slug/attend", requireAuth, cancelEventAttendance);
 contentRouter.get("/blogs", listPublicBlogs);
 contentRouter.get("/blogs/:slug", getPublicBlogBySlug);
 contentRouter.get("/site-notice", getPublicSiteNotice);

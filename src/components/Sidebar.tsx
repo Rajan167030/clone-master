@@ -7,8 +7,8 @@ const menuItems = [
   { label: "Overview", to: "/dashboard", icon: LayoutDashboard },
   { label: "My Events", to: "/events", icon: CalendarDays },
   { label: "Membership", to: "/membership", icon: ShieldCheck },
-  { label: "Community", to: "/about", icon: Users },
-  { label: "Settings", to: "#profile", icon: Settings },
+  { label: "Community", to: "/community", icon: Users },
+  { label: "Settings", to: "/settings", icon: Settings },
   { label: "Blog", to: "/blog", icon: Newspaper },
 ];
 
