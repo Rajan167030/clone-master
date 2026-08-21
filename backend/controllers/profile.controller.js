@@ -184,7 +184,7 @@ export const generateProfileUrl = async (req, res, next) => {
       return res.status(404).json({ message: "Account not found." });
     }
 
-    const profileUrl = `${process.env.FRONTEND_URL || "http://localhost:5173"}/profile/${account.profileId}`;
+    const profileUrl = `${process.env.FRONTEND_URL || process.env.HOST_URL || "https://foundersconnect.co.in"}/profile/${account.profileId}`;
 
     return res.status(200).json({
       profileUrl,

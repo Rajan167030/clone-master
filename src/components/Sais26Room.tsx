@@ -30,7 +30,8 @@ const RATING_CRITERIA = [
   { key: "pitch", label: "Pitch & Presentation Quality" },
 ] as const;
 
-const DEFAULT_SCORES: RatingScores = { innovation: 4, market: 4, traction: 4, team: 4, pitch: 4 };
+const DEFAULT_SCORES: RatingScores = { innovation: 0, market: 0, traction: 0, team: 0, pitch: 0 };
+const starLabels = ["Poor", "Average", "Good", "Very Good", "Excellent"];
 
 type Sais26RoomProps = {
   viewerRole: "investor" | "founder" | "admin";
@@ -91,6 +92,16 @@ const Sais26Room = ({ viewerRole, authToken, highlightStartupId }: Sais26RoomPro
   const handleRatingSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!ratingTargetStartup || !authToken) return;
+
+    const hasUnratedCriteria = Object.values(ratingScores).some((score) => score < 1);
+    if (hasUnratedCriteria) {
+      toast({
+        variant: "destructive",
+        title: "Rate every criterion",
+        description: "Please give at least 1 star on all 5 criteria before submitting.",
+      });
+      return;
+    }
 
     setIsSubmittingRating(true);
     try {
@@ -280,7 +291,12 @@ const Sais26Room = ({ viewerRole, authToken, highlightStartupId }: Sais26RoomPro
                 const currentVal = ratingScores[criteria.key];
                 return (
                   <div key={criteria.key} className="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
-                    <span className="text-xs font-bold text-slate-800">{criteria.label}</span>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-slate-800">{criteria.label}</span>
+                      <Badge className="bg-amber-100 text-amber-900 border-amber-300 text-[11px] font-bold">
+                        {currentVal > 0 ? `${currentVal} / 5 (${starLabels[currentVal - 1]})` : "Not rated yet"}
+                      </Badge>
+                    </div>
                     <div className="flex items-center gap-1.5">
                       {[1, 2, 3, 4, 5].map((starVal) => (
                         <button
@@ -311,7 +327,11 @@ const Sais26Room = ({ viewerRole, authToken, highlightStartupId }: Sais26RoomPro
                 </span>
               </div>
 
-              <Button type="submit" disabled={isSubmittingRating} className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold">
+              <Button
+                type="submit"
+                disabled={isSubmittingRating || Object.values(ratingScores).some((score) => score < 1)}
+                className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold disabled:opacity-50 disabled:cursor-not-allowed"
+              >
                 {isSubmittingRating ? "Submitting…" : isUpdatingExisting ? "Update Rating" : "Submit Rating"}
               </Button>
             </form>

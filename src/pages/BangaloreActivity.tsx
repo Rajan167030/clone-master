@@ -109,13 +109,14 @@ const BangaloreActivity: React.FC = () => {
 
   // Rating Modal state
   const [ratingTargetStartup, setRatingTargetStartup] = useState<ActivityStartupItem | null>(null);
-  const [ratingScores, setRatingScores] = useState<RatingScores>({
-    innovation: 4,
-    market: 4,
-    traction: 4,
-    team: 4,
-    pitch: 4,
-  });
+  const UNRATED_SCORES: RatingScores = {
+    innovation: 0,
+    market: 0,
+    traction: 0,
+    team: 0,
+    pitch: 0,
+  };
+  const [ratingScores, setRatingScores] = useState<RatingScores>(UNRATED_SCORES);
   const [ratingComment, setRatingComment] = useState("");
 
   // Pitch Deck Viewer Modal state
@@ -295,6 +296,16 @@ const BangaloreActivity: React.FC = () => {
       return;
     }
 
+    const hasUnratedCriteria = Object.values(ratingScores).some((score) => score < 1);
+    if (hasUnratedCriteria) {
+      toast({
+        variant: "destructive",
+        title: "Rate every criterion",
+        description: "Please give at least 1 star on all 5 criteria before submitting.",
+      });
+      return;
+    }
+
     const updatedList = await submitStartupRatingApi(
       ratingTargetStartup.id,
       investorProfile,
@@ -394,9 +405,6 @@ const BangaloreActivity: React.FC = () => {
                 <MapPin className="w-4 h-4 text-purple-300" />
                 Bangalore Event Special Activity
               </div>
-              <p className="text-white text-sm sm:text-lg [text-shadow:0_2px_8px_rgba(0,0,0,0.6)]">
-                Exclusive Bangalore Event Activity Portal. Startup Founders upload pitch decks & logos so investors can evaluate, rate, and discover top-performing startups in real-time.
-              </p>
             </div>
           </div>
         </div>
@@ -1125,7 +1133,7 @@ const BangaloreActivity: React.FC = () => {
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-bold text-slate-800">{criteria.label}</span>
                       <Badge className="bg-amber-100 text-amber-900 border-amber-300 text-[11px] font-bold">
-                        {currentVal} / 5 ⭐ ({starLabels[currentVal - 1] || "Unrated"})
+                        {currentVal > 0 ? `${currentVal} / 5 ⭐ (${starLabels[currentVal - 1]})` : "Not rated yet"}
                       </Badge>
                     </div>
 
@@ -1182,7 +1190,11 @@ const BangaloreActivity: React.FC = () => {
                 </span>
               </div>
 
-              <Button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5">
+              <Button
+                type="submit"
+                disabled={Object.values(ratingScores).some((score) => score < 1)}
+                className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
                 Submit & Update Leaderboard
               </Button>
             </form>
@@ -1261,6 +1273,8 @@ const BangaloreActivity: React.FC = () => {
                     size="sm"
                     onClick={() => {
                       if (investorProfile) {
+                        setRatingScores(UNRATED_SCORES);
+                        setRatingComment("");
                         setRatingTargetStartup(viewStartupProfile);
                         setViewStartupProfile(null);
                       } else {

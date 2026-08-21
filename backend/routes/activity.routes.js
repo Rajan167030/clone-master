@@ -70,7 +70,7 @@ router.post("/startup", async (req, res) => {
 
     await startup.save();
 
-    const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
+    const frontendUrl = process.env.FRONTEND_URL || process.env.HOST_URL || "https://foundersconnect.co.in";
     const dashboardLink = `${frontendUrl}/sais26/founder/${accessToken}`;
     sendEmail({
       to: founderEmail,
@@ -145,7 +145,7 @@ router.post("/investor", async (req, res) => {
 
     await investor.save();
 
-    const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
+    const frontendUrl = process.env.FRONTEND_URL || process.env.HOST_URL || "https://foundersconnect.co.in";
     sendEmail({
       to: email,
       subject: "You're in — SAIS'26 awaits — Founders Connect",
