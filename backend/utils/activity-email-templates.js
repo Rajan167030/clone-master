@@ -7,6 +7,22 @@ const escapeHtml = (value) =>
     { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]
   ));
 
+const buildCredentialsBlock = ({ email, password }) => {
+  if (!password) return "";
+
+  return `
+    <div style="background: #f6f4fb; border: 1px solid #e8e1f5; border-radius: 12px; padding: 18px; margin-bottom: 26px; text-align: left;">
+      <p style="margin: 0 0 10px; font-size: 13px; color: #55506b; line-height: 1.5;">
+        Your login — select and copy, then paste both into the <strong style="color: #191024;">login page</strong>:
+      </p>
+      <p style="margin: 0 0 4px; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #8b84a0;">Email</p>
+      <p style="margin: 0 0 12px; font-size: 14px; color: #191024; font-family: 'SFMono-Regular', Consolas, monospace; font-weight: 600; user-select: all;">${escapeHtml(email)}</p>
+      <p style="margin: 0 0 4px; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #8b84a0;">Password</p>
+      <p style="margin: 0; font-size: 16px; color: #6113d8; font-family: 'SFMono-Regular', Consolas, monospace; font-weight: 700; letter-spacing: 0.5px; user-select: all;">${escapeHtml(password)}</p>
+    </div>
+  `;
+};
+
 const renderShell = ({ eyebrow, heading, bodyHtml, primaryLabel, primaryHref, secondaryLinks }) => `
   <div style="background-color: #f6f4fb; padding: 40px 20px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; text-align: center; color: #191024;">
     <div style="max-width: 520px; margin: 0 auto; background: #ffffff; border: 1px solid #e8e1f5; border-top: 4px solid #6113d8; border-radius: 16px; padding: 40px 34px; box-shadow: 0 1px 2px rgba(25,16,36,0.04), 0 16px 32px rgba(25,16,36,0.06); text-align: center;">
@@ -40,13 +56,14 @@ const renderShell = ({ eyebrow, heading, bodyHtml, primaryLabel, primaryHref, se
   </div>
 `;
 
-export const buildStartupActivityEmail = ({ founderName, startupName, dashboardLink, saisLink, communityLink }) => {
+export const buildStartupActivityEmail = ({ founderName, startupName, email, password, dashboardLink, saisLink, communityLink }) => {
   const bodyHtml = `
     <p style="font-size: 15px; color: #55506b; line-height: 1.6; margin-bottom: 6px;">Hi ${escapeHtml(founderName)},</p>
     <p style="font-size: 15px; color: #55506b; line-height: 1.6; margin-bottom: 26px;">
       ${escapeHtml(startupName)} is officially registered for the Bangalore Founders Connect activity. Investors on the ground will be
       viewing your pitch and rating it live — head into <strong style="color: #6113d8;">SAIS'26</strong> to see where you stand.
     </p>
+    ${buildCredentialsBlock({ email, password })}
   `;
 
   return renderShell({
@@ -56,19 +73,20 @@ export const buildStartupActivityEmail = ({ founderName, startupName, dashboardL
     primaryLabel: "Enter SAIS'26 →",
     primaryHref: saisLink,
     secondaryLinks: [
-      { label: "Your Dashboard", href: dashboardLink },
+      { label: password ? "Log In to Dashboard" : "Your Dashboard", href: dashboardLink },
       { label: "Join the Community", href: communityLink },
     ],
   });
 };
 
-export const buildInvestorActivityEmail = ({ fullName, firmName, dashboardLink, saisLink, communityLink }) => {
+export const buildInvestorActivityEmail = ({ fullName, firmName, email, password, dashboardLink, saisLink, communityLink }) => {
   const bodyHtml = `
     <p style="font-size: 15px; color: #55506b; line-height: 1.6; margin-bottom: 6px;">Hi ${escapeHtml(fullName)},</p>
     <p style="font-size: 15px; color: #55506b; line-height: 1.6; margin-bottom: 26px;">
       Your investor profile for ${escapeHtml(firmName)} is confirmed for the Bangalore Founders Connect activity. Step into
       <strong style="color: #6113d8;">SAIS'26</strong> to browse founder pitches and start rating startups.
     </p>
+    ${buildCredentialsBlock({ email, password })}
   `;
 
   return renderShell({
@@ -78,7 +96,7 @@ export const buildInvestorActivityEmail = ({ fullName, firmName, dashboardLink, 
     primaryLabel: "Enter SAIS'26 →",
     primaryHref: saisLink,
     secondaryLinks: [
-      { label: "Your Dashboard", href: dashboardLink },
+      { label: password ? "Log In to Dashboard" : "Your Dashboard", href: dashboardLink },
       { label: "Join the Community", href: communityLink },
     ],
   });

@@ -28,6 +28,12 @@ const mapFounderStage = (formStage) => {
 
 const generateInvestorId = () => `SAIS26-INV-${crypto.randomBytes(4).toString("hex").toUpperCase()}`;
 
+// Short, readable, still hard to guess — meant to be copy-pasted from the email, not typed.
+const generateSimplePassword = () => {
+  const raw = crypto.randomBytes(6).toString("base64").replace(/[+/=]/g, "");
+  return `${raw.slice(0, 8)}${crypto.randomInt(10, 99)}`;
+};
+
 const router = Router();
 
 const stripAccessToken = (startup) => {
@@ -98,12 +104,14 @@ router.post("/startup", async (req, res) => {
     // of creating a duplicate (and leave it alone entirely if that account isn't a founder).
     let founderToken = null;
     let founderAccountSafe = null;
+    let founderPlainPassword = null;
     try {
       const normalizedFounderEmail = String(founderEmail).trim().toLowerCase();
       let account = await Account.findOne({ email: normalizedFounderEmail });
 
       if (!account) {
-        const passwordHash = await bcrypt.hash(crypto.randomBytes(16).toString("hex"), 12);
+        founderPlainPassword = generateSimplePassword();
+        const passwordHash = await bcrypt.hash(founderPlainPassword, 12);
         const roleDetails = validateAndNormalizeRoleDetails("founder", {
           startupName,
           startupStage: mapFounderStage(stage),
@@ -148,13 +156,15 @@ router.post("/startup", async (req, res) => {
     }
 
     const frontendUrl = process.env.FRONTEND_URL || process.env.HOST_URL || "https://foundersconnect.co.in";
-    const dashboardLink = `${frontendUrl}/sais26/founder/${accessToken}`;
+    const dashboardLink = founderPlainPassword ? `${frontendUrl}/login` : `${frontendUrl}/dashboard`;
     sendEmail({
       to: founderEmail,
       subject: "You're registered for SAIS'26 — Founders Connect",
       html: buildStartupActivityEmail({
         founderName,
         startupName,
+        email: founderEmail,
+        password: founderPlainPassword,
         dashboardLink,
         saisLink: `${frontendUrl}/sais26`,
         communityLink: `${frontendUrl}/community`,
@@ -232,12 +242,14 @@ router.post("/investor", async (req, res) => {
     // activity-specific link — Navbar shows their name + Dashboard button immediately.
     let investorToken = null;
     let investorAccountSafe = null;
+    let investorPlainPassword = null;
     try {
       const normalizedEmail = String(email).trim().toLowerCase();
       let account = await Account.findOne({ email: normalizedEmail });
 
       if (!account) {
-        const passwordHash = await bcrypt.hash(crypto.randomBytes(16).toString("hex"), 12);
+        investorPlainPassword = generateSimplePassword();
+        const passwordHash = await bcrypt.hash(investorPlainPassword, 12);
         const focusSector = Array.isArray(sectors) && sectors.length ? sectors : ["General"];
         const roleDetails = validateAndNormalizeRoleDetails("investor", {
           investmentRange: { min: 0, max: 0, currency: "INR" },
@@ -289,7 +301,9 @@ router.post("/investor", async (req, res) => {
       html: buildInvestorActivityEmail({
         fullName,
         firmName,
-        dashboardLink: `${frontendUrl}/sais26/investor/${accessToken}`,
+        email,
+        password: investorPlainPassword,
+        dashboardLink: investorPlainPassword ? `${frontendUrl}/login` : `${frontendUrl}/dashboard`,
         saisLink: `${frontendUrl}/sais26`,
         communityLink: `${frontendUrl}/community`,
       }),
