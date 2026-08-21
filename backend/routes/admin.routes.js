@@ -90,6 +90,7 @@ import {
   reactivateAdminInvestorInvite,
   deleteAdminInvestorInvite,
   listAdminInvestorLeads,
+  listAdminInvestorInviteJoiners,
 } from "../controllers/investor-invite.controller.js";
 import { auditLogger } from "../middlewares/audit.middleware.js";
 import { listAuditLogs } from "../controllers/audit.controller.js";
@@ -190,6 +191,7 @@ adminRouter.delete("/activity/results", resetAdminActivityResults);
 
 adminRouter.get("/investor-invites", listAdminInvestorInvites);
 adminRouter.post("/investor-invites", createAdminInvestorInvite);
+adminRouter.get("/investor-invites/:id/joiners", listAdminInvestorInviteJoiners);
 adminRouter.patch("/investor-invites/:id/revoke", revokeAdminInvestorInvite);
 adminRouter.patch("/investor-invites/:id/reactivate", reactivateAdminInvestorInvite);
 adminRouter.delete("/investor-invites/:id", deleteAdminInvestorInvite);

@@ -9,6 +9,9 @@ const InvestorInviteSchema = new Schema(
     label: { type: String, default: "", trim: true },
     createdBy: { type: Schema.Types.ObjectId, ref: "Account", default: null },
     isActive: { type: Boolean, default: true, index: true },
+    // Reusable links skip the single-use `usedAt` gate entirely — anyone with the link
+    // gets their own investor access each time, via quickAccessInvestorInvite.
+    reusable: { type: Boolean, default: false },
     expiresAt: { type: Date, default: null },
     usageCount: { type: Number, default: 0 },
     lastUsedAt: { type: Date, default: null },

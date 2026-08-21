@@ -201,7 +201,7 @@ const Sais26Room = ({ viewerRole, authToken, highlightStartupId }: Sais26RoomPro
                           <Button variant="outline" size="sm" onClick={() => setViewDeckStartup(startup)} className="flex-1 md:flex-initial text-xs">
                             <FileText className="w-4 h-4 mr-1.5" /> Pitch Deck
                           </Button>
-                          {viewerRole === "investor" && (
+                          {viewerRole === "investor" && authToken && (
                             <Button
                               size="sm"
                               onClick={() => openRatingDialog(startup)}

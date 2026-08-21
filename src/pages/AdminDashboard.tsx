@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import {
@@ -74,6 +74,7 @@ import {
   type ActivityInvestorProfile,
   listAdminInvestorInvitesApi,
   createAdminInvestorInviteApi,
+  getAdminInvestorInviteJoinersApi,
   revokeAdminInvestorInviteApi,
   reactivateAdminInvestorInviteApi,
   deleteAdminInvestorInviteApi,
@@ -106,6 +107,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import AdminAnalyticsOverview from "@/components/AdminAnalyticsOverview";
 import EventMapPreview from "@/components/EventMapPreview";
 import {
@@ -446,7 +448,11 @@ const AdminDashboard = () => {
   const [taskStatusFilter, setTaskStatusFilter] = useState("");
   const [newInviteLabel, setNewInviteLabel] = useState("");
   const [newInviteExpiryDays, setNewInviteExpiryDays] = useState("");
+  const [newInviteReusable, setNewInviteReusable] = useState(false);
   const [creatingInvite, setCreatingInvite] = useState(false);
+  const [expandedInviteId, setExpandedInviteId] = useState<string | null>(null);
+  const [inviteJoiners, setInviteJoiners] = useState<Record<string, ActivityInvestorProfile[]>>({});
+  const [loadingJoinersId, setLoadingJoinersId] = useState<string | null>(null);
   const [showEventForm, setShowEventForm] = useState(false);
   const [showBlogForm, setShowBlogForm] = useState(false);
   const [showPartnerForm, setShowPartnerForm] = useState(false);
@@ -617,19 +623,20 @@ const AdminDashboard = () => {
       });
   };
 
-  const getInvestorInviteLink = (inviteCode: string) =>
-    `${window.location.origin}/invite/${inviteCode}`;
+  const getInvestorInviteLink = (inviteCode: string, reusable?: boolean) =>
+    `${window.location.origin}${reusable ? "/access" : "/invite"}/${inviteCode}`;
 
   const handleCreateInvestorInvite = () => {
     setCreatingInvite(true);
     const expiresInDays = newInviteExpiryDays.trim() ? Number(newInviteExpiryDays.trim()) : undefined;
 
-    createAdminInvestorInviteApi(token, { label: newInviteLabel.trim(), expiresInDays })
+    createAdminInvestorInviteApi(token, { label: newInviteLabel.trim(), expiresInDays, reusable: newInviteReusable })
       .then((response) => {
         setInvestorInvites((prev) => [response.invite, ...prev]);
         setNewInviteLabel("");
         setNewInviteExpiryDays("");
-        navigator.clipboard?.writeText(getInvestorInviteLink(response.invite.code)).catch(() => {});
+        setNewInviteReusable(false);
+        navigator.clipboard?.writeText(getInvestorInviteLink(response.invite.code, response.invite.reusable)).catch(() => {});
         window.alert("Invite link created and copied to clipboard.");
       })
       .catch((error) => {
@@ -638,9 +645,30 @@ const AdminDashboard = () => {
       .finally(() => setCreatingInvite(false));
   };
 
-  const handleCopyInviteLink = (inviteCode: string) => {
-    navigator.clipboard?.writeText(getInvestorInviteLink(inviteCode)).catch(() => {});
+  const handleCopyInviteLink = (inviteCode: string, reusable?: boolean) => {
+    navigator.clipboard?.writeText(getInvestorInviteLink(inviteCode, reusable)).catch(() => {});
     window.alert("Invite link copied to clipboard.");
+  };
+
+  const handleToggleInviteJoiners = (id: string) => {
+    if (expandedInviteId === id) {
+      setExpandedInviteId(null);
+      return;
+    }
+
+    setExpandedInviteId(id);
+    if (inviteJoiners[id]) return;
+
+    setLoadingJoinersId(id);
+    getAdminInvestorInviteJoinersApi(token, id)
+      .then((response) => {
+        setInviteJoiners((prev) => ({ ...prev, [id]: response.joiners }));
+      })
+      .catch((error) => {
+        window.alert(error instanceof Error ? error.message : "Unable to load who joined via this link.");
+        setExpandedInviteId(null);
+      })
+      .finally(() => setLoadingJoinersId(null));
   };
 
   const handleRevokeInvestorInvite = (id: string) => {
@@ -1806,7 +1834,7 @@ const AdminDashboard = () => {
       )}
 
       {/* Main Content */}
-      <main className="flex-1 ml-0 md:ml-64 p-4 md:p-6">
+      <main className="flex-1 min-w-0 ml-0 md:ml-64 p-4 md:p-6">
         <div className="max-w-7xl mx-auto">
           {/* Header */}
           <div className="mb-8">
@@ -4652,7 +4680,7 @@ const AdminDashboard = () => {
                 <CardContent className="space-y-4 bg-white rounded-b-lg p-4">
                   <div className="grid gap-4 sm:grid-cols-2">
                     <Input
-                      placeholder="Investor name — e.g. Rajan Jha"
+                      placeholder={newInviteReusable ? "Link label — e.g. Bangalore Activity Investors" : "Investor name — e.g. Rajan Jha"}
                       value={newInviteLabel}
                       onChange={(e) => setNewInviteLabel(e.target.value)}
                     />
@@ -4664,6 +4692,20 @@ const AdminDashboard = () => {
                       onChange={(e) => setNewInviteExpiryDays(e.target.value)}
                     />
                   </div>
+                  <label className="flex items-start gap-2.5 rounded-lg border border-violet-200 bg-violet-50/60 p-3 text-sm">
+                    <Checkbox
+                      checked={newInviteReusable}
+                      onCheckedChange={(checked) => setNewInviteReusable(checked === true)}
+                      className="mt-0.5"
+                    />
+                    <span>
+                      <span className="font-medium text-slate-800">Reusable admin link</span>
+                      <span className="block text-xs text-slate-500 mt-0.5">
+                        Share it as many times with as many people as you want. Anyone who opens it just enters their name and gets
+                        instant investor access to the Bangalore Activity SAIS'26 Room — no per-person invite needed.
+                      </span>
+                    </span>
+                  </label>
                   <Button onClick={handleCreateInvestorInvite} disabled={creatingInvite} className="gap-2">
                     <Plus className="h-4 w-4" />
                     {creatingInvite ? "Generating..." : "Generate Invite Link"}
@@ -4699,17 +4741,27 @@ const AdminDashboard = () => {
                         ) : (
                           investorInvites.map((invite) => {
                             const expired = Boolean(invite.expiresAt && new Date(invite.expiresAt) < new Date());
+                            const isExpanded = expandedInviteId === invite._id;
+                            const joiners = inviteJoiners[invite._id];
                             return (
-                              <tr key={invite._id} className="hover:bg-slate-50">
+                              <Fragment key={invite._id}>
+                              <tr className="hover:bg-slate-50">
                                 <td className="p-4">
-                                  <p className="font-medium text-slate-900">{invite.label || "Untitled invite"}</p>
+                                  <div className="flex items-center gap-2">
+                                    <p className="font-medium text-slate-900">{invite.label || "Untitled invite"}</p>
+                                    {invite.reusable && (
+                                      <Badge variant="secondary" className="bg-violet-100 text-violet-700">Reusable</Badge>
+                                    )}
+                                  </div>
                                   <p className="text-xs text-slate-400 font-mono">
-                                    /invite/{(invite.code || invite.token).length > 20 ? `${(invite.code || invite.token).slice(0, 20)}…` : (invite.code || invite.token)}
+                                    {invite.reusable ? "/access" : "/invite"}/{(invite.code || invite.token).length > 20 ? `${(invite.code || invite.token).slice(0, 20)}…` : (invite.code || invite.token)}
                                   </p>
                                 </td>
                                 <td className="p-4">
                                   {!invite.isActive ? (
                                     <Badge variant="secondary" className="bg-slate-200 text-slate-600">Revoked</Badge>
+                                  ) : invite.reusable ? (
+                                    <Badge variant="secondary" className="bg-green-100 text-green-700">Active</Badge>
                                   ) : invite.usedAt ? (
                                     <Badge variant="secondary" className="bg-blue-100 text-blue-700">Used</Badge>
                                   ) : expired ? (
@@ -4718,12 +4770,30 @@ const AdminDashboard = () => {
                                     <Badge variant="secondary" className="bg-green-100 text-green-700">Active</Badge>
                                   )}
                                 </td>
-                                <td className="p-4">{invite.usageCount}</td>
+                                <td className="p-4">
+                                  {invite.reusable ? (
+                                    <button
+                                      type="button"
+                                      onClick={() => handleToggleInviteJoiners(invite._id)}
+                                      className="font-semibold text-violet-700 hover:underline"
+                                    >
+                                      {invite.usageCount} joined
+                                    </button>
+                                  ) : (
+                                    invite.usageCount
+                                  )}
+                                </td>
                                 <td className="p-4">{invite.expiresAt ? new Date(invite.expiresAt).toLocaleDateString() : "Never"}</td>
                                 <td className="p-4">{new Date(invite.createdAt).toLocaleDateString()}</td>
                                 <td className="p-4">
                                   <div className="flex items-center justify-end gap-1.5">
-                                    <Button variant="outline" size="sm" onClick={() => handleCopyInviteLink(invite.code)} className="gap-1.5">
+                                    {invite.reusable && (
+                                      <Button variant="outline" size="sm" onClick={() => handleToggleInviteJoiners(invite._id)} className="gap-1.5">
+                                        <Users className="h-3.5 w-3.5" />
+                                        {isExpanded ? "Hide" : "View"} Joiners
+                                      </Button>
+                                    )}
+                                    <Button variant="outline" size="sm" onClick={() => handleCopyInviteLink(invite.code, invite.reusable)} className="gap-1.5">
                                       <Copy className="h-3.5 w-3.5" />
                                       Copy Link
                                     </Button>
@@ -4744,6 +4814,39 @@ const AdminDashboard = () => {
                                   </div>
                                 </td>
                               </tr>
+                              {isExpanded && (
+                                <tr key={`${invite._id}-joiners`} className="bg-violet-50/40">
+                                  <td colSpan={6} className="p-4">
+                                    {loadingJoinersId === invite._id ? (
+                                      <p className="text-sm text-slate-500">Loading who joined…</p>
+                                    ) : !joiners || joiners.length === 0 ? (
+                                      <p className="text-sm text-slate-500">No one has joined via this link yet.</p>
+                                    ) : (
+                                      <div className="space-y-2">
+                                        <p className="text-xs font-semibold uppercase tracking-wide text-violet-700">
+                                          {joiners.length} {joiners.length === 1 ? "person" : "people"} joined via this link
+                                        </p>
+                                        <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                                          {joiners.map((joiner) => (
+                                            <div key={joiner.id} className="flex items-center gap-2.5 rounded-lg border border-violet-100 bg-white p-2.5">
+                                              {joiner.photoUrl ? (
+                                                <img src={joiner.photoUrl} alt="" className="h-8 w-8 rounded-full object-cover" />
+                                              ) : (
+                                                <div className="h-8 w-8 rounded-full bg-slate-200" />
+                                              )}
+                                              <div className="min-w-0">
+                                                <p className="truncate text-sm font-semibold text-slate-900">{joiner.fullName}</p>
+                                                <p className="truncate text-xs text-slate-500">{joiner.firmName}</p>
+                                              </div>
+                                            </div>
+                                          ))}
+                                        </div>
+                                      </div>
+                                    )}
+                                  </td>
+                                </tr>
+                              )}
+                              </Fragment>
                             );
                           })
                         )}

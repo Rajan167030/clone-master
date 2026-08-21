@@ -56,6 +56,7 @@ export type InvestorInvite = {
   code: string;
   label: string;
   isActive: boolean;
+  reusable: boolean;
   expiresAt: string | null;
   usageCount: number;
   lastUsedAt: string | null;
@@ -477,12 +478,27 @@ export const listAdminInvestorInvitesApi = (token: string) =>
 
 export const createAdminInvestorInviteApi = (
   token: string,
-  payload: { label?: string; expiresInDays?: number },
+  payload: { label?: string; expiresInDays?: number; reusable?: boolean },
 ) =>
   request<{ message: string; invite: InvestorInvite }>("/admin/investor-invites", {
     method: "POST",
     headers: { Authorization: `Bearer ${token}` },
     body: JSON.stringify(payload),
+  });
+
+export const quickAccessInvestorInviteApi = (
+  code: string,
+  payload: { fullName: string; firmName?: string },
+) =>
+  request<AuthResponse>(`/auth/access/${encodeURIComponent(code)}`, {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+
+export const getAdminInvestorInviteJoinersApi = (token: string, id: string) =>
+  request<{ joiners: ActivityInvestorProfile[] }>(`/admin/investor-invites/${id}/joiners`, {
+    method: "GET",
+    headers: { Authorization: `Bearer ${token}` },
   });
 
 export const revokeAdminInvestorInviteApi = (token: string, id: string) =>
@@ -1732,6 +1748,15 @@ export type FounderAccessResponse = {
 
 export const getFounderAccessDashboardApi = (accessToken: string) =>
   request<FounderAccessResponse>(`/activity/startup/access/${encodeURIComponent(accessToken)}`, {
+    method: "GET",
+  });
+
+export type InvestorAccessResponse = {
+  investor: ActivityInvestorProfile;
+};
+
+export const getInvestorAccessDashboardApi = (accessToken: string) =>
+  request<InvestorAccessResponse>(`/activity/investor/access/${encodeURIComponent(accessToken)}`, {
     method: "GET",
   });
 

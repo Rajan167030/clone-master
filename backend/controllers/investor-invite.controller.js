@@ -14,6 +14,7 @@ const toSafeInvite = (invite) => ({
   code: invite.code,
   label: invite.label,
   isActive: invite.isActive,
+  reusable: Boolean(invite.reusable),
   expiresAt: invite.expiresAt,
   usageCount: invite.usageCount,
   lastUsedAt: invite.lastUsedAt,
@@ -74,7 +75,7 @@ export const listAdminInvestorInvites = async (req, res, next) => {
 
 export const createAdminInvestorInvite = async (req, res, next) => {
   try {
-    const { label, expiresInDays } = req.body || {};
+    const { label, expiresInDays, reusable } = req.body || {};
 
     const token = crypto.randomBytes(20).toString("hex");
     const code = await generateCodeFromLabel(label);
@@ -89,6 +90,7 @@ export const createAdminInvestorInvite = async (req, res, next) => {
       label: String(label || "").trim(),
       createdBy: req.user?.id || null,
       expiresAt,
+      reusable: Boolean(reusable),
     });
 
     return res.status(201).json({ message: "Investor invite link created.", invite: toSafeInvite(invite) });
@@ -360,6 +362,132 @@ export const registerInvestorViaInvite = async (req, res, next) => {
     if (error.status) {
       return res.status(error.status).json({ message: error.message });
     }
+    return next(error);
+  }
+};
+
+// Reusable, admin-shared link: no email/password, no single-use gate. Anyone who opens it
+// gets their own lightweight investor account + JWT on the spot, so they can browse and
+// rate startups in the SAIS'26 Room straight away (mirrors registerInvestorViaInvite's
+// account/dashboard/activity-profile provisioning, minus the formal signup form).
+export const quickAccessInvestorInvite = async (req, res, next) => {
+  try {
+    const { code } = req.params;
+    const normalizedCode = String(code || "").trim();
+    if (!normalizedCode) {
+      return res.status(400).json({ message: "Invite code is required." });
+    }
+
+    const invite = await InvestorInvite.findOne({
+      code: normalizedCode,
+      isActive: true,
+      reusable: true,
+      $or: [{ expiresAt: null }, { expiresAt: { $gt: new Date() } }],
+    });
+
+    if (!invite) {
+      return res.status(404).json({ message: "This access link is invalid, revoked, or has expired." });
+    }
+
+    const { fullName, firmName } = req.body || {};
+    const normalizedFullName = String(fullName || "").trim();
+    const normalizedFirmName = String(firmName || "").trim() || "Guest Investor";
+
+    if (!normalizedFullName) {
+      throw Object.assign(new Error("Full name is required."), { status: 400 });
+    }
+
+    const placeholderEmail = `quick-${crypto.randomBytes(8).toString("hex")}@foundersconnect.local`;
+    const placeholderPassword = crypto.randomBytes(16).toString("hex");
+    const passwordHash = await bcrypt.hash(placeholderPassword, 12);
+
+    const roleDetails = validateAndNormalizeRoleDetails("investor", {
+      investmentRange: { min: 0, max: 0, currency: "INR" },
+      focusSector: ["General"],
+      portfolioSize: 0,
+      investorId: generateInvestorId(),
+    });
+
+    const dashboardTemplate = getDashboardTemplate("investor");
+    const profileId = generateProfileId();
+
+    const account = await InvestorAccount.create({
+      fullName: normalizedFullName,
+      email: placeholderEmail,
+      passwordHash,
+      phone: "0000000000",
+      city: "Bangalore",
+      role: "investor",
+      profileId,
+      headline: `${normalizedFirmName} · SAIS'26`,
+      referralCode: generateInviteReferralCode(normalizedFullName),
+      roleDetails,
+      dashboard: {
+        stats: dashboardTemplate.stats,
+        commitmentPortfolio: dashboardTemplate.commitmentPortfolio,
+        investmentPortfolio: dashboardTemplate.investmentPortfolio,
+      },
+    });
+
+    const dashboardPayload = buildDashboardPayload({
+      role: "investor",
+      fullName: account.fullName,
+      template: dashboardTemplate,
+      roleDetails,
+    });
+
+    const dashboard = await Dashboard.create({
+      accountId: account._id,
+      role: "investor",
+      ...dashboardPayload,
+    });
+
+    await ActivityInvestor.create({
+      fullName: normalizedFullName,
+      email: placeholderEmail,
+      firmName: normalizedFirmName,
+      designation: "Investor",
+      photoUrl: buildPlaceholderPhoto(normalizedFullName),
+      promoCodeUsed: "quick-access",
+      accountId: account._id,
+      inviteId: invite._id,
+      accessToken: crypto.randomBytes(24).toString("hex"),
+      accessTokenIssuedAt: new Date(),
+    });
+
+    await InvestorInvite.updateOne(
+      { _id: invite._id },
+      { $set: { lastUsedAt: new Date() }, $inc: { usageCount: 1 } },
+    );
+
+    const token = signAuthToken(account);
+
+    return res.status(201).json({
+      message: "Investor access granted.",
+      token,
+      account: typeof account.toSafeJSON === "function" ? account.toSafeJSON() : account.toObject(),
+      dashboard: dashboard.toSafeJSON(),
+    });
+  } catch (error) {
+    if (error.status) {
+      return res.status(error.status).json({ message: error.message });
+    }
+    return next(error);
+  }
+};
+
+// Who has actually joined via a given invite link — for reusable links this can be many
+// people, so the admin needs the list, not just the usageCount number.
+export const listAdminInvestorInviteJoiners = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const joiners = await ActivityInvestor.find({ inviteId: id })
+      .select("-accessToken -accessTokenIssuedAt")
+      .sort({ createdAt: -1 })
+      .lean();
+
+    return res.status(200).json({ joiners });
+  } catch (error) {
     return next(error);
   }
 };

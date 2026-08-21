@@ -41,9 +41,11 @@ const ProductPage = lazy(() => import("./pages/ProductPage.tsx"));
 const OurTeam = lazy(() => import("./pages/OurTeam.tsx"));
 const BangaloreActivity = lazy(() => import("./pages/BangaloreActivity.tsx"));
 const InvestorInviteRegister = lazy(() => import("./pages/InvestorInviteRegister.tsx"));
+const QuickInvestorAccess = lazy(() => import("./pages/QuickInvestorAccess.tsx"));
 const Sais26Leaderboard = lazy(() => import("./pages/Sais26Leaderboard.tsx"));
 const Sais26RoomPage = lazy(() => import("./pages/Sais26RoomPage.tsx"));
 const FounderRoomEntry = lazy(() => import("./pages/FounderRoomEntry.tsx"));
+const InvestorRoomEntry = lazy(() => import("./pages/InvestorRoomEntry.tsx"));
 const AdminSais26Room = lazy(() => import("./pages/AdminSais26Room.tsx"));
 const Settings = lazy(() => import("./pages/Settings.tsx"));
 const Community = lazy(() => import("./pages/Community.tsx"));
@@ -69,8 +71,10 @@ const App = () => (
             <Route path="/register/investor" element={<RegisterInvestor />} />
             <Route path="/register/founder" element={<RegisterFounder />} />
             <Route path="/invite/:code" element={<InvestorInviteRegister />} />
+            <Route path="/access/:code" element={<QuickInvestorAccess />} />
             <Route path="/sais26" element={<Sais26Leaderboard />} />
             <Route path="/sais26/founder/:accessToken" element={<FounderRoomEntry />} />
+            <Route path="/sais26/investor/:accessToken" element={<InvestorRoomEntry />} />
             <Route
               path="/sais26/room"
               element={(

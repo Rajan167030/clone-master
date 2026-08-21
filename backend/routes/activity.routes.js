@@ -4,6 +4,7 @@ import { ActivityStartup, ActivityInvestor } from "../models/activity.model.js";
 import { applyStartupRating } from "../utils/activity-rating.js";
 import { requireAuth } from "../middlewares/auth.middleware.js";
 import { sendEmail } from "../utils/email.js";
+import { buildStartupActivityEmail, buildInvestorActivityEmail } from "../utils/activity-email-templates.js";
 
 const router = Router();
 
@@ -69,11 +70,18 @@ router.post("/startup", async (req, res) => {
 
     await startup.save();
 
-    const dashboardLink = `${process.env.FRONTEND_URL || "http://localhost:5173"}/sais26/founder/${accessToken}`;
+    const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
+    const dashboardLink = `${frontendUrl}/sais26/founder/${accessToken}`;
     sendEmail({
       to: founderEmail,
-      subject: "Your SAIS'26 Founder Dashboard",
-      html: `<p>Hi ${founderName},</p><p>Thanks for registering ${startupName} for SAIS'26. Here is your private dashboard link — save it, it's how you'll get back in:</p><p><a href="${dashboardLink}">${dashboardLink}</a></p>`,
+      subject: "You're registered for SAIS'26 — Founders Connect",
+      html: buildStartupActivityEmail({
+        founderName,
+        startupName,
+        dashboardLink,
+        saisLink: `${frontendUrl}/sais26`,
+        communityLink: `${frontendUrl}/community`,
+      }),
     }).catch(() => {});
 
     return res.status(201).json({ message: "Startup registered successfully for Bangalore Event!", startup, accessToken });
@@ -117,6 +125,8 @@ router.post("/investor", async (req, res) => {
       return res.status(400).json({ message: "Full Name, Email, Firm Name, and Photo are required." });
     }
 
+    const accessToken = crypto.randomBytes(24).toString("hex");
+
     const investor = new ActivityInvestor({
       fullName,
       email,
@@ -129,12 +139,48 @@ router.post("/investor", async (req, res) => {
       bio: bio || "",
       photoUrl,
       promoCodeUsed: "investor20",
+      accessToken,
+      accessTokenIssuedAt: new Date(),
     });
 
     await investor.save();
+
+    const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
+    sendEmail({
+      to: email,
+      subject: "You're in — SAIS'26 awaits — Founders Connect",
+      html: buildInvestorActivityEmail({
+        fullName,
+        firmName,
+        dashboardLink: `${frontendUrl}/sais26/investor/${accessToken}`,
+        saisLink: `${frontendUrl}/sais26`,
+        communityLink: `${frontendUrl}/community`,
+      }),
+    }).catch(() => {});
+
     return res.status(201).json({ message: "Investor profile saved successfully!", investor });
   } catch (error) {
     return res.status(500).json({ message: error.message || "Failed to save investor profile." });
+  }
+});
+
+// Investor's private dashboard access (no login — possession of accessToken), mirrors the founder path above.
+router.get("/investor/access/:accessToken", async (req, res) => {
+  try {
+    const { accessToken } = req.params;
+    const investor = await ActivityInvestor.findOne({ accessToken: String(accessToken || "").trim() });
+
+    if (!investor) {
+      return res.status(404).json({ message: "Dashboard link is invalid." });
+    }
+
+    const safe = investor.toObject();
+    delete safe.accessToken;
+    delete safe.accessTokenIssuedAt;
+
+    return res.status(200).json({ investor: safe });
+  } catch (error) {
+    return res.status(500).json({ message: error.message || "Failed to load dashboard." });
   }
 });
 
@@ -153,7 +199,9 @@ router.get("/startups", async (req, res) => {
 // Get all Bangalore Investors
 router.get("/investors", async (req, res) => {
   try {
-    const investors = await ActivityInvestor.find().sort({ createdAt: -1 });
+    const investors = await ActivityInvestor.find()
+      .select("-accessToken -accessTokenIssuedAt")
+      .sort({ createdAt: -1 });
     return res.json({ investors });
   } catch (error) {
     return res.status(500).json({ message: error.message || "Failed to fetch investors." });

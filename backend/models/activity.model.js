@@ -36,7 +36,11 @@ const activityStartupSchema = new mongoose.Schema(
     totalRatingsCount: { type: Number, default: 0 },
     resultRank: { type: String, enum: ["gold", "silver", "bronze", null], default: null, index: true },
     resultAnnouncedAt: { type: Date, default: null },
-    accessToken: { type: String, default: null, unique: true, sparse: true, index: true },
+    // No `default: null` here on purpose: Mongoose would then write an explicit `null` into
+    // every document, and a sparse unique index still treats present-but-null as a value —
+    // so a second startup without a token would collide on that null. Leaving the field
+    // genuinely absent when unset is what makes the sparse index skip it correctly.
+    accessToken: { type: String, unique: true, sparse: true, index: true },
     accessTokenIssuedAt: { type: Date, default: null },
   },
   { timestamps: true }
@@ -57,6 +61,9 @@ const activityInvestorSchema = new mongoose.Schema(
     promoCodeUsed: { type: String, default: "investor20" },
     accountId: { type: mongoose.Schema.Types.ObjectId, ref: "Account", default: null, index: true },
     inviteId: { type: mongoose.Schema.Types.ObjectId, ref: "InvestorInvite", default: null },
+    // See the comment on ActivityStartup.accessToken above — same reasoning applies here.
+    accessToken: { type: String, unique: true, sparse: true, index: true },
+    accessTokenIssuedAt: { type: Date, default: null },
   },
   { timestamps: true }
 );

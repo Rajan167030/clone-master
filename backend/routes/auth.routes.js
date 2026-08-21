@@ -9,6 +9,7 @@ import {
   submitInvestorLead,
   validateInviteByCode,
   registerInvestorViaInvite,
+  quickAccessInvestorInvite,
 } from "../controllers/investor-invite.controller.js";
 
 const authRouter = Router();
@@ -22,6 +23,7 @@ authRouter.get("/investor-invite/:token", validateInvestorInvite);
 authRouter.post("/investor-lead", submitInvestorLead);
 authRouter.get("/invite/:code", validateInviteByCode);
 authRouter.post("/invite/:code/register", registerInvestorViaInvite);
+authRouter.post("/access/:code", quickAccessInvestorInvite);
 
 authRouter.post("/forgot-password", forgotPassword);
 authRouter.post("/verify-forgot-password-otp", verifyForgotPasswordOtp);
