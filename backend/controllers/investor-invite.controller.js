@@ -7,6 +7,9 @@ import { buildDashboardPayload } from "../utils/dashboard-payload.js";
 import { validateAndNormalizeRoleDetails } from "../utils/role-details.js";
 import { signAuthToken } from "../utils/jwt.js";
 import { generateProfileId } from "../utils/profile-utils.js";
+import { generateSimplePassword } from "../utils/password.js";
+import { sendEmail } from "../utils/email.js";
+import { buildInvestorActivityEmail } from "../utils/activity-email-templates.js";
 
 const toSafeInvite = (invite) => ({
   _id: invite._id,
@@ -389,69 +392,85 @@ export const quickAccessInvestorInvite = async (req, res, next) => {
       return res.status(404).json({ message: "This access link is invalid, revoked, or has expired." });
     }
 
-    const { fullName, firmName } = req.body || {};
+    const { fullName, firmName, email } = req.body || {};
     const normalizedFullName = String(fullName || "").trim();
     const normalizedFirmName = String(firmName || "").trim() || "Guest Investor";
+    const normalizedEmail = String(email || "").trim().toLowerCase();
 
-    if (!normalizedFullName) {
-      throw Object.assign(new Error("Full name is required."), { status: 400 });
+    if (!normalizedFullName || !normalizedEmail) {
+      throw Object.assign(new Error("Full name and email are required."), { status: 400 });
     }
 
-    const placeholderEmail = `quick-${crypto.randomBytes(8).toString("hex")}@foundersconnect.local`;
-    const placeholderPassword = crypto.randomBytes(16).toString("hex");
-    const passwordHash = await bcrypt.hash(placeholderPassword, 12);
+    let account = await Account.findOne({ email: normalizedEmail });
+    let plainPassword = null;
+    let dashboard = null;
 
-    const roleDetails = validateAndNormalizeRoleDetails("investor", {
-      investmentRange: { min: 0, max: 0, currency: "INR" },
-      focusSector: ["General"],
-      portfolioSize: 0,
-      investorId: generateInvestorId(),
-    });
+    if (account && account.role !== "investor") {
+      throw Object.assign(
+        new Error("This email is already registered with a different role. Use a different email."),
+        { status: 409 },
+      );
+    }
 
-    const dashboardTemplate = getDashboardTemplate("investor");
-    const profileId = generateProfileId();
+    if (!account) {
+      plainPassword = generateSimplePassword();
+      const passwordHash = await bcrypt.hash(plainPassword, 12);
 
-    const account = await InvestorAccount.create({
-      fullName: normalizedFullName,
-      email: placeholderEmail,
-      passwordHash,
-      phone: "0000000000",
-      city: "Bangalore",
-      role: "investor",
-      profileId,
-      headline: `${normalizedFirmName} · SAIS'26`,
-      referralCode: generateInviteReferralCode(normalizedFullName),
-      roleDetails,
-      dashboard: {
-        stats: dashboardTemplate.stats,
-        commitmentPortfolio: dashboardTemplate.commitmentPortfolio,
-        investmentPortfolio: dashboardTemplate.investmentPortfolio,
-      },
-    });
+      const roleDetails = validateAndNormalizeRoleDetails("investor", {
+        investmentRange: { min: 0, max: 0, currency: "INR" },
+        focusSector: ["General"],
+        portfolioSize: 0,
+        investorId: generateInvestorId(),
+      });
 
-    const dashboardPayload = buildDashboardPayload({
-      role: "investor",
-      fullName: account.fullName,
-      template: dashboardTemplate,
-      roleDetails,
-    });
+      const dashboardTemplate = getDashboardTemplate("investor");
 
-    const dashboard = await Dashboard.create({
-      accountId: account._id,
-      role: "investor",
-      ...dashboardPayload,
-    });
+      account = await InvestorAccount.create({
+        fullName: normalizedFullName,
+        email: normalizedEmail,
+        passwordHash,
+        phone: "0000000000",
+        city: "Bangalore",
+        role: "investor",
+        profileId: generateProfileId(),
+        headline: `${normalizedFirmName} · SAIS'26`,
+        referralCode: generateInviteReferralCode(normalizedFullName),
+        roleDetails,
+        dashboard: {
+          stats: dashboardTemplate.stats,
+          commitmentPortfolio: dashboardTemplate.commitmentPortfolio,
+          investmentPortfolio: dashboardTemplate.investmentPortfolio,
+        },
+      });
+
+      const dashboardPayload = buildDashboardPayload({
+        role: "investor",
+        fullName: account.fullName,
+        template: dashboardTemplate,
+        roleDetails,
+      });
+
+      dashboard = await Dashboard.create({
+        accountId: account._id,
+        role: "investor",
+        ...dashboardPayload,
+      });
+    } else {
+      dashboard = await Dashboard.findOne({ accountId: account._id, role: "investor" });
+    }
+
+    const accessToken = crypto.randomBytes(24).toString("hex");
 
     await ActivityInvestor.create({
       fullName: normalizedFullName,
-      email: placeholderEmail,
+      email: normalizedEmail,
       firmName: normalizedFirmName,
       designation: "Investor",
       photoUrl: buildPlaceholderPhoto(normalizedFullName),
       promoCodeUsed: "quick-access",
       accountId: account._id,
       inviteId: invite._id,
-      accessToken: crypto.randomBytes(24).toString("hex"),
+      accessToken,
       accessTokenIssuedAt: new Date(),
     });
 
@@ -461,12 +480,27 @@ export const quickAccessInvestorInvite = async (req, res, next) => {
     );
 
     const token = signAuthToken(account);
+    const frontendUrl = process.env.FRONTEND_URL || process.env.HOST_URL || "https://foundersconnect.co.in";
+
+    sendEmail({
+      to: normalizedEmail,
+      subject: "You're in — SAIS'26 awaits — Founders Connect",
+      html: buildInvestorActivityEmail({
+        fullName: normalizedFullName,
+        firmName: normalizedFirmName,
+        email: normalizedEmail,
+        password: plainPassword,
+        dashboardLink: plainPassword ? `${frontendUrl}/login` : `${frontendUrl}/dashboard`,
+        saisLink: `${frontendUrl}/sais26/investor/${accessToken}`,
+        communityLink: `${frontendUrl}/community`,
+      }),
+    }).catch(() => {});
 
     return res.status(201).json({
       message: "Investor access granted.",
       token,
       account: typeof account.toSafeJSON === "function" ? account.toSafeJSON() : account.toObject(),
-      dashboard: dashboard.toSafeJSON(),
+      dashboard: dashboard ? dashboard.toSafeJSON() : null,
     });
   } catch (error) {
     if (error.status) {

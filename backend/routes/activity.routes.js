@@ -12,6 +12,7 @@ import { buildDashboardPayload } from "../utils/dashboard-payload.js";
 import { validateAndNormalizeRoleDetails } from "../utils/role-details.js";
 import { signAuthToken } from "../utils/jwt.js";
 import { generateProfileId } from "../utils/profile-utils.js";
+import { generateSimplePassword } from "../utils/password.js";
 
 // The Bangalore Activity form's "Funding Stage" options don't match the Account model's
 // FounderRoleDetailsSchema enum (idea/mvp/early-revenue/growth/scale), so map between them
@@ -27,12 +28,6 @@ const mapFounderStage = (formStage) => {
 };
 
 const generateInvestorId = () => `SAIS26-INV-${crypto.randomBytes(4).toString("hex").toUpperCase()}`;
-
-// Short, readable, still hard to guess — meant to be copy-pasted from the email, not typed.
-const generateSimplePassword = () => {
-  const raw = crypto.randomBytes(6).toString("base64").replace(/[+/=]/g, "");
-  return `${raw.slice(0, 8)}${crypto.randomInt(10, 99)}`;
-};
 
 const router = Router();
 
