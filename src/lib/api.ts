@@ -1750,6 +1750,12 @@ export type FounderAccessResponse = {
   rank: number | null;
 };
 
+export const getMyFounderAccessApi = (token: string) =>
+  request<{ accessToken: string; startupName: string }>("/activity/startup/my-access", {
+    method: "GET",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
 export const getFounderAccessDashboardApi = (accessToken: string) =>
   request<FounderAccessResponse>(`/activity/startup/access/${encodeURIComponent(accessToken)}`, {
     method: "GET",

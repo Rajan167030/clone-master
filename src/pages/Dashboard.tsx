@@ -12,6 +12,7 @@ import Topbar from "@/components/Topbar";
 import { useIsMobile } from "@/hooks/use-mobile";
 import {
   getMyDashboardApi,
+  getMyFounderAccessApi,
   type DashboardResponse,
 } from "@/lib/api";
 import { clearSession, getAccount, getToken } from "@/lib/session";
@@ -160,6 +161,16 @@ const Dashboard = () => {
   const role = toRole(currentUser.role);
   const roleTitle = roleLabels[role];
 
+  const [founderAccessToken, setFounderAccessToken] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!token || role !== "founder") return;
+
+    getMyFounderAccessApi(token)
+      .then((response) => setFounderAccessToken(response.accessToken))
+      .catch(() => setFounderAccessToken(null));
+  }, [token, role]);
+
   // Initialize Founder stats dynamically based on startup details
   useEffect(() => {
     if (role === "founder" && currentUser.email) {
@@ -289,6 +300,15 @@ const Dashboard = () => {
               {role === "investor" && (
                 <Link
                   to="/sais26/room"
+                  className="inline-flex items-center justify-center gap-2 rounded-xl border border-purple-200 bg-purple-50 px-4 py-3 text-sm font-bold text-purple-700 shadow-sm transition-all hover:bg-purple-100/70 hover:scale-[1.02] active:scale-95"
+                >
+                  <Sparkles size={16} />
+                  SAIS'26 Room
+                </Link>
+              )}
+              {role === "founder" && founderAccessToken && (
+                <Link
+                  to={`/sais26/founder/${founderAccessToken}`}
                   className="inline-flex items-center justify-center gap-2 rounded-xl border border-purple-200 bg-purple-50 px-4 py-3 text-sm font-bold text-purple-700 shadow-sm transition-all hover:bg-purple-100/70 hover:scale-[1.02] active:scale-95"
                 >
                   <Sparkles size={16} />

@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-import { Loader2, ShieldAlert, Sparkles } from "lucide-react";
+import { Link, useParams } from "react-router-dom";
+import { ArrowLeft, Loader2, ShieldAlert, Sparkles } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Card, CardContent } from "@/components/ui/card";
 import Sais26Room from "@/components/Sais26Room";
 import { getInvestorAccessDashboardApi, type ActivityInvestorProfile } from "@/lib/api";
+import { isAuthenticated } from "@/lib/session";
 
 const InvestorRoomEntry = () => {
   const { accessToken } = useParams<{ accessToken: string }>();
@@ -66,6 +67,11 @@ const InvestorRoomEntry = () => {
     <div className="min-h-screen bg-slate-50 flex flex-col">
       <Navbar />
       <main className="flex-1 container mx-auto px-4 py-10 max-w-5xl">
+        {isAuthenticated() && (
+          <Link to="/dashboard" className="inline-flex items-center gap-1.5 text-sm text-slate-600 hover:text-purple-700 mb-4">
+            <ArrowLeft className="w-4 h-4" /> Back to Dashboard
+          </Link>
+        )}
         <div className="mb-6 flex items-center gap-2">
           <Sparkles className="w-6 h-6 text-purple-600" />
           <h1 className="text-2xl font-bold text-slate-900">Your SAIS'26 Dashboard</h1>

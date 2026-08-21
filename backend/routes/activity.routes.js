@@ -183,6 +183,28 @@ router.post("/startup", async (req, res) => {
   }
 });
 
+// Resolve a logged-in founder's own accessToken from their session — lets the general
+// /dashboard link into their SAIS'26 room without them having to dig up the emailed link.
+router.get("/startup/my-access", requireAuth, async (req, res) => {
+  try {
+    if (req.user?.role !== "founder") {
+      return res.status(403).json({ message: "Only founders have a SAIS'26 room." });
+    }
+
+    const startup = await ActivityStartup.findOne({ founderEmail: req.user.email })
+      .sort({ createdAt: -1 })
+      .select("accessToken startupName");
+
+    if (!startup) {
+      return res.status(404).json({ message: "No Bangalore Activity registration found for this account." });
+    }
+
+    return res.status(200).json({ accessToken: startup.accessToken, startupName: startup.startupName });
+  } catch (error) {
+    return res.status(500).json({ message: error.message || "Failed to load your SAIS'26 access." });
+  }
+});
+
 // Founder's private dashboard access (no login — possession of accessToken)
 router.get("/startup/access/:accessToken", async (req, res) => {
   try {
