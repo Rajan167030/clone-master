@@ -1483,10 +1483,10 @@ export const getBangaloreStartupsApi = async (): Promise<ActivityStartupItem[]> 
 
 export const saveBangaloreStartupApi = async (
   startupData: Omit<ActivityStartupItem, "id" | "ratings" | "averageScore" | "totalRatingsCount" | "createdAt">
-): Promise<ActivityStartupItem & { accessToken?: string }> => {
+): Promise<ActivityStartupItem & { accessToken?: string; token?: string; account?: SessionAccount }> => {
   const localSaved = saveBangaloreStartupLocal(startupData);
   try {
-    const res = await request<{ startup: ActivityStartupItem; accessToken?: string }>("/activity/startup", {
+    const res = await request<{ startup: ActivityStartupItem; accessToken?: string; token?: string; account?: SessionAccount }>("/activity/startup", {
       method: "POST",
       body: JSON.stringify({ ...startupData, promoCode: "startup20" }),
     });
@@ -1495,6 +1495,8 @@ export const saveBangaloreStartupApi = async (
         ...res.startup,
         id: (res.startup as any)._id || res.startup.id || localSaved.id,
         accessToken: res.accessToken,
+        token: res.token,
+        account: res.account,
       };
       return serverStartup;
     }
@@ -1506,10 +1508,10 @@ export const saveBangaloreStartupApi = async (
 
 export const saveInvestorProfileApi = async (
   investorData: Omit<ActivityInvestorProfile, "id">
-): Promise<ActivityInvestorProfile> => {
+): Promise<ActivityInvestorProfile & { token?: string; account?: SessionAccount }> => {
   const localSaved = saveInvestorProfileLocal(investorData);
   try {
-    const res = await request<{ investor: ActivityInvestorProfile }>("/activity/investor", {
+    const res = await request<{ investor: ActivityInvestorProfile; token?: string; account?: SessionAccount }>("/activity/investor", {
       method: "POST",
       body: JSON.stringify({ ...investorData, promoCode: "investor20" }),
     });
@@ -1517,6 +1519,8 @@ export const saveInvestorProfileApi = async (
       const serverInvestor = {
         ...res.investor,
         id: (res.investor as any)._id || res.investor.id || localSaved.id,
+        token: res.token,
+        account: res.account,
       };
       saveInvestorProfileLocal(serverInvestor);
       return serverInvestor;

@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/use-toast";
+import { setSession } from "@/lib/session";
 import {
   Star,
   Building2,
@@ -80,6 +81,10 @@ const BangaloreActivity: React.FC = () => {
 
   // Investor state
   const [investorProfile, setInvestorProfile] = useState<ActivityInvestorProfile | null>(null);
+
+  // Bumped after a registration grants a session, forcing the Navbar to remount and
+  // pick up the new session immediately (it only reads localStorage at mount time).
+  const [navbarSessionKey, setNavbarSessionKey] = useState(0);
 
   // Startup Founder Form state
   const [founderName, setFounderName] = useState("");
@@ -237,6 +242,12 @@ const BangaloreActivity: React.FC = () => {
       localStorage.setItem(`fc_sais26_founder_access_${savedStartup.id}`, savedStartup.accessToken);
     }
 
+    if (savedStartup.token && savedStartup.account) {
+      // Full founder access, site-wide — same as logging in.
+      setSession(savedStartup.token, savedStartup.account);
+      setNavbarSessionKey((n) => n + 1);
+    }
+
     await refreshLiveStartups();
     setIsStartupSubmitted(true);
 
@@ -277,6 +288,13 @@ const BangaloreActivity: React.FC = () => {
     });
 
     setInvestorProfile(profile);
+
+    if (profile.token && profile.account) {
+      // Full investor access, site-wide — same as logging in.
+      setSession(profile.token, profile.account);
+      setNavbarSessionKey((n) => n + 1);
+    }
+
     toast({
       title: "Investor Profile Unlocked! 🔑",
       description: "You now have full access to view, evaluate, and rate Bangalore Event Startups.",
@@ -379,7 +397,7 @@ const BangaloreActivity: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans">
-      <Navbar />
+      <Navbar key={navbarSessionKey} />
 
       {/* Hero Header Banner — image shown in full inside a bordered rectangular frame, nothing cropped off */}
       <section className="px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6">

@@ -1,10 +1,32 @@
 import crypto from "crypto";
+import bcrypt from "bcryptjs";
 import { Router } from "express";
 import { ActivityStartup, ActivityInvestor } from "../models/activity.model.js";
+import { Account, Dashboard, FounderAccount, InvestorAccount } from "../models/index.js";
 import { applyStartupRating } from "../utils/activity-rating.js";
 import { requireAuth } from "../middlewares/auth.middleware.js";
 import { sendEmail } from "../utils/email.js";
 import { buildStartupActivityEmail, buildInvestorActivityEmail } from "../utils/activity-email-templates.js";
+import { getDashboardTemplate } from "../utils/dashboard-template.js";
+import { buildDashboardPayload } from "../utils/dashboard-payload.js";
+import { validateAndNormalizeRoleDetails } from "../utils/role-details.js";
+import { signAuthToken } from "../utils/jwt.js";
+import { generateProfileId } from "../utils/profile-utils.js";
+
+// The Bangalore Activity form's "Funding Stage" options don't match the Account model's
+// FounderRoleDetailsSchema enum (idea/mvp/early-revenue/growth/scale), so map between them
+// rather than passing the raw label through.
+const mapFounderStage = (formStage) => {
+  const map = {
+    "pre-seed": "idea",
+    "seed": "mvp",
+    "series a": "growth",
+    "bootstrapped": "early-revenue",
+  };
+  return map[String(formStage || "").trim().toLowerCase()] || "idea";
+};
+
+const generateInvestorId = () => `SAIS26-INV-${crypto.randomBytes(4).toString("hex").toUpperCase()}`;
 
 const router = Router();
 
@@ -70,6 +92,61 @@ router.post("/startup", async (req, res) => {
 
     await startup.save();
 
+    // Give the founder full site-wide founder access too — not just the activity-specific
+    // link — so the Navbar shows their name and a Dashboard button immediately, same as a
+    // real login. If an account with this email already exists, log them into it instead
+    // of creating a duplicate (and leave it alone entirely if that account isn't a founder).
+    let founderToken = null;
+    let founderAccountSafe = null;
+    try {
+      const normalizedFounderEmail = String(founderEmail).trim().toLowerCase();
+      let account = await Account.findOne({ email: normalizedFounderEmail });
+
+      if (!account) {
+        const passwordHash = await bcrypt.hash(crypto.randomBytes(16).toString("hex"), 12);
+        const roleDetails = validateAndNormalizeRoleDetails("founder", {
+          startupName,
+          startupStage: mapFounderStage(stage),
+          teamSize: 1,
+          startupWebsite: pitchDeckUrl,
+        });
+        const dashboardTemplate = getDashboardTemplate("founder");
+
+        account = await FounderAccount.create({
+          fullName: founderName,
+          email: normalizedFounderEmail,
+          passwordHash,
+          phone: founderPhone || "",
+          city: "Bangalore",
+          role: "founder",
+          profileId: generateProfileId(),
+          headline: `Founder, ${startupName}`,
+          roleDetails,
+          dashboard: {
+            stats: dashboardTemplate.stats,
+            commitmentPortfolio: dashboardTemplate.commitmentPortfolio,
+            investmentPortfolio: dashboardTemplate.investmentPortfolio,
+          },
+        });
+
+        const dashboardPayload = buildDashboardPayload({
+          role: "founder",
+          fullName: account.fullName,
+          template: dashboardTemplate,
+          roleDetails,
+        });
+
+        await Dashboard.create({ accountId: account._id, role: "founder", ...dashboardPayload });
+      }
+
+      if (account.role === "founder") {
+        founderToken = signAuthToken(account);
+        founderAccountSafe = typeof account.toSafeJSON === "function" ? account.toSafeJSON() : account;
+      }
+    } catch (sessionError) {
+      console.error("Founder session provisioning failed (registration still succeeded):", sessionError?.message || sessionError);
+    }
+
     const frontendUrl = process.env.FRONTEND_URL || process.env.HOST_URL || "https://foundersconnect.co.in";
     const dashboardLink = `${frontendUrl}/sais26/founder/${accessToken}`;
     sendEmail({
@@ -84,7 +161,13 @@ router.post("/startup", async (req, res) => {
       }),
     }).catch(() => {});
 
-    return res.status(201).json({ message: "Startup registered successfully for Bangalore Event!", startup, accessToken });
+    return res.status(201).json({
+      message: "Startup registered successfully for Bangalore Event!",
+      startup,
+      accessToken,
+      token: founderToken,
+      account: founderAccountSafe,
+    });
   } catch (error) {
     return res.status(500).json({ message: error.message || "Failed to register startup." });
   }
@@ -145,6 +228,60 @@ router.post("/investor", async (req, res) => {
 
     await investor.save();
 
+    // Same as founders: give the investor full site-wide access too, not just the
+    // activity-specific link — Navbar shows their name + Dashboard button immediately.
+    let investorToken = null;
+    let investorAccountSafe = null;
+    try {
+      const normalizedEmail = String(email).trim().toLowerCase();
+      let account = await Account.findOne({ email: normalizedEmail });
+
+      if (!account) {
+        const passwordHash = await bcrypt.hash(crypto.randomBytes(16).toString("hex"), 12);
+        const focusSector = Array.isArray(sectors) && sectors.length ? sectors : ["General"];
+        const roleDetails = validateAndNormalizeRoleDetails("investor", {
+          investmentRange: { min: 0, max: 0, currency: "INR" },
+          focusSector,
+          portfolioSize: 0,
+          investorId: generateInvestorId(),
+        });
+        const dashboardTemplate = getDashboardTemplate("investor");
+
+        account = await InvestorAccount.create({
+          fullName,
+          email: normalizedEmail,
+          passwordHash,
+          phone: phone || "",
+          city: "Bangalore",
+          role: "investor",
+          profileId: generateProfileId(),
+          headline: `${firmName} · SAIS'26`,
+          roleDetails,
+          dashboard: {
+            stats: dashboardTemplate.stats,
+            commitmentPortfolio: dashboardTemplate.commitmentPortfolio,
+            investmentPortfolio: dashboardTemplate.investmentPortfolio,
+          },
+        });
+
+        const dashboardPayload = buildDashboardPayload({
+          role: "investor",
+          fullName: account.fullName,
+          template: dashboardTemplate,
+          roleDetails,
+        });
+
+        await Dashboard.create({ accountId: account._id, role: "investor", ...dashboardPayload });
+      }
+
+      if (account.role === "investor") {
+        investorToken = signAuthToken(account);
+        investorAccountSafe = typeof account.toSafeJSON === "function" ? account.toSafeJSON() : account;
+      }
+    } catch (sessionError) {
+      console.error("Investor session provisioning failed (registration still succeeded):", sessionError?.message || sessionError);
+    }
+
     const frontendUrl = process.env.FRONTEND_URL || process.env.HOST_URL || "https://foundersconnect.co.in";
     sendEmail({
       to: email,
@@ -158,7 +295,12 @@ router.post("/investor", async (req, res) => {
       }),
     }).catch(() => {});
 
-    return res.status(201).json({ message: "Investor profile saved successfully!", investor });
+    return res.status(201).json({
+      message: "Investor profile saved successfully!",
+      investor,
+      token: investorToken,
+      account: investorAccountSafe,
+    });
   } catch (error) {
     return res.status(500).json({ message: error.message || "Failed to save investor profile." });
   }
