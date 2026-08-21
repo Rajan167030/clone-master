@@ -1,4 +1,4 @@
-import { ExternalLink, FileText } from "lucide-react";
+import { Download, ExternalLink, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { getDriveEmbedUrl, isEmbeddablePdfUrl } from "@/lib/drive";
@@ -19,16 +19,25 @@ const PitchDeckViewerModal = ({ startup, onClose }: PitchDeckViewerModalProps) =
     <Dialog open={!!startup} onOpenChange={onClose}>
       <DialogContent className="w-[95vw] sm:max-w-4xl max-h-[90vh] overflow-y-auto bg-white p-4 sm:p-6 rounded-2xl shadow-2xl space-y-4">
         <DialogHeader>
-          <DialogTitle className="text-xl font-bold text-slate-900 flex items-center justify-between">
+          <DialogTitle className="text-xl font-bold text-slate-900 flex flex-wrap items-center justify-between gap-2">
             <span>Pitch Deck: {startup.startupName}</span>
-            <a
-              href={startup.pitchDeckUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-xs font-semibold text-purple-600 hover:underline flex items-center gap-1"
-            >
-              Open in New Tab <ExternalLink className="w-3.5 h-3.5" />
-            </a>
+            <span className="flex items-center gap-3">
+              <a
+                href={startup.pitchDeckUrl}
+                download
+                className="text-xs font-semibold text-purple-600 hover:underline flex items-center gap-1"
+              >
+                Download <Download className="w-3.5 h-3.5" />
+              </a>
+              <a
+                href={startup.pitchDeckUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs font-semibold text-purple-600 hover:underline flex items-center gap-1"
+              >
+                Open in New Tab <ExternalLink className="w-3.5 h-3.5" />
+              </a>
+            </span>
           </DialogTitle>
           <DialogDescription className="text-xs text-slate-600">
             Category: {startup.category} | Stage: {startup.stage}

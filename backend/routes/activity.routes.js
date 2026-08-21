@@ -166,7 +166,7 @@ router.post("/startup", async (req, res) => {
         email: founderEmail,
         password: founderPlainPassword,
         dashboardLink,
-        saisLink: `${frontendUrl}/sais26`,
+        saisLink: `${frontendUrl}/sais26/founder/${accessToken}`,
         communityLink: `${frontendUrl}/community`,
       }),
     }).catch(() => {});
@@ -304,7 +304,7 @@ router.post("/investor", async (req, res) => {
         email,
         password: investorPlainPassword,
         dashboardLink: investorPlainPassword ? `${frontendUrl}/login` : `${frontendUrl}/dashboard`,
-        saisLink: `${frontendUrl}/sais26`,
+        saisLink: `${frontendUrl}/sais26/investor/${accessToken}`,
         communityLink: `${frontendUrl}/community`,
       }),
     }).catch(() => {});

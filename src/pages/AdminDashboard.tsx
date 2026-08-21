@@ -110,6 +110,7 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import AdminAnalyticsOverview from "@/components/AdminAnalyticsOverview";
 import EventMapPreview from "@/components/EventMapPreview";
+import PitchDeckViewerModal from "@/components/PitchDeckViewerModal";
 import {
   BarChart3,
   Calendar,
@@ -341,6 +342,7 @@ const AdminDashboard = () => {
   const [partnerTypes, setPartnerTypes] = useState<Array<{ slug: string; name: string }>>([]);
   const [partnerTypeFilter, setPartnerTypeFilter] = useState<string>("");
   const [activityStartups, setActivityStartups] = useState<ActivityStartupItem[]>([]);
+  const [adminViewDeckStartup, setAdminViewDeckStartup] = useState<ActivityStartupItem | null>(null);
   const [activityInvestors, setActivityInvestors] = useState<ActivityInvestorProfile[]>([]);
   const [goldPick, setGoldPick] = useState("");
   const [silverPick, setSilverPick] = useState("");
@@ -4568,24 +4570,35 @@ const AdminDashboard = () => {
                                 </div>
                               </td>
                               <td className="p-4">
-                                <Button
-                                  size="sm"
-                                  variant="destructive"
-                                  onClick={() => {
-                                    if (window.confirm(`Delete startup "${startup.startupName}"? This cannot be undone.`)) {
-                                      deleteAdminActivityStartupApi(token, startup.id)
-                                        .then((response) => {
-                                          window.alert(response.message);
-                                          setActivityStartups((prev) => prev.filter((s) => s.id !== startup.id));
-                                        })
-                                        .catch((error) => window.alert(error instanceof Error ? error.message : "Unable to delete startup."));
-                                    }
-                                  }}
-                                  className="gap-1.5"
-                                >
-                                  <Trash2 className="h-3.5 w-3.5" />
-                                  Delete
-                                </Button>
+                                <div className="flex items-center gap-1.5">
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => setAdminViewDeckStartup(startup)}
+                                    className="gap-1.5"
+                                  >
+                                    <FileText className="h-3.5 w-3.5" />
+                                    Pitch Deck
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="destructive"
+                                    onClick={() => {
+                                      if (window.confirm(`Delete startup "${startup.startupName}"? This cannot be undone.`)) {
+                                        deleteAdminActivityStartupApi(token, startup.id)
+                                          .then((response) => {
+                                            window.alert(response.message);
+                                            setActivityStartups((prev) => prev.filter((s) => s.id !== startup.id));
+                                          })
+                                          .catch((error) => window.alert(error instanceof Error ? error.message : "Unable to delete startup."));
+                                      }
+                                    }}
+                                    className="gap-1.5"
+                                  >
+                                    <Trash2 className="h-3.5 w-3.5" />
+                                    Delete
+                                  </Button>
+                                </div>
                               </td>
                             </tr>
                           ))
@@ -4595,6 +4608,8 @@ const AdminDashboard = () => {
                   </div>
                 </CardContent>
               </Card>
+
+              <PitchDeckViewerModal startup={adminViewDeckStartup} onClose={() => setAdminViewDeckStartup(null)} />
 
               {/* Investors Table */}
               <Card>

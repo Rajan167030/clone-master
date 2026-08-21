@@ -23,7 +23,7 @@ const buildCredentialsBlock = ({ email, password }) => {
   `;
 };
 
-const renderShell = ({ eyebrow, heading, bodyHtml, primaryLabel, primaryHref, secondaryLinks }) => `
+const renderShell = ({ eyebrow, heading, bodyHtml, primaryLabel, primaryHref, secondaryButton, secondaryLinks }) => `
   <div style="background-color: #f6f4fb; padding: 40px 20px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; text-align: center; color: #191024;">
     <div style="max-width: 520px; margin: 0 auto; background: #ffffff; border: 1px solid #e8e1f5; border-top: 4px solid #6113d8; border-radius: 16px; padding: 40px 34px; box-shadow: 0 1px 2px rgba(25,16,36,0.04), 0 16px 32px rgba(25,16,36,0.06); text-align: center;">
       <div style="margin-bottom: 20px;">
@@ -34,11 +34,22 @@ const renderShell = ({ eyebrow, heading, bodyHtml, primaryLabel, primaryHref, se
 
       ${bodyHtml}
 
-      <a href="${primaryHref}" style="display: inline-block; background: #6113d8; color: #ffffff; text-decoration: none; font-weight: 700; font-size: 15px; padding: 15px 34px; border-radius: 10px; margin: 8px 0 26px; box-shadow: 0 8px 20px rgba(97,19,216,0.25);">
+      <a href="${primaryHref}" style="display: inline-block; background: #6113d8; color: #ffffff; text-decoration: none; font-weight: 700; font-size: 15px; padding: 15px 34px; border-radius: 10px; margin: 8px 0; box-shadow: 0 8px 20px rgba(97,19,216,0.25);">
         ${escapeHtml(primaryLabel)}
       </a>
 
-      <div style="border-top: 1px solid #ece7f6; padding-top: 20px; margin-top: 4px;">
+      ${
+        secondaryButton
+          ? `
+      <div>
+        <a href="${secondaryButton.href}" style="display: inline-block; background: #ffffff; color: #6113d8; text-decoration: none; font-weight: 700; font-size: 14px; padding: 13px 30px; border-radius: 10px; margin: 4px 0 22px; border: 2px solid #6113d8;">
+          ${escapeHtml(secondaryButton.label)}
+        </a>
+      </div>`
+          : ""
+      }
+
+      <div style="border-top: 1px solid #ece7f6; padding-top: 20px; margin-top: ${secondaryButton ? "4px" : "22px"};">
         ${secondaryLinks
           .map(
             (link) => `
@@ -72,10 +83,8 @@ export const buildStartupActivityEmail = ({ founderName, startupName, email, pas
     bodyHtml,
     primaryLabel: "Enter SAIS'26 →",
     primaryHref: saisLink,
-    secondaryLinks: [
-      { label: password ? "Log In to Dashboard" : "Your Dashboard", href: dashboardLink },
-      { label: "Join the Community", href: communityLink },
-    ],
+    secondaryButton: { label: password ? "Log In to Your Dashboard" : "Your Dashboard", href: dashboardLink },
+    secondaryLinks: [{ label: "Join the Community", href: communityLink }],
   });
 };
 
@@ -95,10 +104,8 @@ export const buildInvestorActivityEmail = ({ fullName, firmName, email, password
     bodyHtml,
     primaryLabel: "Enter SAIS'26 →",
     primaryHref: saisLink,
-    secondaryLinks: [
-      { label: password ? "Log In to Dashboard" : "Your Dashboard", href: dashboardLink },
-      { label: "Join the Community", href: communityLink },
-    ],
+    secondaryButton: { label: password ? "Log In to Your Dashboard" : "Your Dashboard", href: dashboardLink },
+    secondaryLinks: [{ label: "Join the Community", href: communityLink }],
   });
 };
 

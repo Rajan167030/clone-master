@@ -11,12 +11,12 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/use-toast";
 import { setSession } from "@/lib/session";
+import PitchDeckViewerModal from "@/components/PitchDeckViewerModal";
 import {
   Star,
   Building2,
   FileText,
   UserCheck,
-  ExternalLink,
   Layers,
   MapPin,
   CheckCircle2,
@@ -126,6 +126,7 @@ const BangaloreActivity: React.FC = () => {
 
   // Pitch Deck Viewer Modal state
   const [viewStartupProfile, setViewStartupProfile] = useState<ActivityStartupItem | null>(null);
+  const [viewDeckStartup, setViewDeckStartup] = useState<ActivityStartupItem | null>(null);
 
   // Loading state for initial fetch
   const [isLoadingStartups, setIsLoadingStartups] = useState(true);
@@ -1282,10 +1283,13 @@ const BangaloreActivity: React.FC = () => {
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Button asChild variant="outline" size="sm" className="border-purple-300 text-purple-700 hover:bg-purple-50 text-xs">
-                    <a href={viewStartupProfile.pitchDeckUrl} target="_blank" rel="noopener noreferrer">
-                      <FileText className="w-3.5 h-3.5 mr-1.5" /> Pitch Deck <ExternalLink className="w-3 h-3 ml-1.5" />
-                    </a>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="border-purple-300 text-purple-700 hover:bg-purple-50 text-xs"
+                    onClick={() => setViewDeckStartup(viewStartupProfile)}
+                  >
+                    <FileText className="w-3.5 h-3.5 mr-1.5" /> Pitch Deck
                   </Button>
                   <Button
                     size="sm"
@@ -1340,6 +1344,7 @@ const BangaloreActivity: React.FC = () => {
         </Dialog>
       )}
 
+      <PitchDeckViewerModal startup={viewDeckStartup} onClose={() => setViewDeckStartup(null)} />
 
       <Footer />
     </div>
