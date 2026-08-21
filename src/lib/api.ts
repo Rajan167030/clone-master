@@ -488,7 +488,7 @@ export const createAdminInvestorInviteApi = (
 
 export const quickAccessInvestorInviteApi = (
   code: string,
-  payload: { fullName: string; email: string; firmName?: string },
+  payload: { fullName: string; email: string; phone?: string; city?: string; firmName?: string; sector?: string },
 ) =>
   request<AuthResponse>(`/auth/access/${encodeURIComponent(code)}`, {
     method: "POST",

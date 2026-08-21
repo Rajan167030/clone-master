@@ -392,10 +392,13 @@ export const quickAccessInvestorInvite = async (req, res, next) => {
       return res.status(404).json({ message: "This access link is invalid, revoked, or has expired." });
     }
 
-    const { fullName, firmName, email } = req.body || {};
+    const { fullName, firmName, email, phone, city, sector } = req.body || {};
     const normalizedFullName = String(fullName || "").trim();
     const normalizedFirmName = String(firmName || "").trim() || "Guest Investor";
     const normalizedEmail = String(email || "").trim().toLowerCase();
+    const normalizedPhone = String(phone || "").trim();
+    const normalizedCity = String(city || "").trim() || "Bangalore";
+    const normalizedSector = String(sector || "").trim();
 
     if (!normalizedFullName || !normalizedEmail) {
       throw Object.assign(new Error("Full name and email are required."), { status: 400 });
@@ -418,7 +421,7 @@ export const quickAccessInvestorInvite = async (req, res, next) => {
 
       const roleDetails = validateAndNormalizeRoleDetails("investor", {
         investmentRange: { min: 0, max: 0, currency: "INR" },
-        focusSector: ["General"],
+        focusSector: [normalizedSector || "General"],
         portfolioSize: 0,
         investorId: generateInvestorId(),
       });
@@ -429,8 +432,8 @@ export const quickAccessInvestorInvite = async (req, res, next) => {
         fullName: normalizedFullName,
         email: normalizedEmail,
         passwordHash,
-        phone: "0000000000",
-        city: "Bangalore",
+        phone: normalizedPhone,
+        city: normalizedCity,
         role: "investor",
         profileId: generateProfileId(),
         headline: `${normalizedFirmName} · SAIS'26`,
@@ -464,8 +467,10 @@ export const quickAccessInvestorInvite = async (req, res, next) => {
     await ActivityInvestor.create({
       fullName: normalizedFullName,
       email: normalizedEmail,
+      phone: normalizedPhone,
       firmName: normalizedFirmName,
       designation: "Investor",
+      sectors: normalizedSector ? [normalizedSector] : [],
       photoUrl: buildPlaceholderPhoto(normalizedFullName),
       promoCodeUsed: "quick-access",
       accountId: account._id,
