@@ -102,11 +102,13 @@ const InvestorIdentityCard = ({
         {/* Photo overlaps the band, like a physical ID badge */}
         <div className="flex justify-center -mt-9">
           {profilePhoto ? (
-            <img
-              src={profilePhoto}
-              alt={fullName}
-              className="h-20 w-20 rounded-full object-cover border-4 border-white shadow-lg"
-            />
+            <div className="h-20 w-20 shrink-0 overflow-hidden rounded-full border-4 border-white bg-white shadow-lg">
+              <img
+                src={profilePhoto}
+                alt={fullName}
+                className="h-full w-full object-contain"
+              />
+            </div>
           ) : (
             <div
               className="h-20 w-20 rounded-full border-4 border-white shadow-lg flex items-center justify-center text-2xl font-black text-white"

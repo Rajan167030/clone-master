@@ -88,7 +88,7 @@ const SidebarPanel = ({ onNavigate, onProfileClick }: SidebarPanelProps) => {
         })}
       </nav>
 
-      <div className="border-t border-slate-800 p-3">
+      <div className="app-safe-bottom border-t border-slate-800 p-3">
         <button
           type="button"
           className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm text-slate-300 transition-colors hover:bg-slate-900 hover:text-white"

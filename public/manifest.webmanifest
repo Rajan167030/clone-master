@@ -1,0 +1,27 @@
+{
+  "name": "Founders Connect",
+  "short_name": "FC",
+  "description": "India's premier founder & investor networking platform.",
+  "start_url": "/dashboard",
+  "id": "/dashboard",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "orientation": "portrait-primary",
+  "background_color": "#ffffff",
+  "theme_color": "#7C3AED",
+  "icons": [
+    {
+      "src": "/founders_connect_global_logo.jpg",
+      "sizes": "100x100",
+      "type": "image/jpeg",
+      "purpose": "any"
+    },
+    {
+      "src": "/founders_connect_global_logo.jpg",
+      "sizes": "100x100",
+      "type": "image/jpeg",
+      "purpose": "maskable"
+    }
+  ]
+}

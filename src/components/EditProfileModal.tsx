@@ -112,11 +112,13 @@ export const EditProfileModal = ({
             <div className="flex items-center gap-4">
               {formData.profilePhoto ? (
                 <div className="relative group">
-                  <img
-                    src={formData.profilePhoto}
-                    alt="Profile"
-                    className="h-20 w-20 rounded-full border-2 border-purple-100 object-cover shadow-sm"
-                  />
+                  <div className="h-20 w-20 overflow-hidden rounded-full border-2 border-purple-100 bg-slate-50 shadow-sm">
+                    <img
+                      src={formData.profilePhoto}
+                      alt="Profile"
+                      className="h-full w-full object-contain"
+                    />
+                  </div>
                   <button
                     type="button"
                     onClick={() => setFormData(prev => ({ ...prev, profilePhoto: "" }))}

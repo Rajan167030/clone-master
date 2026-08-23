@@ -59,6 +59,24 @@
   }
 }
 
+/* App-like feel when launched standalone from the home screen (Add to Home Screen). */
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    overscroll-behavior-y: contain;
+    -webkit-tap-highlight-color: transparent;
+  }
+  /* Respect the notch/status bar and home-indicator safe areas in standalone mode. */
+  .app-safe-top {
+    padding-top: env(safe-area-inset-top);
+  }
+  .app-safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
 @layer utilities {
   .text-gradient {
     @apply bg-clip-text text-transparent;

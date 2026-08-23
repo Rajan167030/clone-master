@@ -171,11 +171,13 @@ export const ProfileCard = ({
             <div className="mb-4 flex justify-center">
               {profilePhoto ? (
                 <div className="relative rounded-full p-[2px] bg-gradient-to-tr from-purple-500 to-indigo-500 shadow-[0_0_15px_rgba(168,85,247,0.4)]">
-                  <img
-                    src={profilePhoto}
-                    alt={fullName}
-                    className="h-20 w-20 rounded-full object-cover"
-                  />
+                  <div className="h-20 w-20 overflow-hidden rounded-full bg-slate-950">
+                    <img
+                      src={profilePhoto}
+                      alt={fullName}
+                      className="h-full w-full object-contain"
+                    />
+                  </div>
                 </div>
               ) : (
                 <div
