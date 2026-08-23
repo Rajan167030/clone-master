@@ -1,4 +1,4 @@
-import { CalendarDays, FileText, LayoutDashboard, LogOut, Newspaper, ShieldCheck, Users, Settings, User } from "lucide-react";
+import { CalendarDays, FileText, LayoutDashboard, LogOut, Newspaper, ShieldCheck, Sparkles, Users, Settings, User } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { clearSession, getAccount } from "@/lib/session";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
@@ -8,6 +8,7 @@ const menuItems = [
   { label: "My Events", to: "/events", icon: CalendarDays },
   { label: "Membership", to: "/membership", icon: ShieldCheck },
   { label: "Community", to: "/community", icon: Users },
+  { label: "Matchmaking", to: "/matchmaking", icon: Sparkles, premiumOnly: true },
   { label: "Settings", to: "/settings", icon: Settings },
   { label: "Blog", to: "/blog", icon: Newspaper },
 ];
@@ -47,7 +48,9 @@ const SidebarPanel = ({ onNavigate, onProfileClick }: SidebarPanelProps) => {
       </div>
 
       <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
-        {menuItems.map(({ label, to, icon: Icon }) => {
+        {menuItems
+          .filter((item) => !item.premiumOnly || account?.role === "founder" || account?.role === "investor")
+          .map(({ label, to, icon: Icon }) => {
           const active = location.pathname === to;
 
           if (to === "#profile") {

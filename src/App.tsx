@@ -50,6 +50,8 @@ const AdminSais26Room = lazy(() => import("./pages/AdminSais26Room.tsx"));
 const Settings = lazy(() => import("./pages/Settings.tsx"));
 const Community = lazy(() => import("./pages/Community.tsx"));
 const CommunityMessages = lazy(() => import("./pages/CommunityMessages.tsx"));
+const CommunityDirectory = lazy(() => import("./pages/CommunityDirectory.tsx"));
+const Matchmaking = lazy(() => import("./pages/Matchmaking.tsx"));
 
 const queryClient = new QueryClient();
 
@@ -122,6 +124,22 @@ const App = () => (
               element={(
                 <ProtectedRoute allowedRoles={["user", "investor", "founder"]} redirectTo="/">
                   <CommunityMessages />
+                </ProtectedRoute>
+              )}
+            />
+            <Route
+              path="/community/directory"
+              element={(
+                <ProtectedRoute allowedRoles={["user", "investor", "founder"]} redirectTo="/">
+                  <CommunityDirectory />
+                </ProtectedRoute>
+              )}
+            />
+            <Route
+              path="/matchmaking"
+              element={(
+                <ProtectedRoute allowedRoles={["investor", "founder"]} redirectTo="/community">
+                  <Matchmaking />
                 </ProtectedRoute>
               )}
             />

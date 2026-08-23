@@ -1743,6 +1743,85 @@ export const sendCommunityMessageApi = (token: string, userId: string, text: str
     body: JSON.stringify({ text }),
   });
 
+// --- Community: member directory (founders & investors) + follow ---
+
+export type DirectoryMember = {
+  id: string;
+  fullName: string;
+  role: "founder" | "investor";
+  city?: string;
+  headline?: string;
+  profilePhoto?: string;
+  profileId: string;
+  company?: string;
+  followersCount: number;
+  isFollowing: boolean;
+};
+
+export const getCommunityDirectoryApi = (
+  token: string,
+  params: { role?: "all" | "founder" | "investor"; search?: string; page?: number } = {},
+) => {
+  const query = new URLSearchParams();
+  if (params.role && params.role !== "all") query.set("role", params.role);
+  if (params.search) query.set("search", params.search);
+  if (params.page) query.set("page", String(params.page));
+  const qs = query.toString();
+
+  return request<{ members: DirectoryMember[]; page: number; hasMore: boolean; total: number }>(
+    `/community/directory${qs ? `?${qs}` : ""}`,
+    { method: "GET", headers: { Authorization: `Bearer ${token}` } },
+  );
+};
+
+export const toggleFollowApi = (token: string, userId: string) =>
+  request<{ isFollowing: boolean; followersCount: number }>(`/community/follow/${userId}`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+// --- Matchmaking: founder <-> investor swipe matching (premium members only) ---
+
+export type MatchCandidate = {
+  id: string;
+  fullName: string;
+  role: "founder" | "investor";
+  city?: string;
+  headline?: string;
+  profilePhoto?: string;
+  profileId: string;
+  roleDetails?: Record<string, any>;
+  matchScore: number;
+};
+
+export type MatchmakingMatch = {
+  id: string;
+  matchedAt: string;
+  user: Omit<MatchCandidate, "matchScore">;
+};
+
+export const getMatchmakingDeckApi = (token: string, limit = 10) =>
+  request<{ deck: MatchCandidate[] }>(`/matchmaking/deck?limit=${limit}`, {
+    method: "GET",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const swipeMatchmakingApi = (token: string, targetUserId: string, action: "like" | "pass") =>
+  request<{ matched: boolean; match?: { id: string; matchedAt: string; user: MatchmakingMatch["user"] } }>(
+    "/matchmaking/swipe",
+    {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ targetUserId, action }),
+    },
+  );
+
+export const listMatchmakingMatchesApi = (token: string) =>
+  request<{ matches: MatchmakingMatch[] }>("/matchmaking/matches", {
+    method: "GET",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
 // --- SAIS'26 Room: founder access, authenticated room ratings, public leaderboard ---
 
 export type FounderAccessResponse = {

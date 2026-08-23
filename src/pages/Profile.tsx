@@ -6,9 +6,10 @@ import ProfileCard from "@/components/ProfileCard";
 import InvestorIdentityCard from "@/components/InvestorIdentityCard";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { MessageSquare, MapPin, Briefcase, Calendar } from "lucide-react";
+import { MessageSquare, MapPin, Briefcase, Calendar, UserPlus, UserCheck, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { getAccount, getToken } from "@/lib/session";
+import { toggleFollowApi } from "@/lib/api";
 
 interface PublicProfile {
   id: string;
@@ -26,6 +27,9 @@ interface PublicProfile {
     backgroundColor?: string;
   };
   createdAt?: string;
+  followersCount?: number;
+  followingCount?: number;
+  isFollowing?: boolean;
 }
 
 const roleInfo: Record<string, { label: string; icon: string; color: string }> = {
@@ -41,6 +45,7 @@ const PublicProfile = () => {
   const [profile, setProfile] = useState<PublicProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isFollowLoading, setIsFollowLoading] = useState(false);
 
   useEffect(() => {
     if (!profileId) {
@@ -52,7 +57,8 @@ const PublicProfile = () => {
     const fetchProfile = async () => {
       try {
         const response = await fetch(
-          `/api/profile/public/${profileId}`
+          `/api/profile/public/${profileId}`,
+          token ? { headers: { Authorization: `Bearer ${token}` } } : undefined
         );
 
         if (!response.ok) {
@@ -113,6 +119,19 @@ const PublicProfile = () => {
     );
   }
 
+  const handleFollow = async () => {
+    if (!token || !profile || isFollowLoading) return;
+    setIsFollowLoading(true);
+    try {
+      const res = await toggleFollowApi(token, profile.id);
+      setProfile((prev) => (prev ? { ...prev, isFollowing: res.isFollowing, followersCount: res.followersCount } : prev));
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Couldn't update follow.");
+    } finally {
+      setIsFollowLoading(false);
+    }
+  };
+
   const info = roleInfo[profile.role] || roleInfo.user;
   const createdDate = profile.createdAt
     ? new Date(profile.createdAt).toLocaleDateString("en-US", {
@@ -168,6 +187,29 @@ const PublicProfile = () => {
               </h1>
               {profile.headline && (
                 <p className="text-lg text-gray-600 italic">"{profile.headline}"</p>
+              )}
+              <p className="mt-2 text-sm text-gray-500">
+                <span className="font-semibold text-gray-800">{profile.followersCount ?? 0}</span> followers
+                {" · "}
+                <span className="font-semibold text-gray-800">{profile.followingCount ?? 0}</span> following
+              </p>
+
+              {token && profile.id !== getAccount()?.id && (
+                <Button
+                  onClick={handleFollow}
+                  disabled={isFollowLoading}
+                  variant={profile.isFollowing ? "outline" : "default"}
+                  className={`mt-4 gap-2 ${profile.isFollowing ? "" : "bg-purple-600 hover:bg-purple-700"}`}
+                >
+                  {isFollowLoading ? (
+                    <Loader2 size={16} className="animate-spin" />
+                  ) : profile.isFollowing ? (
+                    <UserCheck size={16} />
+                  ) : (
+                    <UserPlus size={16} />
+                  )}
+                  {profile.isFollowing ? "Following" : "Follow"}
+                </Button>
               )}
             </div>
 

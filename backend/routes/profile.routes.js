@@ -10,12 +10,12 @@ import {
   updateNotificationPrefs,
   deactivateAccount,
 } from "../controllers/profile.controller.js";
-import { requireAuth } from "../middlewares/auth.middleware.js";
+import { requireAuth, optionalAuth } from "../middlewares/auth.middleware.js";
 
 const profileRouter = Router();
 
-// Public routes (no auth required)
-profileRouter.get("/public/:profileId", getPublicProfile);
+// Public routes (no auth required, but attach req.user when a token is present)
+profileRouter.get("/public/:profileId", optionalAuth, getPublicProfile);
 
 // Protected routes (auth required)
 profileRouter.get("/me", requireAuth, getMyProfile);

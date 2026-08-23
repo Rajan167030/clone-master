@@ -77,6 +77,8 @@ const BaseAccountSchema = new Schema(
     },
     nfcId: { type: String, default: null, trim: true }, // NFC tag ID if available
     isProfilePublic: { type: Boolean, default: true },
+    followers: { type: [{ type: Schema.Types.ObjectId, ref: "Account" }], default: [] },
+    following: { type: [{ type: Schema.Types.ObjectId, ref: "Account" }], default: [] },
     notificationPrefs: {
       productUpdates: { type: Boolean, default: true },
       communityActivity: { type: Boolean, default: true },
@@ -114,6 +116,8 @@ BaseAccountSchema.methods.toSafeJSON = function toSafeJSON() {
     cardColors: this.cardColors,
     nfcId: this.nfcId,
     isProfilePublic: this.isProfilePublic,
+    followersCount: this.followers?.length || 0,
+    followingCount: this.following?.length || 0,
     notificationPrefs: this.notificationPrefs,
     createdAt: this.createdAt,
     updatedAt: this.updatedAt,
@@ -159,6 +163,8 @@ const FounderRoleDetailsSchema = new Schema(
     },
     teamSize: { type: Number, required: true, min: 1 },
     startupWebsite: { type: String, required: true, trim: true },
+    // Optional — powers investor/founder sector matching in the matchmaking feature.
+    industry: { type: [String], default: [] },
   },
   { _id: false },
 );

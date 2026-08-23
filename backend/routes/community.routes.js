@@ -13,6 +13,7 @@ import {
   getThread,
   sendMessage,
 } from "../controllers/community-messages.controller.js";
+import { listDirectory, toggleFollow } from "../controllers/community-directory.controller.js";
 
 const communityRouter = Router();
 
@@ -28,5 +29,8 @@ communityRouter.delete("/posts/:id/comments/:commentId", deleteComment);
 communityRouter.get("/messages", listConversations);
 communityRouter.get("/messages/:userId", getThread);
 communityRouter.post("/messages/:userId", sendMessage);
+
+communityRouter.get("/directory", listDirectory);
+communityRouter.post("/follow/:userId", toggleFollow);
 
 export default communityRouter;

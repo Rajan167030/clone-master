@@ -43,6 +43,8 @@ export const getPublicProfile = async (req, res, next) => {
       (err) => console.error("Failed to track scan:", err)
     );
 
+    const viewerId = req.user?.sub;
+
     // Return only safe public profile data
     return res.status(200).json({
       profile: {
@@ -56,6 +58,9 @@ export const getPublicProfile = async (req, res, next) => {
         cardColors: account.cardColors || {},
         roleDetails: account.roleDetails,
         createdAt: account.createdAt,
+        followersCount: account.followers?.length || 0,
+        followingCount: account.following?.length || 0,
+        isFollowing: viewerId ? (account.followers || []).some((id) => String(id) === String(viewerId)) : false,
       },
     });
   } catch (error) {

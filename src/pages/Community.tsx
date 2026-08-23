@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { Heart, ImageIcon, Loader2, MessageCircle, Send, Trash2, Users, X } from "lucide-react";
+import { Heart, ImageIcon, Loader2, MessageCircle, Send, Trash2, Users, UserCircle2, X } from "lucide-react";
 import Sidebar from "@/components/Sidebar";
 import Topbar from "@/components/Topbar";
 import { Button } from "@/components/ui/button";
@@ -323,9 +323,14 @@ const Community = () => {
               <p className="text-sm font-medium uppercase tracking-[0.22em] text-violet-700">Community</p>
               <h1 className="mt-1 text-2xl font-bold text-slate-900">Founders & Investors Feed</h1>
             </div>
-            <Link to="/community/messages" className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
-              <Users className="w-4 h-4" /> Messages
-            </Link>
+            <div className="flex items-center gap-2">
+              <Link to="/community/directory" className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
+                <UserCircle2 className="w-4 h-4" /> Directory
+              </Link>
+              <Link to="/community/messages" className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">
+                <Users className="w-4 h-4" /> Messages
+              </Link>
+            </div>
           </div>
 
           <PostComposer onPosted={(post) => setPosts((prev) => [post, ...prev])} />
