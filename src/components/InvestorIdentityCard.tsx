@@ -102,7 +102,7 @@ const InvestorIdentityCard = ({
         {/* Photo overlaps the band, like a physical ID badge */}
         <div className="flex justify-center -mt-9">
           {profilePhoto ? (
-            <div className="h-20 w-20 shrink-0 overflow-hidden rounded-full border-4 border-white bg-white shadow-lg">
+            <div className="h-20 w-20 shrink-0 overflow-hidden rounded-full border-4 border-white bg-white shadow-[0_2px_6px_rgba(15,23,42,0.18)] ring-1 ring-black/5">
               <img
                 src={profilePhoto}
                 alt={fullName}
@@ -111,7 +111,7 @@ const InvestorIdentityCard = ({
             </div>
           ) : (
             <div
-              className="h-20 w-20 rounded-full border-4 border-white shadow-lg flex items-center justify-center text-2xl font-black text-white"
+              className="h-20 w-20 rounded-full border-4 border-white shadow-[0_2px_6px_rgba(15,23,42,0.18)] ring-1 ring-black/5 flex items-center justify-center text-2xl font-black text-white"
               style={{ background: `linear-gradient(135deg, ${primary}, ${secondary})` }}
             >
               {fullName.charAt(0).toUpperCase()}
