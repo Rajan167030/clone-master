@@ -7,13 +7,8 @@ export const getDashboardTemplate = (role) => {
         { title: "Goal Progress", value: "10%", color: "purple" },
         { title: "Startups Invested", value: "3", color: "amber" },
       ],
-      commitmentPortfolio: [
-        { startupName: "AgriAI Labs", investment: "INR 1,00,000", date: "12 Mar 2026" },
-        { startupName: "HealthGrid", investment: "INR 75,000", date: "28 Mar 2026" },
-      ],
-      investmentPortfolio: [
-        { startupName: "EduSpark", investment: "INR 75,000", date: "06 Apr 2026" },
-      ],
+      commitmentPortfolio: [],
+      investmentPortfolio: [],
     };
   }
 
@@ -25,9 +20,7 @@ export const getDashboardTemplate = (role) => {
         { title: "Funding Target", value: "INR 40,00,000", color: "purple" },
         { title: "Raised So Far", value: "INR 4,00,000", color: "amber" },
       ],
-      commitmentPortfolio: [
-        { startupName: "Your Startup", investment: "INR 4,00,000", date: "15 Apr 2026" },
-      ],
+      commitmentPortfolio: [],
       investmentPortfolio: [],
     };
   }

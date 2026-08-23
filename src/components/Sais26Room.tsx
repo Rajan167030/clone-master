@@ -1,5 +1,6 @@
 import { type FormEvent, useEffect, useMemo, useState } from "react";
-import { Building2, Eye, FileText, ShieldCheck, Star, Users } from "lucide-react";
+import { motion } from "framer-motion";
+import { Building2, Eye, FileText, Lightbulb, Mic2, Rocket, ShieldCheck, Star, TrendingUp, Users } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -23,15 +24,22 @@ import {
 const RANK_BADGES = ["🥇 #1 Rank", "🥈 #2 Rank", "🥉 #3 Rank"];
 
 const RATING_CRITERIA = [
-  { key: "innovation", label: "Innovation & Product Tech" },
-  { key: "market", label: "Market Opportunity & Scalability" },
-  { key: "traction", label: "Business Model & Traction" },
-  { key: "team", label: "Team & Execution Capability" },
-  { key: "pitch", label: "Pitch & Presentation Quality" },
+  { key: "innovation", label: "Innovation & Product Tech", icon: Lightbulb, color: "#7c3aed" },
+  { key: "market", label: "Market Opportunity & Scalability", icon: TrendingUp, color: "#2563eb" },
+  { key: "traction", label: "Business Model & Traction", icon: Rocket, color: "#059669" },
+  { key: "team", label: "Team & Execution Capability", icon: Users, color: "#d97706" },
+  { key: "pitch", label: "Pitch & Presentation Quality", icon: Mic2, color: "#e11d48" },
 ] as const;
 
 const DEFAULT_SCORES: RatingScores = { innovation: 0, market: 0, traction: 0, team: 0, pitch: 0 };
 const starLabels = ["Poor", "Average", "Good", "Very Good", "Excellent"];
+
+// Score-meter color ramps from rose (low) through amber to emerald (high) as the total climbs.
+const scoreMeterColor = (percent: number) => {
+  if (percent < 40) return "#e11d48";
+  if (percent < 70) return "#d97706";
+  return "#059669";
+};
 
 type Sais26RoomProps = {
   viewerRole: "investor" | "founder" | "admin";
@@ -53,6 +61,7 @@ const Sais26Room = ({ viewerRole, authToken, highlightStartupId }: Sais26RoomPro
   const [ratingComment, setRatingComment] = useState("");
   const [isSubmittingRating, setIsSubmittingRating] = useState(false);
   const [isUpdatingExisting, setIsUpdatingExisting] = useState(false);
+  const [hoverPreview, setHoverPreview] = useState<{ key: string; star: number } | null>(null);
 
   const load = async () => {
     const [freshStartups, freshInvestors] = await Promise.all([
@@ -86,6 +95,7 @@ const Sais26Room = ({ viewerRole, authToken, highlightStartupId }: Sais26RoomPro
       setRatingComment("");
       setIsUpdatingExisting(false);
     }
+    setHoverPreview(null);
     setRatingTargetStartup(startup);
   };
 
@@ -286,27 +296,69 @@ const Sais26Room = ({ viewerRole, authToken, highlightStartupId }: Sais26RoomPro
               </DialogDescription>
             </DialogHeader>
 
-            <form onSubmit={handleRatingSubmit} className="space-y-4 pt-2">
+            <form onSubmit={handleRatingSubmit} className="space-y-3 pt-2">
+              <div className="flex items-center justify-between px-0.5">
+                <span className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+                  {Object.values(ratingScores).filter((v) => v > 0).length} / 5 criteria rated
+                </span>
+                <div className="flex gap-1">
+                  {RATING_CRITERIA.map((c) => (
+                    <span
+                      key={c.key}
+                      className="h-1.5 w-5 rounded-full transition-colors duration-300"
+                      style={{ background: ratingScores[c.key] > 0 ? c.color : "#e2e8f0" }}
+                    />
+                  ))}
+                </div>
+              </div>
+
               {RATING_CRITERIA.map((criteria) => {
                 const currentVal = ratingScores[criteria.key];
+                const previewVal = hoverPreview?.key === criteria.key ? hoverPreview.star : currentVal;
+                const Icon = criteria.icon;
                 return (
-                  <div key={criteria.key} className="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-slate-800">{criteria.label}</span>
-                      <Badge className="bg-amber-100 text-amber-900 border-amber-300 text-[11px] font-bold">
-                        {currentVal > 0 ? `${currentVal} / 5 (${starLabels[currentVal - 1]})` : "Not rated yet"}
+                  <div
+                    key={criteria.key}
+                    className="relative overflow-hidden rounded-xl border border-slate-200 bg-slate-50 p-3 pl-4 space-y-2 transition-shadow hover:shadow-sm"
+                  >
+                    <span className="absolute left-0 top-0 h-full w-1" style={{ background: criteria.color }} />
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="flex items-center gap-1.5 text-xs font-bold text-slate-800">
+                        <Icon className="h-3.5 w-3.5 shrink-0" style={{ color: criteria.color }} />
+                        {criteria.label}
+                      </span>
+                      <Badge
+                        variant="outline"
+                        className="shrink-0 text-[11px] font-bold"
+                        style={
+                          currentVal > 0
+                            ? { borderColor: `${criteria.color}55`, background: `${criteria.color}15`, color: criteria.color }
+                            : { borderColor: "#e2e8f0", color: "#94a3b8" }
+                        }
+                      >
+                        {currentVal > 0 ? `${currentVal} / 5 · ${starLabels[currentVal - 1]}` : "Not rated yet"}
                       </Badge>
                     </div>
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex items-center gap-1" onMouseLeave={() => setHoverPreview(null)}>
                       {[1, 2, 3, 4, 5].map((starVal) => (
-                        <button
+                        <motion.button
                           key={starVal}
                           type="button"
+                          whileHover={{ scale: 1.3, rotate: -8 }}
+                          whileTap={{ scale: 0.85 }}
+                          onMouseEnter={() => setHoverPreview({ key: criteria.key, star: starVal })}
                           onClick={() => setRatingScores({ ...ratingScores, [criteria.key]: starVal })}
-                          className="p-1 hover:scale-125 transition-transform"
+                          className="p-1"
                         >
-                          <Star className={`w-5 h-5 ${starVal <= currentVal ? "fill-amber-400 text-amber-400" : "text-slate-300"}`} />
-                        </button>
+                          <Star
+                            className="h-5 w-5 transition-colors duration-150"
+                            style={
+                              starVal <= previewVal
+                                ? { fill: criteria.color, color: criteria.color }
+                                : { color: "#cbd5e1" }
+                            }
+                          />
+                        </motion.button>
                       ))}
                     </div>
                   </div>
@@ -320,11 +372,21 @@ const Sais26Room = ({ viewerRole, authToken, highlightStartupId }: Sais26RoomPro
                 onChange={(e) => setRatingComment(e.target.value)}
               />
 
-              <div className="bg-slate-100 p-3 rounded-lg flex items-center justify-between text-xs font-bold text-slate-800">
-                <span>Total Score:</span>
-                <span className="text-base text-amber-600 font-extrabold">
-                  {totalScore} / 25 ({(totalScore / 5).toFixed(1)} ★)
-                </span>
+              <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 space-y-2">
+                <div className="flex items-center justify-between text-xs font-bold text-slate-800">
+                  <span>Total Score</span>
+                  <span className="text-base font-extrabold" style={{ color: scoreMeterColor((totalScore / 25) * 100) }}>
+                    {totalScore} / 25 ({(totalScore / 5).toFixed(1)} ★)
+                  </span>
+                </div>
+                <div className="h-2 w-full overflow-hidden rounded-full bg-slate-200">
+                  <motion.div
+                    className="h-full rounded-full"
+                    initial={false}
+                    animate={{ width: `${(totalScore / 25) * 100}%`, background: scoreMeterColor((totalScore / 25) * 100) }}
+                    transition={{ type: "spring", stiffness: 220, damping: 26 }}
+                  />
+                </div>
               </div>
 
               <Button

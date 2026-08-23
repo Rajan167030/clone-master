@@ -109,6 +109,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import AdminAnalyticsOverview from "@/components/AdminAnalyticsOverview";
+import AdminCookieConsent from "@/components/AdminCookieConsent";
 import EventMapPreview from "@/components/EventMapPreview";
 import PitchDeckViewerModal from "@/components/PitchDeckViewerModal";
 import {
@@ -142,6 +143,7 @@ import {
   KeyRound,
   Sparkles,
   Trophy,
+  Cookie,
 } from "lucide-react";
 
 const emptyEventForm = {
@@ -414,7 +416,7 @@ const AdminDashboard = () => {
   const [showPromotionForm, setShowPromotionForm] = useState(false);
   const [uploadingPromotionImage, setUploadingPromotionImage] = useState(false);
   const [promotionImageMode, setPromotionImageMode] = useState<ImageInputMode>("url");
-  const [activeTab, setActiveTab] = useState<"dashboard" | "analytics" | "events" | "blogs" | "members" | "partners" | "newsletter" | "automation" | "funding" | "promotions" | "activity" | "investor-invites" | "team" | "chat" | "tasks">("dashboard");
+  const [activeTab, setActiveTab] = useState<"dashboard" | "analytics" | "events" | "blogs" | "members" | "partners" | "newsletter" | "automation" | "funding" | "promotions" | "activity" | "investor-invites" | "team" | "chat" | "tasks" | "cookies">("dashboard");
   const [investorInvites, setInvestorInvites] = useState<InvestorInvite[]>([]);
   const [investorLeads, setInvestorLeads] = useState<AdminInvestorDetail[]>([]);
 
@@ -1740,6 +1742,7 @@ const AdminDashboard = () => {
     { label: "Investor Invites", id: "investor-invites", icon: Link2 },
     { label: "Admin Chat", id: "chat", icon: MessageSquare },
     { label: "Tasks", id: "tasks", icon: CheckCircle2 },
+    { label: "Cookie Consent", id: "cookies", icon: Cookie },
     ...(account?.role === "superadmin" ? [{ label: "Team & Access", id: "team", icon: ShieldCheck }] : []),
   ];
 
@@ -1863,6 +1866,7 @@ const AdminDashboard = () => {
               {activeTab === "team" && "Team & Access"}
               {activeTab === "chat" && "Admin Chat"}
               {activeTab === "tasks" && "Tasks"}
+              {activeTab === "cookies" && "Cookie Consent"}
             </h1>
             <p className="mt-3 max-w-3xl text-slate-600">
               {activeTab === "dashboard" && "Welcome back! Here's your admin overview."}
@@ -1880,6 +1884,7 @@ const AdminDashboard = () => {
               {activeTab === "team" && "Create admin accounts, manage access, and review admin activity history."}
               {activeTab === "chat" && "Message other admins in real time."}
               {activeTab === "tasks" && "Create, assign, and track tasks across the admin team."}
+              {activeTab === "cookies" && "Monitor how visitors respond to the cookie consent banner."}
             </p>
           </div>
 
@@ -2128,6 +2133,9 @@ const AdminDashboard = () => {
               activityInvestors={activityInvestors}
             />
           )}
+
+          {/* Cookie Consent Tab */}
+          {activeTab === "cookies" && <AdminCookieConsent />}
 
           {/* Events Tab */}
           {activeTab === "events" && (

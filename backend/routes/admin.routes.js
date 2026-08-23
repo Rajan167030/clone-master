@@ -38,6 +38,7 @@ import {
   deleteAdminSliderPromotion,
 } from "../controllers/content.controller.js";
 import { listSubscribersAdmin } from "../controllers/newsletter.controller.js";
+import { getConsentStats } from "../controllers/cookie-consent.controller.js";
 import { sendBulkEmail } from "../controllers/email-automation.controller.js";
 import {
   listTemplates,
@@ -137,6 +138,8 @@ adminRouter.delete("/blogs/:slug", deleteAdminBlog);
 
 adminRouter.get("/site-notice", getAdminSiteNotice);
 adminRouter.put("/site-notice", updateAdminSiteNotice);
+
+adminRouter.get("/cookie-consent", getConsentStats);
 
 adminRouter.get("/slider-promotions", listAdminSliderPromotions);
 adminRouter.post("/slider-promotions", createAdminSliderPromotion);

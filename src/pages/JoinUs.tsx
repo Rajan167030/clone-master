@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Copy, CheckCircle, MessageCircle, ArrowRight, ChevronLeft } from "lucide-react";
+import { CheckCircle, MessageCircle, ArrowRight, ChevronLeft } from "lucide-react";
 import EmailVerificationBox from "@/components/EmailVerificationBox";
 import { Button } from "@/components/ui/button";
 import { submitJoinRequestApi } from "@/lib/api";
@@ -114,7 +114,6 @@ const JoinUs = () => {
   });
   const [formData, setFormData] = useState(initialFormData);
   const [submitting, setSubmitting] = useState(false);
-  const [copyMessage, setCopyMessage] = useState("");
   const [emailVerificationToken, setEmailVerificationToken] = useState("");
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
@@ -146,18 +145,6 @@ const JoinUs = () => {
         [e.target.name]: e.target.name === "phoneNumber" ? e.target.value.replace(/\D/g, "") : e.target.value,
       }));
     }
-  };
-
-  const handleCopyLink = async () => {
-    const shareUrl = `${window.location.origin}/join-us`;
-    try {
-      await navigator.clipboard.writeText(shareUrl);
-      setCopyMessage("Form link copied");
-    } catch {
-      setCopyMessage("Copy failed");
-    }
-
-    window.setTimeout(() => setCopyMessage(""), 2500);
   };
 
   const handleSubmit = async (e: FormEvent) => {
@@ -262,34 +249,7 @@ const JoinUs = () => {
             </h1>
 
 
-            <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
-              <Button type="button" variant="outline" onClick={handleCopyLink} className="gap-2">
-                <Copy size={16} />
-                Copy Join Link
-              </Button>
-              
-                <MessageCircle size={16} />
-                
-              
-            </div>
-
-            <div className="mx-auto mt-7 grid max-w-3xl gap-3 sm:grid-cols-3">
-              <div className="rounded-xl border border-border/70 bg-slate-50 p-3 text-center">
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Members</p>
-                <p className="mt-1 text-2xl font-extrabold text-slate-900">1000+</p>
-              </div>
-              <div className="rounded-xl border border-border/70 bg-slate-50 p-3 text-center">
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Cities</p>
-                <p className="mt-1 text-2xl font-extrabold text-slate-900">50+</p>
-              </div>
-              <div className="rounded-xl border border-border/70 bg-slate-50 p-3 text-center">
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Focused On</p>
-                <p className="mt-1 text-sm font-bold text-slate-900">Founder Growth</p>
-              </div>
-            </div>
           </div>
-
-          {copyMessage && <p className="mt-3 text-center text-sm text-muted-foreground">{copyMessage}</p>}
 
           <div className="mx-auto max-w-3xl">
             <Card className="border-2 border-dashed border-muted-foreground/30 bg-white shadow-xl">

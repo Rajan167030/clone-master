@@ -33,6 +33,7 @@ export { InvestorInvite } from "./investor-invite.model.js";
 export { InvestorLead } from "./investor-lead.model.js";
 export { CommunityPost, CommunityMessage } from "./community.model.js";
 export { MatchSwipe, Match } from "./matchmaking.model.js";
+export { CookieConsentLog } from "./cookie-consent.model.js";
 export { EventAttendance } from "./event-attendance.model.js";
 export { AdminMessage } from "./admin-message.model.js";
 export { default as TeamMember } from "./team.model.js";

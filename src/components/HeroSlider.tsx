@@ -5,30 +5,13 @@ import { ArrowRight } from "lucide-react";
 import { getPublicSliderEventsApi, getPublicSliderPromotionsApi } from "@/lib/api";
 import { optimizeCloudinaryUrl } from "@/lib/cloudinary";
 
-const HERO_IMAGE = "/hero-founders-connect.webp";
-
+// No-photo branded slide — used only if the API returns zero featured events/promotions.
 const fallbackSlides = [
   {
     title: "Founders Connect",
-    highlight: "Startup Meetup 2026",
-    link: "/events/founders-connect-dehradun-edition-v1",
-    image: HERO_IMAGE,
-    alt: "Founders Connect startup meetup event",
-    buttonLabel: "Join now",
-  },
-  {
-    title: "",
-    highlight: "",
-    link: "/joinus",
-    image: HERO_IMAGE,
-    alt: "Join Founders Connect",
-    buttonLabel: "Join now",
-  },
-  {
-    title: "",
-    highlight: "",
-    link: "/joinus",
-    image: HERO_IMAGE,
+    highlight: "India's Founder & Investor Network",
+    link: "/join-us",
+    image: "",
     alt: "Join Founders Connect",
     buttonLabel: "Join now",
   },
@@ -53,18 +36,7 @@ const HeroSlider = ({ className }: { className?: string }) => {
           getPublicSliderPromotionsApi(),
         ]);
 
-        // The first slide is ALWAYS hardcoded as requested
-        const allSlides = [
-          {
-            type: "hardcoded",
-            title: "Founders Connect",
-            highlight: "Startup Meetup 2026",
-            link: "/events/founders-connect-dehradun-edition-v1",
-            image: HERO_IMAGE,
-            alt: "Founders Connect startup meetup event",
-            buttonLabel: "Join now",
-          }
-        ];
+        const allSlides: Array<Record<string, unknown>> = [];
 
         // Add event slides (second slider onwards from admin panel)
         if (eventsResponse?.events && eventsResponse.events.length > 0) {
@@ -73,7 +45,7 @@ const HeroSlider = ({ className }: { className?: string }) => {
             title: event.title,
             highlight: event.subtitle || event.title,
             link: `/events/${event.slug}`,
-            image: optimizeCloudinaryUrl(event.bannerImage, 1600) || HERO_IMAGE,
+            image: optimizeCloudinaryUrl(event.bannerImage, 1600) || "",
             alt: event.bannerAlt || event.title,
             buttonLabel: "Join now",
           }));
@@ -94,7 +66,7 @@ const HeroSlider = ({ className }: { className?: string }) => {
           allSlides.push(...promotionSlides);
         }
 
-        setSlides(allSlides.length > 1 ? allSlides : [...allSlides, ...fallbackSlides.slice(1)]);
+        setSlides(allSlides.length > 0 ? (allSlides as typeof fallbackSlides) : fallbackSlides);
       } catch (error) {
         console.error("Failed to fetch slider content:", error);
         // Keep fallback slides on error
@@ -130,30 +102,44 @@ const HeroSlider = ({ className }: { className?: string }) => {
                 transition={{ duration: 0.7 }}
                 className="absolute inset-0 w-full h-full overflow-hidden"
               >
-                {/* Blurred Background */}
-                <img
-                  src={currentSlide.image}
-                  alt=""
-                  loading={current === 0 ? "eager" : "lazy"}
-                  decoding="async"
-                  className="absolute inset-0 w-full h-full object-cover scale-[1.15] blur-3xl opacity-60 saturate-150"
-                  aria-hidden="true"
-                />
-                {/* Foreground Image */}
-                <motion.img
-                  src={currentSlide.image}
-                  alt={currentSlide.alt}
-                  width={1600}
-                  height={900}
-                  loading={current === 0 ? "eager" : "lazy"}
-                  decoding="async"
-                  // @ts-expect-error fetchPriority is a valid DOM attribute not yet in React's img typings
-                  fetchpriority={current === 0 ? "high" : "auto"}
-                  initial={{ scale: 1.05 }}
-                  animate={{ scale: 1 }}
-                  transition={{ duration: 0.7 }}
-                  className="absolute inset-0 w-full h-full object-contain drop-shadow-2xl z-10"
-                />
+                {currentSlide.image ? (
+                  <>
+                    {/* Blurred Background */}
+                    <img
+                      src={currentSlide.image}
+                      alt=""
+                      loading={current === 0 ? "eager" : "lazy"}
+                      decoding="async"
+                      className="absolute inset-0 w-full h-full object-cover scale-[1.15] blur-3xl opacity-60 saturate-150"
+                      aria-hidden="true"
+                    />
+                    {/* Foreground Image */}
+                    <motion.img
+                      src={currentSlide.image}
+                      alt={currentSlide.alt}
+                      width={1600}
+                      height={900}
+                      loading={current === 0 ? "eager" : "lazy"}
+                      decoding="async"
+                      // @ts-expect-error fetchPriority is a valid DOM attribute not yet in React's img typings
+                      fetchpriority={current === 0 ? "high" : "auto"}
+                      initial={{ scale: 1.05 }}
+                      animate={{ scale: 1 }}
+                      transition={{ duration: 0.7 }}
+                      className="absolute inset-0 w-full h-full object-contain drop-shadow-2xl z-10"
+                    />
+                  </>
+                ) : (
+                  // No-photo branded fallback (only shown if zero events/promotions are configured)
+                  <div className="absolute inset-0 w-full h-full bg-gradient-to-br from-violet-950 via-slate-950 to-indigo-950">
+                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(168,85,247,0.35),transparent_55%)]" />
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <span className="text-2xl sm:text-4xl md:text-5xl font-black tracking-tight text-white/90">
+                        Founders Connect
+                      </span>
+                    </div>
+                  </div>
+                )}
               </motion.div>
             </AnimatePresence>
           </Link>

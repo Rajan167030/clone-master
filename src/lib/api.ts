@@ -1822,6 +1822,42 @@ export const listMatchmakingMatchesApi = (token: string) =>
     headers: { Authorization: `Bearer ${token}` },
   });
 
+// --- Cookie consent: log the banner choice, admin can monitor accept/deny stats ---
+
+export const logCookieConsentApi = (
+  payload: { visitorId: string; choice: "accepted" | "denied"; path: string },
+  token?: string | null,
+) =>
+  request<{ ok: boolean }>("/consent/log", {
+    method: "POST",
+    headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+    body: JSON.stringify(payload),
+  });
+
+export type CookieConsentLogEntry = {
+  id: string;
+  choice: "accepted" | "denied";
+  path?: string;
+  userAgent?: string;
+  account: { id: string; fullName: string; email: string; role: string } | null;
+  createdAt: string;
+};
+
+export type CookieConsentStats = {
+  totalAccepted: number;
+  totalDenied: number;
+  total: number;
+  acceptRate: number;
+  recent: CookieConsentLogEntry[];
+  daily: Array<{ date: string; accepted: number; denied: number }>;
+};
+
+export const getAdminCookieConsentApi = (token: string) =>
+  request<CookieConsentStats>("/admin/cookie-consent", {
+    method: "GET",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
 // --- SAIS'26 Room: founder access, authenticated room ratings, public leaderboard ---
 
 export type FounderAccessResponse = {

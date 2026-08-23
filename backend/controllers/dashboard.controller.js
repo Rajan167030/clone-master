@@ -29,6 +29,11 @@ export const getMyDashboard = async (req, res, next) => {
 
     const dashboard = dashboardDoc.toSafeJSON();
 
+    // Portfolio tables have no real data source yet (no self-serve or admin entry
+    // flow exists) — always return empty rather than the placeholder rows that
+    // used to get stamped into every new account's dashboard at creation time.
+    dashboard.tables = { commitmentPortfolio: [], investmentPortfolio: [] };
+
     // 1. Calculate live Profile Completion %
     let completion = 20; // Baseline registered
     if (account.phone) completion += 15;

@@ -12,6 +12,7 @@ import activityRouter from "./routes/activity.routes.js";
 import teamRouter from "./routes/team.routes.js";
 import communityRouter from "./routes/community.routes.js";
 import matchmakingRouter from "./routes/matchmaking.routes.js";
+import cookieConsentRouter from "./routes/cookie-consent.routes.js";
 import { errorHandler, notFoundHandler } from "./middlewares/error.middleware.js";
 
 
@@ -84,6 +85,7 @@ app.use("/api/activity", activityRouter);
 app.use("/api/team", teamRouter);
 app.use("/api/community", communityRouter);
 app.use("/api/matchmaking", matchmakingRouter);
+app.use("/api/consent", cookieConsentRouter);
 
 app.use(notFoundHandler);
 
