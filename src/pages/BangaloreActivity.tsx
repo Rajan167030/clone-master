@@ -40,6 +40,14 @@ import {
   getSavedInvestorProfileLocal,
   getPublicCloudinaryUploadSignatureApi,
 } from "@/lib/api";
+import {
+  DEFAULT_RATING_SCORES,
+  RATING_CRITERIA,
+  RATING_MAX_TOTAL,
+  RATING_SCALE_MAX,
+  ratingScoreLabel,
+  sumRatingScores,
+} from "@/lib/rating-criteria";
 
 const PROMO_CODES = {
   STARTUP: "startup20",
@@ -114,13 +122,7 @@ const BangaloreActivity: React.FC = () => {
 
   // Rating Modal state
   const [ratingTargetStartup, setRatingTargetStartup] = useState<ActivityStartupItem | null>(null);
-  const UNRATED_SCORES: RatingScores = {
-    innovation: 0,
-    market: 0,
-    traction: 0,
-    team: 0,
-    pitch: 0,
-  };
+  const UNRATED_SCORES: RatingScores = DEFAULT_RATING_SCORES;
   const [ratingScores, setRatingScores] = useState<RatingScores>(UNRATED_SCORES);
   const [ratingComment, setRatingComment] = useState("");
 
@@ -320,7 +322,7 @@ const BangaloreActivity: React.FC = () => {
       toast({
         variant: "destructive",
         title: "Rate every criterion",
-        description: "Please give at least 1 star on all 5 criteria before submitting.",
+        description: `Please give at least 1 point on all ${RATING_CRITERIA.length} criteria before submitting.`,
       });
       return;
     }
@@ -1132,56 +1134,41 @@ const BangaloreActivity: React.FC = () => {
                 <span>Rate Startup: {ratingTargetStartup.startupName}</span>
               </DialogTitle>
               <DialogDescription className="text-xs text-slate-600">
-                Score this startup across the 5 evaluation criteria (1 to 5 stars each).
+                Score this startup across the {RATING_CRITERIA.length} evaluation criteria (1 to {RATING_SCALE_MAX} each).
               </DialogDescription>
             </DialogHeader>
 
             <form onSubmit={handleRatingSubmit} className="space-y-4 pt-3">
-              {[
-                { key: "innovation", label: "1. Innovation & Product Tech" },
-                { key: "market", label: "2. Market Opportunity & Scalability" },
-                { key: "traction", label: "3. Business Model & Traction" },
-                { key: "team", label: "4. Team & Execution Capability" },
-                { key: "pitch", label: "5. Pitch & Presentation Quality" },
-              ].map((criteria) => {
+              {RATING_CRITERIA.map((criteria, index) => {
                 const currentVal = (ratingScores as any)[criteria.key] || 0;
-                const starLabels = ["Poor", "Average", "Good", "Very Good", "Excellent"];
 
                 return (
                   <div key={criteria.key} className="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-slate-800">{criteria.label}</span>
+                      <span className="text-xs font-bold text-slate-800">
+                        {index + 1}. {criteria.label}
+                      </span>
                       <Badge className="bg-amber-100 text-amber-900 border-amber-300 text-[11px] font-bold">
-                        {currentVal > 0 ? `${currentVal} / 5 ⭐ (${starLabels[currentVal - 1]})` : "Not rated yet"}
+                        {currentVal > 0 ? `${currentVal} / ${RATING_SCALE_MAX} (${ratingScoreLabel(currentVal)})` : "Not rated yet"}
                       </Badge>
                     </div>
 
-                    <div className="flex items-center justify-between pt-1">
-                      <div className="flex items-center gap-1.5">
-                        {[1, 2, 3, 4, 5].map((starVal) => (
-                          <button
-                            key={starVal}
-                            type="button"
-                            onClick={() =>
-                              setRatingScores({ ...ratingScores, [criteria.key]: starVal })
-                            }
-                            title={`${starVal} Star - ${starLabels[starVal - 1]}`}
-                            className="p-1 hover:scale-125 transition-transform focus:outline-none"
-                          >
-                            <Star
-                              className={`w-6 h-6 ${
-                                starVal <= currentVal
-                                  ? "fill-amber-400 text-amber-400 drop-shadow-sm"
-                                  : "text-slate-300 hover:text-amber-300"
-                              }`}
-                            />
-                          </button>
-                        ))}
-                      </div>
-
-                      <span className="text-[11px] font-semibold text-slate-500">
-                        {currentVal} / 5
-                      </span>
+                    <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                      {Array.from({ length: RATING_SCALE_MAX }, (_, i) => i + 1).map((val) => (
+                        <button
+                          key={val}
+                          type="button"
+                          onClick={() => setRatingScores({ ...ratingScores, [criteria.key]: val })}
+                          title={`${val} / ${RATING_SCALE_MAX}`}
+                          className={`flex h-7 w-7 items-center justify-center rounded-full border text-[11px] font-bold transition-colors focus:outline-none ${
+                            val <= currentVal
+                              ? "bg-indigo-600 border-indigo-600 text-white"
+                              : "bg-white border-slate-300 text-slate-500 hover:border-indigo-400"
+                          }`}
+                        >
+                          {val}
+                        </button>
+                      ))}
                     </div>
                   </div>
                 );
@@ -1200,12 +1187,7 @@ const BangaloreActivity: React.FC = () => {
               <div className="bg-slate-100 p-3 rounded-lg flex items-center justify-between text-xs font-bold text-slate-800">
                 <span>Total Score:</span>
                 <span className="text-base text-amber-600 font-extrabold">
-                  {ratingScores.innovation +
-                    ratingScores.market +
-                    ratingScores.traction +
-                    ratingScores.team +
-                    ratingScores.pitch}{" "}
-                  / 25 ({((ratingScores.innovation + ratingScores.market + ratingScores.traction + ratingScores.team + ratingScores.pitch) / 5).toFixed(1)} ★)
+                  {sumRatingScores(ratingScores)} / {RATING_MAX_TOTAL} ({(sumRatingScores(ratingScores) / RATING_CRITERIA.length).toFixed(1)} avg)
                 </span>
               </div>
 
@@ -1332,7 +1314,7 @@ const BangaloreActivity: React.FC = () => {
                           </div>
                         </div>
                         <Badge className="bg-amber-100 text-amber-800 border-amber-200 shrink-0">
-                          {(rev.totalScore / 5).toFixed(1)} ★
+                          {(rev.totalScore / RATING_CRITERIA.length).toFixed(1)} / {RATING_SCALE_MAX} ★
                         </Badge>
                       </div>
                     ))}

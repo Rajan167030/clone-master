@@ -400,7 +400,7 @@ export const createAdminEvent = async (req, res, next) => {
     }
     
     const event = await EventContent.create(payload);
-    await deleteCache("public:events", "admin:events");
+    await deleteCache("public:events", "admin:events", "public:slider-events");
     await deleteCacheByPrefix("public:event:");
     return res.status(201).json({ message: "Event created successfully.", event });
   } catch (error) {
@@ -418,7 +418,7 @@ export const updateAdminEvent = async (req, res, next) => {
       return res.status(404).json({ message: "Event not found." });
     }
 
-    await deleteCache("public:events", "admin:events", `public:event:${slug}`, `public:event:${payload.slug}`);
+    await deleteCache("public:events", "admin:events", "public:slider-events", `public:event:${slug}`, `public:event:${payload.slug}`);
     return res.status(200).json({ message: "Event updated successfully.", event });
   } catch (error) {
     return next(error);
@@ -434,7 +434,7 @@ export const deleteAdminEvent = async (req, res, next) => {
       return res.status(404).json({ message: "Event not found." });
     }
 
-    await deleteCache("public:events", "admin:events", `public:event:${slug}`);
+    await deleteCache("public:events", "admin:events", "public:slider-events", `public:event:${slug}`);
     return res.status(200).json({ message: "Event deleted successfully." });
   } catch (error) {
     return next(error);

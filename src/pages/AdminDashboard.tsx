@@ -1299,6 +1299,58 @@ const AdminDashboard = () => {
     }
   };
 
+  const handlePromotionImageUpload = async (file?: File | null) => {
+    if (!file) return;
+    if (!token) {
+      window.alert("Please log in again before uploading images.");
+      return;
+    }
+
+    setUploadingPromotionImage(true);
+    try {
+      const signaturePayload = await getCloudinaryUploadSignatureApi(token, {
+        folder: "founders-connect/promotions",
+      });
+
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("api_key", signaturePayload.apiKey);
+      formData.append("timestamp", String(signaturePayload.timestamp));
+      formData.append("signature", signaturePayload.signature);
+      formData.append("folder", signaturePayload.folder);
+
+      if (signaturePayload.publicId) {
+        formData.append("public_id", signaturePayload.publicId);
+      }
+
+      const uploadResponse = await fetch(signaturePayload.uploadUrl, {
+        method: "POST",
+        body: formData,
+      });
+
+      const uploadData = (await uploadResponse.json().catch(() => ({}))) as CloudinaryUploadResponse & {
+        error?: { message?: string };
+      };
+
+      if (!uploadResponse.ok || !uploadData.secure_url) {
+        throw new Error(uploadData.error?.message || "Cloudinary upload failed.");
+      }
+
+      setPromotionForm((current) => ({
+        ...current,
+        imageUrl: uploadData.secure_url || "",
+        altText: current.altText || current.title || file.name.replace(/\.[^.]+$/, ""),
+      }));
+
+      window.alert("Image uploaded successfully.");
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Unable to upload image.";
+      window.alert(message);
+    } finally {
+      setUploadingPromotionImage(false);
+    }
+  };
+
   const handlePartnerLogoUpload = async (file?: File | null) => {
     if (!file) return;
     if (!token) {
@@ -4096,55 +4148,74 @@ const AdminDashboard = () => {
                         className="mt-1"
                       />
                     </div>
-                    <div>
-                      <label className="text-sm font-medium text-slate-700">Image Mode</label>
-                      <div className="flex gap-3 mt-1">
-                        <label className="flex items-center gap-2">
-                          <input
-                            type="radio"
-                            value="url"
-                            checked={promotionImageMode === "url"}
-                            onChange={(e) => setPromotionImageMode(e.target.value as ImageInputMode)}
-                          />
-                          <span className="text-sm">URL</span>
+                    <div className="space-y-2.5 p-3.5 rounded-xl bg-slate-50 border border-slate-200">
+                      <div className="flex items-center justify-between">
+                        <label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                          <Image className="w-4 h-4 text-purple-600" />
+                          Promotion Image *
                         </label>
-                        <label className="flex items-center gap-2">
-                          <input
-                            type="radio"
-                            value="upload"
-                            checked={promotionImageMode === "upload"}
-                            onChange={(e) => setPromotionImageMode(e.target.value as ImageInputMode)}
-                          />
-                          <span className="text-sm">Upload</span>
-                        </label>
+                        <div className="flex gap-1 rounded bg-white p-0.5 border text-[11px]">
+                          <button
+                            type="button"
+                            onClick={() => setPromotionImageMode("url")}
+                            className={`px-2 py-0.5 rounded font-medium ${promotionImageMode === "url" ? "bg-purple-600 text-white" : "text-slate-600"}`}
+                          >
+                            URL
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setPromotionImageMode("upload")}
+                            className={`px-2 py-0.5 rounded font-medium ${promotionImageMode === "upload" ? "bg-purple-600 text-white" : "text-slate-600"}`}
+                          >
+                            Upload
+                          </button>
+                        </div>
                       </div>
-                    </div>
-                    {promotionImageMode === "url" ? (
-                      <div>
-                        <label className="text-sm font-medium text-slate-700">Image URL *</label>
+
+                      {promotionImageMode === "url" ? (
                         <Input
                           placeholder="https://example.com/image.jpg"
                           value={promotionForm.imageUrl}
                           onChange={(e) => setPromotionForm((c) => ({ ...c, imageUrl: e.target.value }))}
-                          className="mt-1"
                         />
-                      </div>
-                    ) : (
-                      <div>
-                        <label className="text-sm font-medium text-slate-700">Upload Image *</label>
-                        <Input
-                          type="file"
-                          accept="image/*"
-                          onChange={(e) => {
-                            // File upload handler would go here
-                            if (e.target.files?.[0]) {
-                              window.alert("Image upload feature requires Cloudinary integration. Use URL mode for now.");
-                            }
-                          }}
-                          className="mt-1"
+                      ) : (
+                        <div className="flex items-center gap-2">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            disabled={uploadingPromotionImage}
+                            onClick={() => document.getElementById("promotion-image-upload")?.click()}
+                            className="text-xs"
+                          >
+                            {uploadingPromotionImage ? "Uploading..." : "Upload Image"}
+                          </Button>
+                          <input
+                            id="promotion-image-upload"
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              void handlePromotionImageUpload(file);
+                              e.target.value = "";
+                            }}
+                          />
+                        </div>
+                      )}
+
+                      <p className="text-[11px] font-medium text-slate-500 bg-purple-50/70 p-2 rounded border border-purple-100">
+                        📏 <strong>Recommended Size:</strong> 1600 × 900 px (Aspect Ratio 16:9)
+                      </p>
+
+                      {promotionForm.imageUrl && (
+                        <img
+                          src={promotionForm.imageUrl}
+                          alt="Promotion preview"
+                          className="h-28 w-full rounded-lg border object-cover shadow-sm"
                         />
-                      </div>
-                    )}
+                      )}
+                    </div>
                     <div>
                       <label className="text-sm font-medium text-slate-700">Alt Text</label>
                       <Input

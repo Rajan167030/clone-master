@@ -2,19 +2,12 @@ import { Building2, Mail, MapPin, Phone, Star, User } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import type { ActivityStartupItem } from "@/lib/api";
+import { RATING_CRITERIA as CRITERIA, RATING_CRITERIA_COUNT, RATING_SCALE_MAX } from "@/lib/rating-criteria";
 
 type StartupProfileModalProps = {
   startup: ActivityStartupItem | null;
   onClose: () => void;
 };
-
-const CRITERIA = [
-  { key: "innovation", label: "Innovation & Product Tech" },
-  { key: "market", label: "Market Opportunity" },
-  { key: "traction", label: "Traction" },
-  { key: "team", label: "Team & Execution" },
-  { key: "pitch", label: "Pitch Quality" },
-] as const;
 
 const StartupProfileModal = ({ startup, onClose }: StartupProfileModalProps) => {
   if (!startup) return null;
@@ -80,20 +73,20 @@ const StartupProfileModal = ({ startup, onClose }: StartupProfileModalProps) => 
               <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500">Evaluation Breakdown</h4>
               <span className="flex items-center gap-1 text-amber-500 font-bold text-sm">
                 <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
-                {startup.averageScore > 0 ? startup.averageScore : "N/A"} ({startup.totalRatingsCount} ratings)
+                {startup.averageScore > 0 ? startup.averageScore : "N/A"} / {RATING_SCALE_MAX} ({startup.totalRatingsCount} ratings)
               </span>
             </div>
             <div className="space-y-2">
               {criteriaAverages.map((c) => (
                 <div key={c.key} className="flex items-center gap-3">
-                  <span className="text-xs text-slate-600 w-40 shrink-0">{c.label}</span>
+                  <span className="text-xs text-slate-600 w-44 sm:w-52 shrink-0 leading-tight">{c.label}</span>
                   <div className="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
                     <div
                       className="h-full bg-gradient-to-r from-amber-400 to-purple-500 rounded-full"
-                      style={{ width: `${(c.average / 5) * 100}%` }}
+                      style={{ width: `${(c.average / RATING_SCALE_MAX) * 100}%` }}
                     />
                   </div>
-                  <span className="text-xs font-semibold text-slate-700 w-8 text-right">{c.average || "—"}</span>
+                  <span className="text-xs font-semibold text-slate-700 w-10 text-right shrink-0">{c.average || "—"}</span>
                 </div>
               ))}
             </div>
@@ -128,7 +121,7 @@ const StartupProfileModal = ({ startup, onClose }: StartupProfileModalProps) => 
                           </div>
                         </div>
                         <Badge className="bg-amber-100 text-amber-800 border-amber-200 shrink-0">
-                          {(r.totalScore / 5).toFixed(1)} ★
+                          {(r.totalScore / RATING_CRITERIA_COUNT).toFixed(1)} / {RATING_SCALE_MAX} ★
                         </Badge>
                       </div>
                       {r.comment && <p className="text-xs text-slate-600 italic mt-2">"{r.comment}"</p>}

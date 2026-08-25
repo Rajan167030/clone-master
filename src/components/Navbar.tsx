@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Menu, X, ChevronDown, LogOut } from "lucide-react";
+import { Menu, X, ChevronDown, LogOut, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { clearSession, getAccount, isAuthenticated } from "@/lib/session";
+import { clearSession, getAccount, getToken, isAuthenticated } from "@/lib/session";
+import { getMyFounderAccessApi } from "@/lib/api";
 
 type NavDropdown = {
   label: string;
@@ -52,6 +53,16 @@ const Navbar = () => {
   const authed = isAuthenticated();
   const account = getAccount();
   const isAdmin = account?.role === "admin" || account?.role === "superadmin";
+  const [founderAccessToken, setFounderAccessToken] = useState<string | null>(null);
+
+  useEffect(() => {
+    const token = getToken();
+    if (!token || account?.role !== "founder") return;
+
+    getMyFounderAccessApi(token)
+      .then((response) => setFounderAccessToken(response.accessToken))
+      .catch(() => setFounderAccessToken(null));
+  }, [account?.role]);
 
   const handleLogout = () => {
     clearSession();
@@ -60,6 +71,14 @@ const Navbar = () => {
 
   const topButtonLabel = authed ? (isAdmin ? "Admin Panel" : "Dashboard") : "Login";
   const topButtonTo = authed ? (isAdmin ? "/admin" : "/dashboard") : "/login";
+
+  const saisRoomTo = isAdmin
+    ? "/admin/sais26-room"
+    : account?.role === "investor"
+      ? "/sais26/room"
+      : account?.role === "founder" && founderAccessToken
+        ? `/sais26/founder/${founderAccessToken}`
+        : null;
 
   return (
     <header className="sticky top-0 z-50 flex flex-col w-full shadow-sm">
@@ -80,12 +99,11 @@ const Navbar = () => {
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
           <Link to={authed ? "/dashboard" : "/"} className="flex items-center gap-2 flex-shrink-0">
-            <img 
-              src="/founders_connect_global_logo.jpg" 
-              alt="Founders Connect" 
+            <img
+              src="/founders_connect_global_logo.jpg"
+              alt="Founders Connect"
               className="h-12 w-auto object-contain rounded"
             />
-            <span className="hidden sm:block text-lg font-bold text-slate-900">Founders Connect</span>
           </Link>
 
           {/* Desktop Navigation */}
@@ -137,6 +155,16 @@ const Navbar = () => {
                   <LogOut size={16} />
                 </button>
               </div>
+            )}
+
+            {saisRoomTo && (
+              <Link
+                to={saisRoomTo}
+                className="hidden sm:inline-flex items-center gap-1.5 rounded-xl border border-purple-200 bg-purple-50 px-3 py-2 text-sm font-bold text-purple-700 shadow-sm transition-all hover:bg-purple-100/70"
+              >
+                <Sparkles size={16} />
+                SAIS Room
+              </Link>
             )}
 
             <Button asChild className="btn-metallic btn-metallic-purple hidden sm:inline-flex text-white text-sm">
@@ -226,6 +254,17 @@ const Navbar = () => {
                   Logout
                 </button>
               </div>
+            )}
+
+            {saisRoomTo && (
+              <Link
+                to={saisRoomTo}
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="flex items-center justify-center gap-1.5 rounded-xl border border-purple-200 bg-purple-50 px-3 py-2 text-sm font-bold text-purple-700 shadow-sm transition-all hover:bg-purple-100/70"
+              >
+                <Sparkles size={16} />
+                SAIS Room
+              </Link>
             )}
 
             <Button asChild className="btn-metallic btn-metallic-purple w-full text-white text-sm">

@@ -1,6 +1,8 @@
+import { useEffect, useState } from "react";
 import { CalendarDays, FileText, LayoutDashboard, LogOut, Newspaper, ShieldCheck, Sparkles, Users, Settings, User } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { clearSession, getAccount } from "@/lib/session";
+import { clearSession, getAccount, getToken } from "@/lib/session";
+import { getMyFounderAccessApi } from "@/lib/api";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 
 const menuItems = [
@@ -22,6 +24,25 @@ const SidebarPanel = ({ onNavigate, onProfileClick }: SidebarPanelProps) => {
   const location = useLocation();
   const navigate = useNavigate();
   const account = getAccount();
+  const isAdmin = account?.role === "admin" || account?.role === "superadmin";
+  const [founderAccessToken, setFounderAccessToken] = useState<string | null>(null);
+
+  useEffect(() => {
+    const token = getToken();
+    if (!token || account?.role !== "founder") return;
+
+    getMyFounderAccessApi(token)
+      .then((response) => setFounderAccessToken(response.accessToken))
+      .catch(() => setFounderAccessToken(null));
+  }, [account?.role]);
+
+  const saisRoomTo = isAdmin
+    ? "/admin/sais26-room"
+    : account?.role === "investor"
+      ? "/sais26/room"
+      : account?.role === "founder" && founderAccessToken
+        ? `/sais26/founder/${founderAccessToken}`
+        : null;
 
   return (
     <div className="flex h-full flex-col bg-slate-950 text-white">
@@ -48,6 +69,20 @@ const SidebarPanel = ({ onNavigate, onProfileClick }: SidebarPanelProps) => {
       </div>
 
       <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
+        {saisRoomTo && (
+          <Link
+            to={saisRoomTo}
+            onClick={onNavigate}
+            className={`flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold transition-colors ${
+              location.pathname === saisRoomTo
+                ? "bg-violet-500/15 text-violet-200"
+                : "bg-violet-500/10 text-violet-300 hover:bg-violet-500/20 hover:text-white"
+            }`}
+          >
+            <Sparkles size={18} />
+            <span>SAIS Room</span>
+          </Link>
+        )}
         {menuItems
           .filter((item) => !item.premiumOnly || account?.role === "founder" || account?.role === "investor")
           .map(({ label, to, icon: Icon }) => {

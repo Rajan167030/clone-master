@@ -1236,13 +1236,9 @@ export const generateProfileUrlApi = (token: string) =>
 
 // --- BANGALORE EVENT ACTIVITY API & LOCAL STORAGE ---
 
-export type RatingScores = {
-  innovation: number;
-  market: number;
-  traction: number;
-  team: number;
-  pitch: number;
-};
+import { type RatingCriterionKey, RATING_CRITERIA_COUNT, sumRatingScores } from "./rating-criteria";
+
+export type RatingScores = Record<RatingCriterionKey, number>;
 
 export type ActivityRatingItem = {
   investorId: string;
@@ -1250,7 +1246,7 @@ export type ActivityRatingItem = {
   investorFirm?: string;
   investorPhoto?: string;
   scores: RatingScores;
-  totalScore: number; // out of 25
+  totalScore: number; // out of RATING_MAX_TOTAL (9 criteria x 10)
   comment?: string;
   updatedAt: string;
 };
@@ -1269,7 +1265,7 @@ export type ActivityStartupItem = {
   pitchDeckUrl: string;
   logoUrl: string;
   ratings: ActivityRatingItem[];
-  averageScore: number; // 0 to 5 scale
+  averageScore: number; // 0 to 10 scale (average per criterion)
   totalRatingsCount: number;
   resultRank?: "gold" | "silver" | "bronze" | null;
   createdAt: string;
@@ -1310,13 +1306,16 @@ const INITIAL_BANGALORE_STARTUPS: ActivityStartupItem[] = [
         investorName: "Vikram Mehta",
         investorFirm: "Apex Venture Partners",
         investorPhoto: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80",
-        scores: { innovation: 5, market: 4, traction: 5, team: 5, pitch: 4 },
-        totalScore: 23,
+        scores: {
+          market: 8, traction: 10, pitch: 8,
+          problemClarity: 9, solutionViability: 9, qna: 8, mvpFit: 9,
+        },
+        totalScore: 61,
         comment: "Outstanding tech stack and strong team execution in Bangalore ecosystem.",
         updatedAt: new Date().toISOString(),
       },
     ],
-    averageScore: 4.6,
+    averageScore: 8.71,
     totalRatingsCount: 1,
     createdAt: new Date().toISOString(),
   },
@@ -1339,13 +1338,16 @@ const INITIAL_BANGALORE_STARTUPS: ActivityStartupItem[] = [
         investorName: "Vikram Mehta",
         investorFirm: "Apex Venture Partners",
         investorPhoto: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80",
-        scores: { innovation: 4, market: 5, traction: 4, team: 4, pitch: 4 },
-        totalScore: 21,
+        scores: {
+          market: 10, traction: 8, pitch: 8,
+          problemClarity: 8, solutionViability: 8, qna: 7, mvpFit: 8,
+        },
+        totalScore: 57,
         comment: "Huge addressable market with clear monetization path.",
         updatedAt: new Date().toISOString(),
       },
     ],
-    averageScore: 4.2,
+    averageScore: 8.14,
     totalRatingsCount: 1,
     createdAt: new Date().toISOString(),
   },
@@ -1411,7 +1413,7 @@ export const submitStartupRatingLocal = (
   const updated = startups.map((s) => {
     if (s.id !== startupId) return s;
 
-    const totalScore = scores.innovation + scores.market + scores.traction + scores.team + scores.pitch;
+    const totalScore = sumRatingScores(scores);
     const newRating: ActivityRatingItem = {
       investorId: investor.id,
       investorName: investor.fullName,
@@ -1425,7 +1427,7 @@ export const submitStartupRatingLocal = (
 
     const existingRatings = s.ratings.filter((r) => r.investorId !== investor.id);
     const newRatings = [...existingRatings, newRating];
-    const totalScoreSum = newRatings.reduce((acc, curr) => acc + curr.totalScore / 5, 0);
+    const totalScoreSum = newRatings.reduce((acc, curr) => acc + curr.totalScore / RATING_CRITERIA_COUNT, 0);
     const avgScore = Number((totalScoreSum / newRatings.length).toFixed(2));
 
     return {
