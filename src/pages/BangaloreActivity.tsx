@@ -1251,16 +1251,24 @@ const BangaloreActivity: React.FC = () => {
                 </div>
               </div>
 
-              {/* Rating summary */}
+              {/* Rating summary — derived live from each rating's raw scores, not the stored
+                  averageScore, so it stays correct even after the evaluation rubric changes. */}
               <div className="flex items-center justify-between p-4 bg-amber-50 rounded-xl border border-amber-200">
                 <div className="flex items-center gap-2">
                   <Star className="w-6 h-6 fill-amber-400 text-amber-400" />
                   <div>
                     <p className="text-lg font-extrabold text-amber-700">
-                      {viewStartupProfile.averageScore > 0 ? viewStartupProfile.averageScore.toFixed(1) : "Unrated"}
+                      {(() => {
+                        const startupRatings = viewStartupProfile.ratings || [];
+                        if (startupRatings.length === 0) return "Unrated";
+                        const live =
+                          startupRatings.reduce((acc, r) => acc + sumRatingScores(r.scores) / RATING_CRITERIA.length, 0) /
+                          startupRatings.length;
+                        return live.toFixed(1);
+                      })()}
                     </p>
                     <p className="text-[11px] text-amber-600 font-medium">
-                      {viewStartupProfile.totalRatingsCount} Investor {viewStartupProfile.totalRatingsCount === 1 ? "Rating" : "Ratings"}
+                      {(viewStartupProfile.ratings || []).length} Investor {(viewStartupProfile.ratings || []).length === 1 ? "Rating" : "Ratings"}
                     </p>
                   </div>
                 </div>
@@ -1314,7 +1322,7 @@ const BangaloreActivity: React.FC = () => {
                           </div>
                         </div>
                         <Badge className="bg-amber-100 text-amber-800 border-amber-200 shrink-0">
-                          {(rev.totalScore / RATING_CRITERIA.length).toFixed(1)} / {RATING_SCALE_MAX} ★
+                          {(sumRatingScores(rev.scores) / RATING_CRITERIA.length).toFixed(1)} / {RATING_SCALE_MAX} ★
                         </Badge>
                       </div>
                     ))}

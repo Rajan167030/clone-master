@@ -237,11 +237,17 @@ const JoinUs = () => {
       <Navbar />
 
       <section className="relative overflow-hidden pt-6 md:pt-8 pb-20">
+        <img
+          src="https://images.unsplash.com/photo-1511578314322-379afb476865?w=1600&q=80&fit=crop"
+          alt=""
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 h-full w-full object-cover"
+        />
         <div className="pointer-events-none absolute -left-20 top-12 h-64 w-64 rounded-full bg-blob" />
         <div className="pointer-events-none absolute right-0 top-32 h-80 w-80 rounded-full bg-blob" />
         <div className="pointer-events-none absolute inset-x-0 top-0 h-72 bg-[radial-gradient(circle_at_top,rgba(124,58,237,0.14),transparent_60%)]" />
 
-        <div className="container mx-auto px-4">
+        <div className="container relative z-10 mx-auto px-4">
           <div className="mx-auto mb-10 max-w-5xl rounded-3xl border border-border/70 bg-white/80 p-6 shadow-xl backdrop-blur-sm md:p-10">
             <p className="mb-3 text-center text-xs font-semibold uppercase tracking-[0.28em] text-primary md:text-sm">Join Our Community</p>
             <h1 className="text-center font-heading text-4xl font-extrabold leading-tight md:text-6xl">

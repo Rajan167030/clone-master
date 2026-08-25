@@ -30,7 +30,13 @@ export const applyStartupRating = (startup, { investorId, investorName, investor
     startup.ratings.push(ratingEntry);
   }
 
-  const sumAverage = startup.ratings.reduce((acc, curr) => acc + curr.totalScore / CRITERIA_KEYS.length, 0);
+  // Recompute every rating's per-criterion average live from its raw `scores`, ignoring
+  // `curr.totalScore` — that field was frozen at whatever CRITERIA_KEYS existed when that
+  // rating was submitted, so trusting it drifts out of sync each time the rubric changes.
+  const sumAverage = startup.ratings.reduce((acc, curr) => {
+    const liveTotal = CRITERIA_KEYS.reduce((sum, key) => sum + Number(curr.scores?.[key] || 0), 0);
+    return acc + liveTotal / CRITERIA_KEYS.length;
+  }, 0);
   startup.totalRatingsCount = startup.ratings.length;
   startup.averageScore = startup.totalRatingsCount > 0 ? Number((sumAverage / startup.totalRatingsCount).toFixed(2)) : 0;
 

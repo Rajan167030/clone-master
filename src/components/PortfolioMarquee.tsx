@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { ArrowRight, Handshake } from "lucide-react";
 import { getPublicPartnersApi, type PartnerLogo } from "@/lib/api";
 
 const companies = [
@@ -47,6 +49,14 @@ const PortfolioMarquee = ({ className }: { className?: string }) => {
           <p className="text-muted-foreground mt-4">
             50+ funded companies building the future across industries.
           </p>
+          <Link
+            to="/partner-with-us"
+            className="mt-6 inline-flex items-center gap-2 rounded-full bg-violet-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-violet-700 hover:shadow-md active:scale-95"
+          >
+            <Handshake className="h-4 w-4" />
+            Partner With Us
+            <ArrowRight className="h-4 w-4" />
+          </Link>
         </div>
       </div>
 

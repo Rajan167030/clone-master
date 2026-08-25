@@ -4,8 +4,8 @@ import Footer from "@/components/Footer";
 import EmailVerificationBox from "@/components/EmailVerificationBox";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Copy, Megaphone, Network, Users, ChevronRight, ChevronLeft, CheckCircle } from "lucide-react";
-import { submitPartnerInquiryApi, getPublicPartnerTypesApi } from "@/lib/api";
+import { Copy, ChevronRight, ChevronLeft, CheckCircle, ArrowUpRight } from "lucide-react";
+import { submitPartnerInquiryApi, getPublicPartnerTypesApi, getPublicPartnersApi, type PartnerLogo } from "@/lib/api";
 
 const emptyFormData = {
   companyName: "",
@@ -42,6 +42,7 @@ const PartnerWithUs = () => {
   const [emailVerificationToken, setEmailVerificationToken] = useState("");
   const [currentStep, setCurrentStep] = useState(1);
   const [validationErrors, setValidationErrors] = useState<{ website?: string; phone?: string }>({});
+  const [partners, setPartners] = useState<PartnerLogo[]>([]);
 
   useEffect(() => {
     getPublicPartnerTypesApi()
@@ -52,6 +53,10 @@ const PartnerWithUs = () => {
         // fallback to a minimal static list
         setPartnershipTypes(["Media & Press", "Event Sponsor", "Co-hosting Partner", "Technology Partner", "Community Partner", "College Partner", "Other"]);
       });
+
+    getPublicPartnersApi()
+      .then((res) => setPartners((res.partners || []).filter((p) => p.isActive)))
+      .catch(() => setPartners([]));
   }, []);
 
 const companyTypes = [
@@ -90,25 +95,6 @@ const countryCodes = [
   { code: "+971", label: "UAE (+971)" },
 ];
 
-const benefits = [
-  {
-    icon: Users,
-    title: "Founder Access",
-    description: "Reach a focused network of founders, operators, investors, and ecosystem builders.",
-  },
-  {
-    icon: Megaphone,
-    title: "Brand Visibility",
-    description: "Get meaningful exposure through events, content, community touchpoints, and co-branded initiatives.",
-  },
-  {
-    icon: Network,
-    title: "Warm Collaboration",
-    description: "Build partnerships around sponsorships, community growth, event programming, or technology support.",
-  },
-];
-
-  
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>,
@@ -255,7 +241,7 @@ const benefits = [
       <Navbar />
 
 
-      <section className="relative min-h-[520px] overflow-hidden pt-6 md:pt-8">
+      <section className="sticky top-0 z-0 min-h-[520px] overflow-hidden pt-6 md:pt-8">
         <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=1200&q=80&fit=crop" alt="Founders Connect partnership" className="absolute inset-0 h-full w-full object-cover" />
         <div className="absolute inset-0 bg-slate-950/65" />
         <div className="container relative z-10 mx-auto px-4 py-16">
@@ -281,19 +267,51 @@ const benefits = [
         </div>
       </section>
 
-      <section className="border-b border-border bg-white py-10">
-        <div className="container mx-auto grid gap-4 px-4 md:grid-cols-3">
-          {benefits.map(({ icon: Icon, title, description }) => (
-            <div key={title} className="rounded-lg border border-border bg-background p-5">
-              <div className="mb-4 inline-flex h-11 w-11 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                <Icon className="h-5 w-5" />
-              </div>
-              <h2 className="font-heading text-lg font-bold text-foreground">{title}</h2>
-              <p className="mt-2 text-sm leading-6 text-muted-foreground">{description}</p>
+      {/* Everything below sits in one positioned (z-10) layer above the sticky hero, so as the
+          page scrolls this content slides up and permanently covers the pinned hero image. */}
+      <div className="relative z-10 bg-white shadow-[0_-16px_32px_-16px_rgba(0,0,0,0.2)]">
+      {partners.length > 0 && (
+        <section className="border-b border-border bg-white py-12">
+          <div className="container mx-auto px-4">
+            <p className="text-center text-xs font-bold uppercase tracking-widest text-violet-600 mb-6">
+              Trusted by our partners
+            </p>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 sm:gap-5">
+              {partners.map((partner) => {
+                const cardContent = (
+                  <div className="group relative flex flex-col justify-center items-center p-5 h-24 rounded-xl border border-slate-100 bg-white transition-all duration-300 hover:-translate-y-0.5 hover:border-violet-200 hover:shadow-md overflow-hidden">
+                    {partner.logoUrl ? (
+                      <img
+                        src={partner.logoUrl}
+                        alt={partner.name}
+                        style={{ width: partner.logoWidth || "auto", height: partner.logoHeight || "auto" }}
+                        className="max-h-10 max-w-[85%] object-contain opacity-75 grayscale transition-all duration-300 group-hover:opacity-100 group-hover:grayscale-0"
+                      />
+                    ) : (
+                      <span className="text-sm font-semibold text-slate-700 text-center line-clamp-2 group-hover:text-violet-600">
+                        {partner.name}
+                      </span>
+                    )}
+                    {partner.websiteUrl && (
+                      <div className="absolute bottom-1.5 right-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        <ArrowUpRight className="h-3 w-3 text-violet-500" />
+                      </div>
+                    )}
+                  </div>
+                );
+
+                return partner.websiteUrl ? (
+                  <a key={partner._id} href={partner.websiteUrl} target="_blank" rel="noreferrer" className="block">
+                    {cardContent}
+                  </a>
+                ) : (
+                  <div key={partner._id}>{cardContent}</div>
+                );
+              })}
             </div>
-          ))}
-        </div>
-      </section>
+          </div>
+        </section>
+      )}
 
       <section id="partner-form" className="py-16">
         <div className="container mx-auto px-4">
@@ -590,6 +608,7 @@ const benefits = [
       </section>
 
       <Footer />
+      </div>
     </div>
   );
 };
