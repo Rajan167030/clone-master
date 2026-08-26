@@ -1466,9 +1466,14 @@ export const getSavedInvestorProfileLocal = (): ActivityInvestorProfile | null =
 
 // --- REAL-TIME BACKEND API CONNECTORS WITH MONGODB & SYNC ---
 
-export const getBangaloreStartupsApi = async (): Promise<ActivityStartupItem[]> => {
+// Pass the viewer's auth token (if any) so the backend can include founderPhone for logged-in
+// members — anonymous callers get every field except that one.
+export const getBangaloreStartupsApi = async (token?: string | null): Promise<ActivityStartupItem[]> => {
   try {
-    const res = await request<{ startups: ActivityStartupItem[] }>("/activity/startups", { method: "GET" });
+    const res = await request<{ startups: ActivityStartupItem[] }>("/activity/startups", {
+      method: "GET",
+      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+    });
     if (res?.startups && Array.isArray(res.startups)) {
       // A successful response — including an empty list (e.g. all startups deleted) — is the source of truth.
       // Map MongoDB _id to id if needed
@@ -1485,29 +1490,66 @@ export const getBangaloreStartupsApi = async (): Promise<ActivityStartupItem[]> 
   return getBangaloreStartupsLocal();
 };
 
-export const saveBangaloreStartupApi = async (
+// A founder gets exactly one Bangalore Activity registration — the backend rejects a second
+// submission under the same email with 409 + code "ALREADY_REGISTERED" (and hands back the
+// existing registration's accessToken) instead of creating a duplicate directory entry.
+export type RegisterBangaloreStartupResult =
+  | { status: "created"; startup: ActivityStartupItem & { accessToken?: string; token?: string; account?: SessionAccount } }
+  | { status: "duplicate"; accessToken?: string; message: string };
+
+export const registerBangaloreStartupApi = async (
   startupData: Omit<ActivityStartupItem, "id" | "ratings" | "averageScore" | "totalRatingsCount" | "createdAt">
-): Promise<ActivityStartupItem & { accessToken?: string; token?: string; account?: SessionAccount }> => {
-  const localSaved = saveBangaloreStartupLocal(startupData);
-  try {
-    const res = await request<{ startup: ActivityStartupItem; accessToken?: string; token?: string; account?: SessionAccount }>("/activity/startup", {
-      method: "POST",
-      body: JSON.stringify({ ...startupData, promoCode: "startup20" }),
-    });
-    if (res?.startup) {
-      const serverStartup = {
-        ...res.startup,
-        id: (res.startup as any)._id || res.startup.id || localSaved.id,
-        accessToken: res.accessToken,
-        token: res.token,
-        account: res.account,
-      };
-      return serverStartup;
-    }
-  } catch {
-    // Retain local copy if server fails
+): Promise<RegisterBangaloreStartupResult> => {
+  const response = await fetch(`${API_BASE_URL}/activity/startup`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ ...startupData, promoCode: "startup20" }),
+  });
+  const data = (await response.json().catch(() => ({}))) as {
+    message?: string;
+    code?: string;
+    accessToken?: string;
+    token?: string;
+    account?: SessionAccount;
+    startup?: ActivityStartupItem;
+  };
+
+  if (response.status === 409 && data.code === "ALREADY_REGISTERED") {
+    return { status: "duplicate", accessToken: data.accessToken, message: data.message || "You've already registered." };
   }
-  return localSaved;
+
+  if (!response.ok || !data.startup) {
+    throw new Error(data.message || "Failed to register startup.");
+  }
+
+  const localSaved = saveBangaloreStartupLocal(startupData);
+  return {
+    status: "created",
+    startup: {
+      ...data.startup,
+      id: (data.startup as any)._id || data.startup.id || localSaved.id,
+      accessToken: data.accessToken,
+      token: data.token,
+      account: data.account,
+    },
+  };
+};
+
+// Update the founder's own already-registered startup profile — the only path a founder has
+// back into their Bangalore Activity entry once registered (email is not editable here; it's
+// the identity the duplicate check above keys off).
+export const updateBangaloreStartupApi = async (
+  accessToken: string,
+  startupData: Pick<
+    ActivityStartupItem,
+    "founderName" | "founderPhone" | "startupName" | "tagline" | "description" | "category" | "stage" | "pitchDeckUrl" | "logoUrl"
+  >
+): Promise<ActivityStartupItem> => {
+  const res = await request<{ startup: ActivityStartupItem }>(`/activity/startup/access/${encodeURIComponent(accessToken)}`, {
+    method: "PUT",
+    body: JSON.stringify(startupData),
+  });
+  return { ...res.startup, id: (res.startup as any)._id || res.startup.id };
 };
 
 export const saveInvestorProfileApi = async (

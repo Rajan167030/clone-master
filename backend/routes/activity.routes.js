@@ -4,7 +4,7 @@ import { Router } from "express";
 import { ActivityStartup, ActivityInvestor } from "../models/activity.model.js";
 import { Account, Dashboard, FounderAccount, InvestorAccount } from "../models/index.js";
 import { applyStartupRating } from "../utils/activity-rating.js";
-import { requireAuth } from "../middlewares/auth.middleware.js";
+import { requireAuth, optionalAuth } from "../middlewares/auth.middleware.js";
 import { sendEmail } from "../utils/email.js";
 import { buildStartupActivityEmail, buildInvestorActivityEmail } from "../utils/activity-email-templates.js";
 import { getDashboardTemplate } from "../utils/dashboard-template.js";
@@ -28,6 +28,8 @@ const mapFounderStage = (formStage) => {
 };
 
 const generateInvestorId = () => `SAIS26-INV-${crypto.randomBytes(4).toString("hex").toUpperCase()}`;
+
+const escapeRegExp = (value) => String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 const router = Router();
 
@@ -71,6 +73,21 @@ router.post("/startup", async (req, res) => {
 
     if (!founderName || !founderEmail || !startupName || !tagline || !pitchDeckUrl || !logoUrl) {
       return res.status(400).json({ message: "Please fill all required startup details." });
+    }
+
+    // One founder, one Bangalore Activity registration — a second submission under the same
+    // email would just create a duplicate directory entry, so route them to edit the existing
+    // one (via the returned accessToken) instead of creating a new ActivityStartup document.
+    const normalizedFounderEmail = String(founderEmail).trim().toLowerCase();
+    const existingStartup = await ActivityStartup.findOne({
+      founderEmail: { $regex: new RegExp(`^${escapeRegExp(normalizedFounderEmail)}$`, "i") },
+    });
+    if (existingStartup) {
+      return res.status(409).json({
+        message: "You've already registered a startup for the Bangalore Event. Edit your existing profile instead of registering again.",
+        code: "ALREADY_REGISTERED",
+        accessToken: existingStartup.accessToken,
+      });
     }
 
     const accessToken = crypto.randomBytes(24).toString("hex");
@@ -222,6 +239,43 @@ router.get("/startup/access/:accessToken", async (req, res) => {
   }
 });
 
+// Edit an already-registered founder's Bangalore Activity profile (no login — possession of
+// accessToken, same as the read path above). founderEmail is intentionally not editable here:
+// it's the identity the duplicate-registration check above keys off, and it's tied to the
+// linked founder Account.
+router.put("/startup/access/:accessToken", async (req, res) => {
+  try {
+    const { accessToken } = req.params;
+    const startup = await ActivityStartup.findOne({ accessToken: String(accessToken || "").trim() });
+
+    if (!startup) {
+      return res.status(404).json({ message: "Dashboard link is invalid." });
+    }
+
+    const { founderName, founderPhone, startupName, tagline, description, category, stage, pitchDeckUrl, logoUrl } = req.body || {};
+
+    if (!founderName || !startupName || !tagline || !description || !pitchDeckUrl || !logoUrl) {
+      return res.status(400).json({ message: "Please fill all required startup details." });
+    }
+
+    startup.founderName = founderName;
+    startup.founderPhone = founderPhone || "";
+    startup.startupName = startupName;
+    startup.tagline = tagline;
+    startup.description = description;
+    startup.category = category;
+    startup.stage = stage;
+    startup.pitchDeckUrl = pitchDeckUrl;
+    startup.logoUrl = logoUrl;
+
+    await startup.save();
+
+    return res.status(200).json({ message: "Your Bangalore Event profile has been updated.", startup: stripAccessToken(startup) });
+  } catch (error) {
+    return res.status(500).json({ message: error.message || "Failed to update your profile." });
+  }
+});
+
 // Register Investor Profile
 router.post("/investor", async (req, res) => {
   try {
@@ -357,11 +411,12 @@ router.get("/investor/access/:accessToken", async (req, res) => {
   }
 });
 
-// Get all Bangalore Startups
-router.get("/startups", async (req, res) => {
+// Get all Bangalore Startups — founderPhone is only for logged-in members (investors, other
+// founders, admins) browsing the directory; anonymous visitors get everything else, minus that.
+router.get("/startups", optionalAuth, async (req, res) => {
   try {
     const startups = await ActivityStartup.find()
-      .select("-accessToken -accessTokenIssuedAt")
+      .select(req.user ? "-accessToken -accessTokenIssuedAt" : "-accessToken -accessTokenIssuedAt -founderPhone")
       .sort({ createdAt: -1 });
     return res.json({ startups });
   } catch (error) {

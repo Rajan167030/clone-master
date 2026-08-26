@@ -1,4 +1,5 @@
 import { ActivityStartup, ActivityInvestor } from "../models/activity.model.js";
+import { Account } from "../models/index.js";
 
 export const deleteAdminActivityStartup = async (req, res, next) => {
   try {
@@ -24,7 +25,17 @@ export const deleteAdminActivityInvestor = async (req, res, next) => {
       return res.status(404).json({ message: "Investor not found." });
     }
 
-    return res.status(200).json({ message: "Investor removed from the Bangalore Event Activity." });
+    // This event-registration record only references the real platform account via
+    // accountId — deleting it alone left that Account untouched, so the investor kept
+    // showing up on the public Community Directory after being "deleted" here.
+    if (investor.accountId) {
+      await Account.updateOne(
+        { _id: investor.accountId },
+        { $set: { isActive: false, isProfilePublic: false } },
+      );
+    }
+
+    return res.status(200).json({ message: "Investor removed from the Bangalore Event Activity and hidden from the Community Directory." });
   } catch (error) {
     return next(error);
   }

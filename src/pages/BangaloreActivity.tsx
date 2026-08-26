@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import EventLocationVisualizer from "@/components/EventLocationVisualizer";
@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/use-toast";
-import { setSession } from "@/lib/session";
+import { setSession, isAuthenticated, getAccount, getToken } from "@/lib/session";
 import PitchDeckViewerModal from "@/components/PitchDeckViewerModal";
 import {
   Star,
@@ -28,13 +28,17 @@ import {
   Trophy,
   Phone,
   Mail,
+  Lock,
 } from "lucide-react";
 import {
   ActivityStartupItem,
   ActivityInvestorProfile,
   RatingScores,
   getBangaloreStartupsApi,
-  saveBangaloreStartupApi,
+  registerBangaloreStartupApi,
+  updateBangaloreStartupApi,
+  getFounderAccessDashboardApi,
+  getMyFounderAccessApi,
   submitStartupRatingApi,
   saveInvestorProfileApi,
   getSavedInvestorProfileLocal,
@@ -53,6 +57,11 @@ const PROMO_CODES = {
   STARTUP: "startup20",
   INVESTOR: "investor20",
 };
+
+// Remembers this browser's own Bangalore Activity founder registration so a repeat visit to
+// "Register Your Startup" opens the edit form instead of a blank one — the backend also
+// enforces this by email, so this is just a UX shortcut around that server-side check.
+const LOCAL_STORAGE_MY_FOUNDER_ACCESS_KEY = "fc_sais26_my_founder_access";
 
 const SECTORS = [
   "All",
@@ -73,6 +82,7 @@ const FORM_INPUT_CLASS =
 
 const BangaloreActivity: React.FC = () => {
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   // Selected Role: null | "startup" | "investor"
   const [selectedRole, setSelectedRole] = useState<"startup" | "investor" | null>(null);
@@ -107,6 +117,7 @@ const BangaloreActivity: React.FC = () => {
   const [logoUrl, setLogoUrl] = useState("");
   const [isStartupSubmitted, setIsStartupSubmitted] = useState(false);
   const [founderAccessToken, setFounderAccessToken] = useState<string | null>(null);
+  const [isEditingStartup, setIsEditingStartup] = useState(false);
 
   // Investor Form state
   const [invFullName, setInvFullName] = useState("");
@@ -129,6 +140,8 @@ const BangaloreActivity: React.FC = () => {
   // Pitch Deck Viewer Modal state
   const [viewStartupProfile, setViewStartupProfile] = useState<ActivityStartupItem | null>(null);
   const [viewDeckStartup, setViewDeckStartup] = useState<ActivityStartupItem | null>(null);
+  // Logo lightbox — anyone can open this, no login required
+  const [viewLogoStartup, setViewLogoStartup] = useState<ActivityStartupItem | null>(null);
 
   // Loading state for initial fetch
   const [isLoadingStartups, setIsLoadingStartups] = useState(true);
@@ -147,7 +160,7 @@ const BangaloreActivity: React.FC = () => {
   // Function to refresh live startups from API
   const refreshLiveStartups = async (showLoader = false) => {
     if (showLoader) setIsLoadingStartups(true);
-    const freshStartups = await getBangaloreStartupsApi();
+    const freshStartups = await getBangaloreStartupsApi(getToken());
     setStartups(sortStartups(freshStartups));
     setLastSyncTime(new Date().toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", second: "2-digit" }));
     setIsLoadingStartups(false);
@@ -160,6 +173,23 @@ const BangaloreActivity: React.FC = () => {
     const savedInvestor = getSavedInvestorProfileLocal();
     if (savedInvestor) {
       setInvestorProfile(savedInvestor);
+    }
+
+    // A logged-in founder may already have a Bangalore registration from a previous session
+    // (different browser, cleared storage, etc.) — sync it into localStorage so clicking
+    // "Register Your Startup" opens the edit form instead of letting them attempt a duplicate.
+    const account = getAccount();
+    if (isAuthenticated() && account?.role === "founder") {
+      const token = getToken();
+      if (token) {
+        getMyFounderAccessApi(token)
+          .then((res) => {
+            if (res?.accessToken) {
+              localStorage.setItem(LOCAL_STORAGE_MY_FOUNDER_ACCESS_KEY, res.accessToken);
+            }
+          })
+          .catch(() => {});
+      }
     }
 
     // Live polling every 4 seconds for real-time updates during live event
@@ -210,7 +240,39 @@ const BangaloreActivity: React.FC = () => {
     }
   };
 
-  // Submit Startup Form
+  // Pull an existing registration into the form and switch to edit mode — used both when the
+  // backend reports a duplicate on submit, and when we already know (via localStorage or the
+  // founder's session) that this person has registered before.
+  const loadStartupForEditing = async (accessToken: string) => {
+    try {
+      const res = await getFounderAccessDashboardApi(accessToken);
+      const startup = res.startup as ActivityStartupItem;
+
+      setFounderName(startup.founderName || "");
+      setFounderEmail(startup.founderEmail || "");
+      setFounderPhone(startup.founderPhone || "");
+      setStartupName(startup.startupName || "");
+      setTagline(startup.tagline || "");
+      setDescription(startup.description || "");
+      setCategory(startup.category || "AI & DeepTech");
+      setStage(startup.stage || "Seed");
+      setPitchDeckUrl(startup.pitchDeckUrl || "");
+      setLogoUrl(startup.logoUrl || "");
+
+      setFounderAccessToken(accessToken);
+      setIsEditingStartup(true);
+      setIsStartupSubmitted(false);
+      setSelectedRole("startup");
+      setIsPromoVerified(true);
+      localStorage.setItem(LOCAL_STORAGE_MY_FOUNDER_ACCESS_KEY, accessToken);
+    } catch {
+      // Stale/invalid accessToken — fall through to a normal blank registration form.
+      setSelectedRole("startup");
+      setIsPromoVerified(true);
+    }
+  };
+
+  // Submit Startup Form — registers a new startup, or (once already registered) updates it.
   const handleStartupSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -226,38 +288,80 @@ const BangaloreActivity: React.FC = () => {
     const defaultLogo = logoUrl.trim() || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=300&auto=format&fit=crop&q=80";
     const defaultDeck = pitchDeckUrl.trim() || "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf";
 
-    const savedStartup = await saveBangaloreStartupApi({
-      founderName,
-      founderEmail,
-      founderPhone,
-      startupName,
-      tagline,
-      description,
-      category,
-      stage,
-      location: "Bangalore",
-      logoUrl: defaultLogo,
-      pitchDeckUrl: defaultDeck,
-    });
+    try {
+      if (isEditingStartup && founderAccessToken) {
+        await updateBangaloreStartupApi(founderAccessToken, {
+          founderName,
+          founderPhone,
+          startupName,
+          tagline,
+          description,
+          category,
+          stage,
+          logoUrl: defaultLogo,
+          pitchDeckUrl: defaultDeck,
+        });
 
-    if (savedStartup.accessToken) {
-      setFounderAccessToken(savedStartup.accessToken);
-      localStorage.setItem(`fc_sais26_founder_access_${savedStartup.id}`, savedStartup.accessToken);
+        await refreshLiveStartups();
+        setIsStartupSubmitted(true);
+
+        toast({
+          title: "Profile Updated ✅",
+          description: `${startupName}'s Bangalore Event profile has been updated.`,
+        });
+        return;
+      }
+
+      const result = await registerBangaloreStartupApi({
+        founderName,
+        founderEmail,
+        founderPhone,
+        startupName,
+        tagline,
+        description,
+        category,
+        stage,
+        location: "Bangalore",
+        logoUrl: defaultLogo,
+        pitchDeckUrl: defaultDeck,
+      });
+
+      if (result.status === "duplicate") {
+        toast({
+          title: "Already Registered",
+          description: result.message || "You've already registered for the Bangalore Event — edit your existing profile below.",
+        });
+        if (result.accessToken) {
+          await loadStartupForEditing(result.accessToken);
+        }
+        return;
+      }
+
+      const savedStartup = result.startup;
+
+      if (savedStartup.accessToken) {
+        setFounderAccessToken(savedStartup.accessToken);
+        localStorage.setItem(`fc_sais26_founder_access_${savedStartup.id}`, savedStartup.accessToken);
+        localStorage.setItem(LOCAL_STORAGE_MY_FOUNDER_ACCESS_KEY, savedStartup.accessToken);
+      }
+
+      if (savedStartup.token && savedStartup.account) {
+        // Full founder access, site-wide — same as logging in.
+        setSession(savedStartup.token, savedStartup.account);
+        setNavbarSessionKey((n) => n + 1);
+      }
+
+      await refreshLiveStartups();
+      setIsStartupSubmitted(true);
+
+      toast({
+        title: "Startup Registered Successfully! 🚀",
+        description: `${startupName} has been submitted for the Bangalore Event Activity Session!`,
+      });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Failed to save your registration.";
+      toast({ variant: "destructive", title: "Something went wrong", description: message });
     }
-
-    if (savedStartup.token && savedStartup.account) {
-      // Full founder access, site-wide — same as logging in.
-      setSession(savedStartup.token, savedStartup.account);
-      setNavbarSessionKey((n) => n + 1);
-    }
-
-    await refreshLiveStartups();
-    setIsStartupSubmitted(true);
-
-    toast({
-      title: "Startup Registered Successfully! 🚀",
-      description: `${startupName} has been submitted for the Bangalore Event Activity Session!`,
-    });
   };
 
   // Submit Investor Profile Form
@@ -450,13 +554,23 @@ const BangaloreActivity: React.FC = () => {
                 role="button"
                 tabIndex={0}
                 onClick={() => {
-                  setSelectedRole("startup");
-                  setIsPromoVerified(true);
+                  const savedToken = localStorage.getItem(LOCAL_STORAGE_MY_FOUNDER_ACCESS_KEY);
+                  if (savedToken) {
+                    void loadStartupForEditing(savedToken);
+                  } else {
+                    setSelectedRole("startup");
+                    setIsPromoVerified(true);
+                  }
                 }}
                 onKeyDown={(e) => {
                   if (e.key === "Enter" || e.key === " ") {
-                    setSelectedRole("startup");
-                    setIsPromoVerified(true);
+                    const savedToken = localStorage.getItem(LOCAL_STORAGE_MY_FOUNDER_ACCESS_KEY);
+                    if (savedToken) {
+                      void loadStartupForEditing(savedToken);
+                    } else {
+                      setSelectedRole("startup");
+                      setIsPromoVerified(true);
+                    }
                   }
                 }}
                 className="group cursor-pointer flex-1 flex flex-col border-2 border-[#0B0B09] bg-[#FBFAF5] rounded-none shadow-[6px_6px_0px_#0B0B09] hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[8px_8px_0px_#0B0B09] active:translate-x-0 active:translate-y-0 active:shadow-[6px_6px_0px_#0B0B09] transition-all duration-200 ease-out overflow-hidden"
@@ -472,14 +586,16 @@ const BangaloreActivity: React.FC = () => {
                     <Building2 className="w-7 h-7" />
                   </div>
                   <h2 className="font-heading text-xl sm:text-2xl font-extrabold uppercase tracking-tight text-[#0B0B09]">
-                    Register Your Startup
+                    {localStorage.getItem(LOCAL_STORAGE_MY_FOUNDER_ACCESS_KEY) ? "Edit Your Startup" : "Register Your Startup"}
                   </h2>
                   <p className="mt-2 text-sm text-[#6B6558] font-sans">
-                    For founders participating in the Bangalore Event. Submit your startup details, logo, and pitch deck to get evaluated.
+                    {localStorage.getItem(LOCAL_STORAGE_MY_FOUNDER_ACCESS_KEY)
+                      ? "You're already registered for the Bangalore Event — update your startup details, logo, or pitch deck here."
+                      : "For founders participating in the Bangalore Event. Submit your startup details, logo, and pitch deck to get evaluated."}
                   </p>
 
                   <div className="mt-auto pt-5 flex items-center justify-between font-mono text-xs font-bold uppercase tracking-wider text-[#4C1D95]">
-                    Start Registration
+                    {localStorage.getItem(LOCAL_STORAGE_MY_FOUNDER_ACCESS_KEY) ? "Edit Details" : "Start Registration"}
                     <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                   </div>
                 </div>
@@ -500,6 +616,7 @@ const BangaloreActivity: React.FC = () => {
                   onClick={() => {
                     setIsPromoVerified(false);
                     setSelectedRole(null);
+                    setIsEditingStartup(false);
                   }}
                   className="text-[#6B6558] hover:text-[#0B0B09] font-bold"
                 >
@@ -513,10 +630,12 @@ const BangaloreActivity: React.FC = () => {
                     <CheckCircle2 className="h-7 w-7" />
                   </div>
                   <h3 className="font-heading text-xl sm:text-2xl font-extrabold uppercase tracking-tight text-[#0B0B09]">
-                    Registration Received
+                    {isEditingStartup ? "Profile Updated" : "Registration Received"}
                   </h3>
                   <p className="mt-2 text-sm text-[#6B6558] max-w-md font-sans">
-                    {startupName || "Your startup"} has been added to the Bangalore Event startup directory.
+                    {isEditingStartup
+                      ? `${startupName || "Your startup"}'s Bangalore Event profile has been updated.`
+                      : `${startupName || "Your startup"} has been added to the Bangalore Event startup directory.`}
                   </p>
                   <div className="flex flex-wrap items-center justify-center gap-3 pt-5">
                     {founderAccessToken && (
@@ -524,18 +643,20 @@ const BangaloreActivity: React.FC = () => {
                         <Link to={`/sais26/founder/${founderAccessToken}`}>Your SAIS'26 Dashboard</Link>
                       </Button>
                     )}
-                    <Button
-                      variant="outline"
-                      className="rounded-none border-2 border-[#0B0B09] font-mono text-xs uppercase tracking-wider text-[#0B0B09] hover:bg-[#0B0B09] hover:text-white"
-                      onClick={() => {
-                        setIsStartupSubmitted(false);
-                        setStartupName("");
-                      }}
-                    >
-                      Submit Another Startup
-                    </Button>
+                    {founderAccessToken && (
+                      <Button
+                        variant="outline"
+                        className="rounded-none border-2 border-[#0B0B09] font-mono text-xs uppercase tracking-wider text-[#0B0B09] hover:bg-[#0B0B09] hover:text-white"
+                        onClick={() => {
+                          setIsStartupSubmitted(false);
+                          setIsEditingStartup(true);
+                        }}
+                      >
+                        Edit Your Details
+                      </Button>
+                    )}
                   </div>
-                  {founderAccessToken && (
+                  {founderAccessToken && !isEditingStartup && (
                     <p className="text-xs text-[#6B6558] pt-4 font-sans">
                       We've also emailed this private dashboard link to {founderEmail || "you"} — save it, it's how you'll get back in.
                     </p>
@@ -545,10 +666,12 @@ const BangaloreActivity: React.FC = () => {
                 <div className="p-5 sm:p-8">
                   <div className="mb-6">
                     <h2 className="font-heading text-xl sm:text-2xl font-extrabold uppercase tracking-tight text-[#0B0B09]">
-                      Startup Registration
+                      {isEditingStartup ? "Edit Your Startup Profile" : "Startup Registration"}
                     </h2>
                     <p className="mt-1.5 text-sm text-[#6B6558] font-sans">
-                      Founder details, startup summary, logo, and pitch deck.
+                      {isEditingStartup
+                        ? "You've already registered — update your founder details, startup summary, logo, and pitch deck below."
+                        : "Founder details, startup summary, logo, and pitch deck."}
                     </p>
                   </div>
 
@@ -574,12 +697,16 @@ const BangaloreActivity: React.FC = () => {
                           <label className={FORM_LABEL_CLASS}>Email <span className="text-[#4C1D95]">*</span></label>
                           <input
                             type="email"
-                            className={FORM_INPUT_CLASS}
+                            className={`${FORM_INPUT_CLASS} ${isEditingStartup ? "bg-slate-100 cursor-not-allowed text-[#6B6558]" : ""}`}
                             placeholder="e.g. founder@startup.in"
                             value={founderEmail}
                             onChange={(e) => setFounderEmail(e.target.value)}
+                            readOnly={isEditingStartup}
                             required
                           />
+                          {isEditingStartup && (
+                            <p className="text-[11px] text-[#6B6558]">Email can't be changed here.</p>
+                          )}
                         </div>
                         <div className="space-y-1.5">
                           <label className={FORM_LABEL_CLASS}>Phone <span className="font-normal normal-case text-[#6B6558]">(optional)</span></label>
@@ -752,7 +879,7 @@ const BangaloreActivity: React.FC = () => {
                       type="submit"
                       className="w-full bg-gradient-to-r from-[#4C1D95] to-[#6D28D9] text-white font-mono text-sm md:text-base font-bold uppercase tracking-wider border-2 border-[#0B0B09] rounded-none py-3.5 px-6 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[4px_4px_0px_#0B0B09] active:translate-x-0 active:translate-y-0 active:shadow-none transition-all duration-200 ease-out"
                     >
-                      Submit Registration
+                      {isEditingStartup ? "Update Profile" : "Submit Registration"}
                     </button>
                   </form>
                 </div>
@@ -1004,12 +1131,17 @@ const BangaloreActivity: React.FC = () => {
                 <Button
                   size="sm"
                   onClick={() => {
-                    setSelectedRole("startup");
-                    setIsPromoVerified(true);
+                    const savedToken = localStorage.getItem(LOCAL_STORAGE_MY_FOUNDER_ACCESS_KEY);
+                    if (savedToken) {
+                      void loadStartupForEditing(savedToken);
+                    } else {
+                      setSelectedRole("startup");
+                      setIsPromoVerified(true);
+                    }
                   }}
                   className="flex-1 md:flex-initial bg-purple-600 hover:bg-purple-700 text-white text-xs"
                 >
-                  + Add New Startup
+                  {localStorage.getItem(LOCAL_STORAGE_MY_FOUNDER_ACCESS_KEY) ? "Edit Your Startup" : "+ Add New Startup"}
                 </Button>
               </div>
             </div>
@@ -1096,7 +1228,11 @@ const BangaloreActivity: React.FC = () => {
                         <img
                           src={startup.logoUrl}
                           alt={startup.startupName}
-                          className="w-11 h-11 rounded-lg object-cover border border-slate-200 shrink-0"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setViewLogoStartup(startup);
+                          }}
+                          className="w-11 h-11 rounded-lg object-cover border border-slate-200 shrink-0 cursor-zoom-in hover:opacity-80 transition-opacity"
                         />
                         <div className="min-w-0">
                           <h3 className="text-sm font-bold text-slate-900 truncate">{startup.startupName}</h3>
@@ -1214,7 +1350,8 @@ const BangaloreActivity: React.FC = () => {
                   <img
                     src={viewStartupProfile.logoUrl}
                     alt={viewStartupProfile.startupName}
-                    className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl object-cover border-2 border-white/40 shadow-md shrink-0"
+                    onClick={() => setViewLogoStartup(viewStartupProfile)}
+                    className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl object-cover border-2 border-white/40 shadow-md shrink-0 cursor-zoom-in hover:opacity-90 transition-opacity"
                   />
                   <div className="min-w-0">
                     <DialogTitle className="text-xl sm:text-2xl font-bold text-white">
@@ -1245,8 +1382,24 @@ const BangaloreActivity: React.FC = () => {
                 <p className="text-sm font-bold text-slate-900">{viewStartupProfile.founderName}</p>
                 <div className="flex flex-col sm:flex-row sm:items-center gap-2 text-xs text-slate-600">
                   <span className="flex items-center gap-1.5"><Mail className="w-3.5 h-3.5 text-slate-400" /> {viewStartupProfile.founderEmail}</span>
-                  {viewStartupProfile.founderPhone && (
-                    <span className="flex items-center gap-1.5"><Phone className="w-3.5 h-3.5 text-slate-400" /> {viewStartupProfile.founderPhone}</span>
+                  {isAuthenticated() ? (
+                    viewStartupProfile.founderPhone && (
+                      <span className="flex items-center gap-1.5"><Phone className="w-3.5 h-3.5 text-slate-400" /> {viewStartupProfile.founderPhone}</span>
+                    )
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        toast({
+                          title: "Login Required",
+                          description: "Sign in or register to view the founder's phone number.",
+                        });
+                        navigate("/login");
+                      }}
+                      className="flex items-center gap-1.5 text-purple-700 hover:underline"
+                    >
+                      <Lock className="w-3.5 h-3.5 text-purple-400" /> Login to view phone number
+                    </button>
                   )}
                 </div>
               </div>
@@ -1335,6 +1488,22 @@ const BangaloreActivity: React.FC = () => {
       )}
 
       <PitchDeckViewerModal startup={viewDeckStartup} onClose={() => setViewDeckStartup(null)} />
+
+      {/* --- LOGO LIGHTBOX — open to everyone, no login required --- */}
+      {viewLogoStartup && (
+        <Dialog open={!!viewLogoStartup} onOpenChange={() => setViewLogoStartup(null)}>
+          <DialogContent className="w-[92vw] sm:max-w-lg bg-white p-4 sm:p-5 rounded-2xl shadow-2xl">
+            <DialogHeader>
+              <DialogTitle className="text-base font-bold text-slate-900">{viewLogoStartup.startupName}</DialogTitle>
+            </DialogHeader>
+            <img
+              src={viewLogoStartup.logoUrl}
+              alt={viewLogoStartup.startupName}
+              className="w-full max-h-[70vh] object-contain rounded-xl border border-slate-200 bg-slate-50"
+            />
+          </DialogContent>
+        </Dialog>
+      )}
 
       <Footer />
     </div>

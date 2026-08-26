@@ -1,4 +1,4 @@
-import { type ChangeEvent, type FormEvent, useEffect, useMemo, useState } from "react";
+import { type ChangeEvent, type FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { Building2, CheckCircle2, Eye, FileText, Image as ImageIcon, Layers, Loader2, MessageSquareText, Mic, Mic2, Rocket, ShieldCheck, Star, Target, TrendingUp, Users, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -31,6 +31,12 @@ import {
 } from "@/lib/api";
 
 const RANK_BADGES = ["🥇 #1 Rank", "🥈 #2 Rank", "🥉 #3 Rank"];
+
+// Chrome/Edge only — Firefox and Safari don't ship the Web Speech API, so live captions are
+// a progressive enhancement: the mic still records normally, we just fall back to the existing
+// upload-then-transcribe-with-Whisper path when this isn't available.
+const getSpeechRecognitionCtor = (): (new () => any) | null =>
+  (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition || null;
 
 const CRITERION_ICON: Record<string, typeof Target> = {
   problemClarity: Target,
@@ -94,6 +100,16 @@ const Sais26Room = ({ viewerRole, authToken, highlightStartupId }: Sais26RoomPro
   const [isSubmittingRating, setIsSubmittingRating] = useState(false);
   const [isUpdatingExisting, setIsUpdatingExisting] = useState(false);
   const [hoverPreview, setHoverPreview] = useState<{ key: string; star: number } | null>(null);
+
+  // Live mic recording — the investor speaks, captions appear as they talk (Web Speech API),
+  // while the raw audio is captured in parallel and uploaded as the usual voice note on stop.
+  const [isRecording, setIsRecording] = useState(false);
+  const [liveCaption, setLiveCaption] = useState("");
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const micStreamRef = useRef<MediaStream | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+  const recognitionRef = useRef<any>(null);
+  const gotLiveTranscriptRef = useRef(false);
 
   const load = async () => {
     const [freshStartups, freshInvestors] = await Promise.all([
@@ -208,6 +224,140 @@ const Sais26Room = ({ viewerRole, authToken, highlightStartupId }: Sais26RoomPro
       setIsTranscribing(false);
     }
   };
+
+  const stopMicTracks = () => {
+    micStreamRef.current?.getTracks().forEach((track) => track.stop());
+    micStreamRef.current = null;
+  };
+
+  const startRecording = async () => {
+    if (!authToken || isRecording) return;
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      micStreamRef.current = stream;
+
+      const recorder = new MediaRecorder(stream);
+      audioChunksRef.current = [];
+      recorder.ondataavailable = (e) => {
+        if (e.data.size > 0) audioChunksRef.current.push(e.data);
+      };
+      mediaRecorderRef.current = recorder;
+      recorder.start();
+
+      gotLiveTranscriptRef.current = false;
+      setLiveCaption("");
+
+      const SpeechRecognitionCtor = getSpeechRecognitionCtor();
+      if (SpeechRecognitionCtor) {
+        const recognition = new SpeechRecognitionCtor();
+        recognition.continuous = true;
+        recognition.interimResults = true;
+        recognition.lang = "en-IN";
+        recognition.onresult = (event: any) => {
+          let interim = "";
+          let finalChunk = "";
+          for (let i = event.resultIndex; i < event.results.length; i++) {
+            const transcript = event.results[i][0].transcript;
+            if (event.results[i].isFinal) {
+              finalChunk += `${transcript} `;
+            } else {
+              interim += transcript;
+            }
+          }
+          if (finalChunk.trim()) {
+            gotLiveTranscriptRef.current = true;
+            setRatingComment((prev) => (prev ? `${prev.trim()} ${finalChunk.trim()}` : finalChunk.trim()));
+          }
+          setLiveCaption(interim);
+        };
+        recognition.onerror = () => {};
+        recognition.start();
+        recognitionRef.current = recognition;
+      } else {
+        toast({
+          title: "Live captions not supported",
+          description: "Your browser can't show real-time text — we'll transcribe your recording after you stop.",
+        });
+      }
+
+      setIsRecording(true);
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Microphone access denied",
+        description: "Allow microphone access in your browser to record a live voice note.",
+      });
+    }
+  };
+
+  const stopRecording = () => {
+    const recorder = mediaRecorderRef.current;
+    if (!recorder) return;
+
+    recognitionRef.current?.stop();
+    recognitionRef.current = null;
+
+    recorder.onstop = async () => {
+      stopMicTracks();
+      setIsRecording(false);
+      setLiveCaption("");
+
+      const blob = new Blob(audioChunksRef.current, { type: "audio/webm" });
+      audioChunksRef.current = [];
+      if (blob.size === 0) return;
+
+      setIsUploadingVoice(true);
+      try {
+        const file = new File([blob], `voice-note-${Date.now()}.webm`, { type: "audio/webm" });
+        const url = await uploadToCloudinary(file, "auto");
+        setVoiceNoteUrl(url);
+        setIsUploadingVoice(false);
+
+        // Live captions already filled ratingComment as the investor spoke — only fall back
+        // to server-side Whisper transcription when the browser couldn't do it live.
+        if (!gotLiveTranscriptRef.current) {
+          setIsTranscribing(true);
+          const { text } = await transcribeVoiceNoteApi(authToken as string, url);
+          if (text) {
+            setRatingComment((prev) => (prev ? `${prev}\n${text}` : text));
+          }
+        }
+      } catch (error) {
+        toast({
+          variant: "destructive",
+          title: "Voice note failed",
+          description: error instanceof Error ? error.message : "Please try again.",
+        });
+      } finally {
+        setIsUploadingVoice(false);
+        setIsTranscribing(false);
+      }
+    };
+    recorder.stop();
+    mediaRecorderRef.current = null;
+  };
+
+  // If the dialog is closed or the component unmounts mid-recording, don't leave the mic hot.
+  useEffect(() => {
+    if (!ratingTargetStartup && isRecording) {
+      recognitionRef.current?.stop();
+      recognitionRef.current = null;
+      mediaRecorderRef.current?.stop();
+      mediaRecorderRef.current = null;
+      stopMicTracks();
+      setIsRecording(false);
+      setLiveCaption("");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ratingTargetStartup]);
+
+  useEffect(() => {
+    return () => {
+      recognitionRef.current?.stop();
+      mediaRecorderRef.current?.stop();
+      stopMicTracks();
+    };
+  }, []);
 
   const handleRatingSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -490,10 +640,39 @@ const Sais26Room = ({ viewerRole, authToken, highlightStartupId }: Sais26RoomPro
                   <input type="file" accept="image/*" className="hidden" disabled={isUploadingImage} onChange={handleFeedbackImageChange} />
                 </label>
 
+                {!isRecording ? (
+                  <button
+                    type="button"
+                    onClick={() => void startRecording()}
+                    disabled={isUploadingVoice || isTranscribing}
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <Mic className="h-3.5 w-3.5 text-rose-500" /> Record live voice note
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={stopRecording}
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-rose-300 bg-rose-50 px-3 py-1.5 text-xs font-semibold text-rose-700"
+                  >
+                    <span className="relative flex h-2 w-2">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-500 opacity-75" />
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-600" />
+                    </span>
+                    Stop recording
+                  </button>
+                )}
+
                 <label className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50">
                   {isUploadingVoice ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Mic className="h-3.5 w-3.5" />}
                   {voiceNoteUrl ? "Replace voice note" : "Upload voice note"}
-                  <input type="file" accept="audio/*" className="hidden" disabled={isUploadingVoice || isTranscribing} onChange={handleVoiceNoteChange} />
+                  <input
+                    type="file"
+                    accept="audio/*"
+                    className="hidden"
+                    disabled={isUploadingVoice || isTranscribing || isRecording}
+                    onChange={handleVoiceNoteChange}
+                  />
                 </label>
 
                 {isTranscribing && (
@@ -502,6 +681,15 @@ const Sais26Room = ({ viewerRole, authToken, highlightStartupId }: Sais26RoomPro
                   </span>
                 )}
               </div>
+
+              {isRecording && (
+                <div className="rounded-lg border border-rose-200 bg-rose-50/70 p-2.5 text-xs text-slate-700">
+                  <span className="font-semibold text-rose-600">Listening… </span>
+                  <span className="italic text-slate-500">
+                    {liveCaption || "Start speaking — your words will appear here in real time."}
+                  </span>
+                </div>
+              )}
 
               {feedbackImageUrl && (
                 <div className="relative inline-block">
@@ -553,6 +741,7 @@ const Sais26Room = ({ viewerRole, authToken, highlightStartupId }: Sais26RoomPro
                   isUploadingImage ||
                   isUploadingVoice ||
                   isTranscribing ||
+                  isRecording ||
                   Object.values(ratingScores).some((score) => score < 1)
                 }
                 className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold disabled:opacity-50 disabled:cursor-not-allowed"
