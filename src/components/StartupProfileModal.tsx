@@ -162,6 +162,20 @@ const StartupProfileModal = ({ startup, onClose }: StartupProfileModalProps) => 
                         </Badge>
                       </div>
                       {r.comment && <p className="text-xs text-slate-600 italic mt-2">"{r.comment}"</p>}
+                      {(r.feedbackImageUrl || r.voiceNoteUrl) && (
+                        <div className="mt-2 flex flex-wrap items-center gap-2">
+                          {r.feedbackImageUrl && (
+                            <a href={r.feedbackImageUrl} target="_blank" rel="noreferrer">
+                              <img
+                                src={r.feedbackImageUrl}
+                                alt="Feedback notes"
+                                className="h-14 w-14 rounded-md border border-slate-200 object-cover hover:opacity-80"
+                              />
+                            </a>
+                          )}
+                          {r.voiceNoteUrl && <audio src={r.voiceNoteUrl} controls className="h-8" />}
+                        </div>
+                      )}
                     </div>
                   ))}
               </div>

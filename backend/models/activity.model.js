@@ -31,6 +31,8 @@ const activityStartupSchema = new mongoose.Schema(
         },
         totalScore: { type: Number, required: true },
         comment: { type: String, default: "" },
+        feedbackImageUrl: { type: String, default: "" },
+        voiceNoteUrl: { type: String, default: "" },
         updatedAt: { type: Date, default: Date.now },
       },
     ],

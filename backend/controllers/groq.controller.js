@@ -52,4 +52,48 @@ export const chat = async (req, res) => {
   }
 };
 
-export default { chat };
+// Speech-to-text for voice-note feedback — proxies to Groq's Whisper endpoint
+// (OpenAI-compatible /audio/transcriptions), reusing the same GROQ_API_KEY as the chat feature.
+export const transcribe = async (req, res) => {
+  try {
+    const { audioUrl } = req.body || {};
+    if (!audioUrl || typeof audioUrl !== "string") {
+      return res.status(400).json({ message: "Missing audioUrl" });
+    }
+
+    const groqKey = process.env.GROQ_API_KEY;
+    if (!groqKey) return res.status(500).json({ message: "Groq API not configured" });
+
+    const audioRes = await fetch(audioUrl);
+    if (!audioRes.ok) {
+      return res.status(400).json({ message: "Could not fetch the uploaded voice note." });
+    }
+    const audioBlob = await audioRes.blob();
+
+    const form = new FormData();
+    form.append("file", audioBlob, "voice-note.webm");
+    form.append("model", process.env.GROQ_WHISPER_MODEL || "whisper-large-v3-turbo");
+    form.append("response_format", "json");
+
+    const response = await fetch("https://api.groq.com/openai/v1/audio/transcriptions", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${groqKey}` },
+      body: form,
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      return res.status(response.status).json({
+        message: data?.error?.message || "Transcription failed",
+      });
+    }
+
+    return res.json({ text: data?.text || "" });
+  } catch (err) {
+    console.error("Groq transcribe error:", err?.message || err);
+    return res.status(500).json({ message: "Transcription failed" });
+  }
+};
+
+export default { chat, transcribe };

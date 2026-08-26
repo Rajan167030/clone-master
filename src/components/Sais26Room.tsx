@@ -1,6 +1,6 @@
-import { type FormEvent, useEffect, useMemo, useState } from "react";
+import { type ChangeEvent, type FormEvent, useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { Building2, CheckCircle2, Eye, FileText, Layers, MessageSquareText, Mic2, Rocket, ShieldCheck, Star, Target, TrendingUp, Users } from "lucide-react";
+import { Building2, CheckCircle2, Eye, FileText, Image as ImageIcon, Layers, Loader2, MessageSquareText, Mic, Mic2, Rocket, ShieldCheck, Star, Target, TrendingUp, Users, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -25,7 +25,9 @@ import {
   type RatingScores,
   getBangaloreInvestorsApi,
   getBangaloreStartupsApi,
+  getPublicCloudinaryUploadSignatureApi,
   submitRoomRatingApi,
+  transcribeVoiceNoteApi,
 } from "@/lib/api";
 
 const RANK_BADGES = ["🥇 #1 Rank", "🥈 #2 Rank", "🥉 #3 Rank"];
@@ -84,6 +86,11 @@ const Sais26Room = ({ viewerRole, authToken, highlightStartupId }: Sais26RoomPro
   const [ratingTargetStartup, setRatingTargetStartup] = useState<ActivityStartupItem | null>(null);
   const [ratingScores, setRatingScores] = useState<RatingScores>(DEFAULT_SCORES);
   const [ratingComment, setRatingComment] = useState("");
+  const [feedbackImageUrl, setFeedbackImageUrl] = useState("");
+  const [voiceNoteUrl, setVoiceNoteUrl] = useState("");
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [isUploadingVoice, setIsUploadingVoice] = useState(false);
+  const [isTranscribing, setIsTranscribing] = useState(false);
   const [isSubmittingRating, setIsSubmittingRating] = useState(false);
   const [isUpdatingExisting, setIsUpdatingExisting] = useState(false);
   const [hoverPreview, setHoverPreview] = useState<{ key: string; star: number } | null>(null);
@@ -114,14 +121,92 @@ const Sais26Room = ({ viewerRole, authToken, highlightStartupId }: Sais26RoomPro
     if (myExisting) {
       setRatingScores(myExisting.scores);
       setRatingComment(myExisting.comment || "");
+      setFeedbackImageUrl(myExisting.feedbackImageUrl || "");
+      setVoiceNoteUrl(myExisting.voiceNoteUrl || "");
       setIsUpdatingExisting(true);
     } else {
       setRatingScores(DEFAULT_SCORES);
       setRatingComment("");
+      setFeedbackImageUrl("");
+      setVoiceNoteUrl("");
       setIsUpdatingExisting(false);
     }
     setHoverPreview(null);
     setRatingTargetStartup(startup);
+  };
+
+  const uploadToCloudinary = async (file: File, resourceType: "image" | "auto") => {
+    const signature = await getPublicCloudinaryUploadSignatureApi({
+      folder: "founders-connect/sais26-feedback",
+      resourceType,
+    });
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("api_key", signature.apiKey);
+    formData.append("timestamp", String(signature.timestamp));
+    formData.append("signature", signature.signature);
+    formData.append("folder", signature.folder);
+    if (signature.publicId) formData.append("public_id", signature.publicId);
+
+    const uploadRes = await fetch(signature.uploadUrl, { method: "POST", body: formData });
+    const uploadData = (await uploadRes.json().catch(() => ({}))) as { secure_url?: string; error?: { message?: string } };
+    if (!uploadRes.ok || !uploadData.secure_url) {
+      throw new Error(uploadData.error?.message || "Upload failed.");
+    }
+    return uploadData.secure_url;
+  };
+
+  const handleFeedbackImageChange = async (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    setIsUploadingImage(true);
+    try {
+      const url = await uploadToCloudinary(file, "image");
+      setFeedbackImageUrl(url);
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Image upload failed",
+        description: error instanceof Error ? error.message : "Please try again.",
+      });
+    } finally {
+      setIsUploadingImage(false);
+    }
+  };
+
+  const handleVoiceNoteChange = async (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file || !authToken) return;
+    setIsUploadingVoice(true);
+    try {
+      const url = await uploadToCloudinary(file, "auto");
+      setVoiceNoteUrl(url);
+      setIsUploadingVoice(false);
+
+      setIsTranscribing(true);
+      const { text } = await transcribeVoiceNoteApi(authToken, url);
+      if (text) {
+        setRatingComment((prev) => (prev ? `${prev}\n${text}` : text));
+        toast({ title: "Voice note transcribed", description: "Review the text below and edit it if needed." });
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Could not transcribe voice note",
+          description: "The audio was uploaded — you can still type your feedback manually.",
+        });
+      }
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Voice note failed",
+        description: error instanceof Error ? error.message : "Please try again.",
+      });
+    } finally {
+      setIsUploadingVoice(false);
+      setIsTranscribing(false);
+    }
   };
 
   const handleRatingSubmit = async (e: FormEvent) => {
@@ -144,6 +229,8 @@ const Sais26Room = ({ viewerRole, authToken, highlightStartupId }: Sais26RoomPro
         startupId: (ratingTargetStartup as any)._id || ratingTargetStartup.id,
         scores: ratingScores,
         comment: ratingComment,
+        feedbackImageUrl,
+        voiceNoteUrl,
       });
       toast({
         title: isUpdatingExisting ? "Rating updated!" : "Rating submitted!",
@@ -151,6 +238,8 @@ const Sais26Room = ({ viewerRole, authToken, highlightStartupId }: Sais26RoomPro
       });
       setRatingTargetStartup(null);
       setRatingComment("");
+      setFeedbackImageUrl("");
+      setVoiceNoteUrl("");
       await load();
     } catch (error) {
       toast({
@@ -388,11 +477,57 @@ const Sais26Room = ({ viewerRole, authToken, highlightStartupId }: Sais26RoomPro
               })}
 
               <Textarea
-                placeholder="Feedback for the founder (optional)"
+                placeholder="Feedback for the founder (optional) — write it here, or attach a photo of your notes / a voice note below"
                 rows={2}
                 value={ratingComment}
                 onChange={(e) => setRatingComment(e.target.value)}
               />
+
+              <div className="flex flex-wrap items-center gap-2">
+                <label className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50">
+                  {isUploadingImage ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ImageIcon className="h-3.5 w-3.5" />}
+                  {feedbackImageUrl ? "Replace photo" : "Attach photo of notes"}
+                  <input type="file" accept="image/*" className="hidden" disabled={isUploadingImage} onChange={handleFeedbackImageChange} />
+                </label>
+
+                <label className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50">
+                  {isUploadingVoice ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Mic className="h-3.5 w-3.5" />}
+                  {voiceNoteUrl ? "Replace voice note" : "Upload voice note"}
+                  <input type="file" accept="audio/*" className="hidden" disabled={isUploadingVoice || isTranscribing} onChange={handleVoiceNoteChange} />
+                </label>
+
+                {isTranscribing && (
+                  <span className="inline-flex items-center gap-1.5 text-xs font-medium text-indigo-600">
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" /> Transcribing voice note…
+                  </span>
+                )}
+              </div>
+
+              {feedbackImageUrl && (
+                <div className="relative inline-block">
+                  <img src={feedbackImageUrl} alt="Feedback notes" className="h-24 w-24 rounded-lg border border-slate-200 object-cover" />
+                  <button
+                    type="button"
+                    onClick={() => setFeedbackImageUrl("")}
+                    className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-slate-800 text-white shadow"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </div>
+              )}
+
+              {voiceNoteUrl && (
+                <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white p-2">
+                  <audio src={voiceNoteUrl} controls className="h-8 flex-1" />
+                  <button
+                    type="button"
+                    onClick={() => setVoiceNoteUrl("")}
+                    className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              )}
 
               <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 space-y-2">
                 <div className="flex items-center justify-between text-xs font-bold text-slate-800">
@@ -413,7 +548,13 @@ const Sais26Room = ({ viewerRole, authToken, highlightStartupId }: Sais26RoomPro
 
               <Button
                 type="submit"
-                disabled={isSubmittingRating || Object.values(ratingScores).some((score) => score < 1)}
+                disabled={
+                  isSubmittingRating ||
+                  isUploadingImage ||
+                  isUploadingVoice ||
+                  isTranscribing ||
+                  Object.values(ratingScores).some((score) => score < 1)
+                }
                 className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isSubmittingRating ? "Submitting…" : isUpdatingExisting ? "Update Rating" : "Submit Rating"}

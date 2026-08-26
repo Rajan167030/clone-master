@@ -9,7 +9,10 @@ const CRITERIA_KEYS = [
   "mvpFit",
 ];
 
-export const applyStartupRating = (startup, { investorId, investorName, investorFirm, investorPhoto, scores, comment }) => {
+export const applyStartupRating = (
+  startup,
+  { investorId, investorName, investorFirm, investorPhoto, scores, comment, feedbackImageUrl, voiceNoteUrl },
+) => {
   const totalScore = CRITERIA_KEYS.reduce((sum, key) => sum + Number(scores?.[key] || 0), 0);
 
   const ratingEntry = {
@@ -20,6 +23,8 @@ export const applyStartupRating = (startup, { investorId, investorName, investor
     scores,
     totalScore,
     comment: comment || "",
+    feedbackImageUrl: feedbackImageUrl || "",
+    voiceNoteUrl: voiceNoteUrl || "",
     updatedAt: new Date(),
   };
 

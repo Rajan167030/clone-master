@@ -1248,6 +1248,8 @@ export type ActivityRatingItem = {
   scores: RatingScores;
   totalScore: number; // out of RATING_MAX_TOTAL (9 criteria x 10)
   comment?: string;
+  feedbackImageUrl?: string;
+  voiceNoteUrl?: string;
   updatedAt: string;
 };
 
@@ -1889,12 +1891,26 @@ export const getInvestorAccessDashboardApi = (accessToken: string) =>
 
 export const submitRoomRatingApi = (
   token: string,
-  payload: { startupId: string; scores: RatingScores; comment?: string },
+  payload: {
+    startupId: string;
+    scores: RatingScores;
+    comment?: string;
+    feedbackImageUrl?: string;
+    voiceNoteUrl?: string;
+  },
 ) =>
   request<{ message: string; startup: ActivityStartupItem }>("/activity/room/rate", {
     method: "POST",
     headers: { Authorization: `Bearer ${token}` },
     body: JSON.stringify(payload),
+  });
+
+// Transcribes an uploaded voice note (Cloudinary URL) to text via Groq Whisper.
+export const transcribeVoiceNoteApi = (token: string, audioUrl: string) =>
+  request<{ text: string }>("/ai/transcribe", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ audioUrl }),
   });
 
 export type PublicLeaderboardStartup = {

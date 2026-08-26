@@ -411,7 +411,7 @@ router.post("/room/rate", requireAuth, async (req, res) => {
       return res.status(403).json({ message: "Only investors can rate startups." });
     }
 
-    const { startupId, scores, comment } = req.body || {};
+    const { startupId, scores, comment, feedbackImageUrl, voiceNoteUrl } = req.body || {};
     if (!startupId || !scores) {
       return res.status(400).json({ message: "Startup ID and scores are required." });
     }
@@ -441,6 +441,8 @@ router.post("/room/rate", requireAuth, async (req, res) => {
       investorPhoto: investorProfile.photoUrl,
       scores,
       comment,
+      feedbackImageUrl,
+      voiceNoteUrl,
     });
 
     await startup.save();
