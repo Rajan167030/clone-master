@@ -773,6 +773,18 @@ const AdminDashboard = () => {
       .finally(() => setUpdatingAdminId(""));
   };
 
+  const handleRevokeAdmin = (id: string, fullName: string) => {
+    if (!window.confirm(`Revoke ${fullName}'s admin panel access? Their account stays, but they're demoted to a regular user and can no longer log into the admin panel. You can re-grant access later from the Members list.`)) return;
+
+    setUpdatingAdminId(id);
+    deleteAdminAccountApi(token, id, false)
+      .then(() => loadAdmins())
+      .catch((error) => {
+        window.alert(error instanceof Error ? error.message : "Unable to revoke access.");
+      })
+      .finally(() => setUpdatingAdminId(""));
+  };
+
   const handleDeleteAdmin = (id: string, fullName: string) => {
     if (!window.confirm(`Permanently delete ${fullName}'s admin account? This cannot be undone, and their email will be free to use again.`)) return;
 
@@ -5056,7 +5068,7 @@ const AdminDashboard = () => {
                 <Card>
                   <CardHeader className="bg-slate-50 border-b">
                     <CardTitle>Admins ({admins.length})</CardTitle>
-                    <CardDescription>Manage roles or remove admin access.</CardDescription>
+                    <CardDescription>Change roles, revoke access, or permanently delete an admin account.</CardDescription>
                   </CardHeader>
                   <CardContent className="p-0">
                     <div className="overflow-x-auto">
@@ -5100,16 +5112,28 @@ const AdminDashboard = () => {
                                     <Badge variant={admin.isActive ? "default" : "secondary"}>{admin.isActive ? "Active" : "Inactive"}</Badge>
                                   </td>
                                   <td className="p-4 text-right">
-                                    <Button
-                                      size="sm"
-                                      variant="destructive"
-                                      disabled={isSelf || isUpdating}
-                                      onClick={() => handleDeleteAdmin(admin._id, admin.fullName)}
-                                      className="gap-1.5"
-                                    >
-                                      <Trash2 className="h-3.5 w-3.5" />
-                                      Delete
-                                    </Button>
+                                    <div className="flex justify-end gap-2">
+                                      <Button
+                                        size="sm"
+                                        variant="outline"
+                                        disabled={isSelf || isUpdating}
+                                        onClick={() => handleRevokeAdmin(admin._id, admin.fullName)}
+                                        className="gap-1.5 border-amber-300 text-amber-700 hover:bg-amber-50"
+                                      >
+                                        <Ban className="h-3.5 w-3.5" />
+                                        Revoke
+                                      </Button>
+                                      <Button
+                                        size="sm"
+                                        variant="destructive"
+                                        disabled={isSelf || isUpdating}
+                                        onClick={() => handleDeleteAdmin(admin._id, admin.fullName)}
+                                        className="gap-1.5"
+                                      >
+                                        <Trash2 className="h-3.5 w-3.5" />
+                                        Delete
+                                      </Button>
+                                    </div>
                                   </td>
                                 </tr>
                               );

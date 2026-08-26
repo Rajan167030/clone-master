@@ -36,7 +36,6 @@ const InvestorIdentityCard = ({
   const profileUrl = `${import.meta.env.VITE_APP_URL || window.location.origin}/profile/${profileId}`;
 
   const primary = cardColors.primary || "#7C3AED";
-  const secondary = cardColors.secondary || "#F59E0B";
 
   const downloadCard = async () => {
     if (!cardRef.current) return;
@@ -74,35 +73,27 @@ const InvestorIdentityCard = ({
     <div className="space-y-4">
       <div
         ref={cardRef}
-        className="mx-auto w-full max-w-sm rounded-3xl bg-white shadow-[0_20px_45px_-15px_rgba(15,23,42,0.25)] border border-slate-100 overflow-hidden relative"
+        className="mx-auto w-full max-w-sm rounded-3xl bg-white shadow-[0_20px_45px_-15px_rgba(15,23,42,0.15)] border border-slate-100 overflow-hidden relative"
       >
-        {/* Decorative corner accent */}
-        <div
-          className="absolute -top-10 -right-10 h-32 w-32 rounded-full opacity-10"
-          style={{ background: `radial-gradient(circle, ${secondary}, transparent 70%)` }}
-        />
-
-        {/* Colored header band */}
-        <div
-          className="px-6 pt-5 pb-10 relative"
-          style={{ background: `linear-gradient(120deg, ${primary} 0%, ${secondary} 100%)` }}
-        >
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-[10px] font-extrabold uppercase tracking-[0.25em] text-white/80">
-                Founders Connect
-              </p>
-              <p className="text-sm font-black uppercase tracking-wide text-white flex items-center gap-1.5 mt-0.5">
-                <BadgeCheck className="w-4 h-4" /> SAIS'26 Verified Investor
-              </p>
-            </div>
+        {/* Top identity strip */}
+        <div className="px-6 pt-5 pb-4 flex items-center justify-between border-b border-slate-100">
+          <div>
+            <p className="text-[10px] font-extrabold uppercase tracking-[0.25em]" style={{ color: primary }}>
+              Founders Connect
+            </p>
+            <p className="text-xs font-bold uppercase tracking-wide text-slate-700 flex items-center gap-1.5 mt-0.5">
+              <BadgeCheck className="w-3.5 h-3.5" style={{ color: primary }} /> SAIS'26 Verified Investor
+            </p>
           </div>
         </div>
 
-        {/* Photo overlaps the band, like a physical ID badge */}
-        <div className="flex justify-center -mt-9">
+        {/* Full profile photo, shown in complete without cropping */}
+        <div className="flex justify-center pt-6">
           {profilePhoto ? (
-            <div className="h-20 w-20 shrink-0 overflow-hidden rounded-full border-4 border-white bg-white shadow-[0_2px_6px_rgba(15,23,42,0.18)] ring-1 ring-black/5">
+            <div
+              className="h-28 w-28 shrink-0 overflow-hidden rounded-full border-4 bg-white shadow-[0_4px_12px_rgba(15,23,42,0.1)] flex items-center justify-center"
+              style={{ borderColor: `${primary}25` }}
+            >
               <img
                 src={profilePhoto}
                 alt={fullName}
@@ -111,15 +102,15 @@ const InvestorIdentityCard = ({
             </div>
           ) : (
             <div
-              className="h-20 w-20 rounded-full border-4 border-white shadow-[0_2px_6px_rgba(15,23,42,0.18)] ring-1 ring-black/5 flex items-center justify-center text-2xl font-black text-white"
-              style={{ background: `linear-gradient(135deg, ${primary}, ${secondary})` }}
+              className="h-28 w-28 rounded-full border-4 shadow-[0_4px_12px_rgba(15,23,42,0.1)] flex items-center justify-center text-3xl font-black text-white"
+              style={{ borderColor: `${primary}25`, background: primary }}
             >
               {fullName.charAt(0).toUpperCase()}
             </div>
           )}
         </div>
 
-        <div className="px-6 pt-3 pb-6 text-center">
+        <div className="px-6 pt-4 pb-6 text-center">
           <h2 className="text-xl font-extrabold text-slate-900 tracking-tight">{fullName}</h2>
           {headline && <p className="text-xs text-slate-500 mt-0.5 italic">"{headline}"</p>}
 
