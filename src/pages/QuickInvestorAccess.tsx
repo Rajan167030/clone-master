@@ -1,5 +1,5 @@
 import { type FormEvent, useState } from "react";
-import { Building2, CheckCircle2, Loader2, Mail, MapPin, Phone, Sparkles, Star, Tag, User, Users } from "lucide-react";
+import { Building2, CheckCircle2, Loader2, Mail, MapPin, Sparkles, Star, Tag, User, Users } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -37,7 +37,6 @@ const QuickInvestorAccess = () => {
   const { code } = useParams<{ code: string }>();
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
   const [city, setCity] = useState("");
   const [firmName, setFirmName] = useState("");
   const [sector, setSector] = useState("");
@@ -52,7 +51,6 @@ const QuickInvestorAccess = () => {
       const response = await quickAccessInvestorInviteApi(code, {
         fullName: fullName.trim(),
         email: email.trim(),
-        phone: phone.trim() || undefined,
         city: city.trim() || undefined,
         firmName: firmName.trim() || undefined,
         sector: sector || undefined,
@@ -125,20 +123,11 @@ const QuickInvestorAccess = () => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <FieldLabel>Email *</FieldLabel>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                    <Input className="pl-9" type="email" placeholder="jane@fund.vc" value={email} onChange={(e) => setEmail(e.target.value)} required />
-                  </div>
-                </div>
-                <div>
-                  <FieldLabel>Phone</FieldLabel>
-                  <div className="relative">
-                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                    <Input className="pl-9" placeholder="+91 98765 43210" value={phone} onChange={(e) => setPhone(e.target.value)} />
-                  </div>
+              <div>
+                <FieldLabel>Email *</FieldLabel>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <Input className="pl-9" type="email" placeholder="jane@fund.vc" value={email} onChange={(e) => setEmail(e.target.value)} required />
                 </div>
               </div>
 
