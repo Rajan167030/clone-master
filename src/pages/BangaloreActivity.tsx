@@ -122,7 +122,6 @@ const BangaloreActivity: React.FC = () => {
   // Investor Form state
   const [invFullName, setInvFullName] = useState("");
   const [invEmail, setInvEmail] = useState("");
-  const [invPhone, setInvPhone] = useState("");
   const [invFirmName, setInvFirmName] = useState("");
   const [invDesignation, setInvDesignation] = useState("");
   const [invSectors, setInvSectors] = useState("AI, FinTech, SaaS");
@@ -383,7 +382,6 @@ const BangaloreActivity: React.FC = () => {
     const profile = await saveInvestorProfileApi({
       fullName: invFullName,
       email: invEmail,
-      phone: invPhone,
       firmName: invFirmName,
       designation: invDesignation || "Investor",
       sectors: sectorsArray,
@@ -978,24 +976,14 @@ const BangaloreActivity: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="space-y-1">
-                      <label className="text-xs font-semibold text-slate-700">LinkedIn Profile URL</label>
-                      <Input
-                        type="url"
-                        placeholder="https://linkedin.com/in/investorname"
-                        value={invLinkedin}
-                        onChange={(e) => setInvLinkedin(e.target.value)}
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-xs font-semibold text-slate-700">Phone Number</label>
-                      <Input
-                        placeholder="+91 98765 00000"
-                        value={invPhone}
-                        onChange={(e) => setInvPhone(e.target.value)}
-                      />
-                    </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-slate-700">LinkedIn Profile URL</label>
+                    <Input
+                      type="url"
+                      placeholder="https://linkedin.com/in/investorname"
+                      value={invLinkedin}
+                      onChange={(e) => setInvLinkedin(e.target.value)}
+                    />
                   </div>
 
                   <div className="space-y-1">
