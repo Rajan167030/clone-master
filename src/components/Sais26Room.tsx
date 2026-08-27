@@ -1,6 +1,7 @@
 import { type ChangeEvent, type FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Building2, CheckCircle2, Eye, FileText, Image as ImageIcon, Layers, Loader2, MessageSquareText, Mic, Mic2, Rocket, ShieldCheck, Star, Target, TrendingUp, Users, X } from "lucide-react";
+import { Building2, CheckCircle2, Eye, FileText, Image as ImageIcon, Layers, Loader2, MessageSquareText, Mic, Mic2, Pencil, Rocket, ShieldCheck, Star, Target, TrendingUp, Users, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -78,9 +79,10 @@ type Sais26RoomProps = {
   viewerRole: "investor" | "founder" | "admin";
   authToken?: string;
   highlightStartupId?: string;
+  founderAccessToken?: string;
 };
 
-const Sais26Room = ({ viewerRole, authToken, highlightStartupId }: Sais26RoomProps) => {
+const Sais26Room = ({ viewerRole, authToken, highlightStartupId, founderAccessToken }: Sais26RoomProps) => {
   const { toast } = useToast();
   const currentAccount = useMemo(() => getAccount(), []);
   const [startups, setStartups] = useState<ActivityStartupItem[]>([]);
@@ -485,6 +487,13 @@ const Sais26Room = ({ viewerRole, authToken, highlightStartupId }: Sais26RoomPro
                           <Button variant="outline" size="sm" onClick={() => setViewDeckStartup(startup)} className="flex-1 md:flex-initial text-xs">
                             <FileText className="w-4 h-4 mr-1.5" /> Pitch Deck
                           </Button>
+                          {viewerRole === "founder" && isMine && founderAccessToken && (
+                            <Button asChild size="sm" className="flex-1 md:flex-initial text-xs bg-purple-600 hover:bg-purple-700 text-white">
+                              <Link to={`/bangalore-activity?edit=${founderAccessToken}`}>
+                                <Pencil className="w-4 h-4 mr-1.5" /> Edit Profile
+                              </Link>
+                            </Button>
+                          )}
                           {viewerRole === "investor" && authToken && (
                             <Button
                               size="sm"

@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { ArrowLeft, Loader2, ShieldAlert, Sparkles, Star, TrendingUp } from "lucide-react";
+import { ArrowLeft, Loader2, Pencil, ShieldAlert, Sparkles, Star, TrendingUp } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import Sais26Room from "@/components/Sais26Room";
 import { getFounderAccessDashboardApi, type ActivityStartupItem } from "@/lib/api";
@@ -74,9 +75,16 @@ const FounderRoomEntry = () => {
             <ArrowLeft className="w-4 h-4" /> Back to Dashboard
           </Link>
         )}
-        <div className="mb-6 flex items-center gap-2">
-          <Sparkles className="w-6 h-6 text-purple-600" />
-          <h1 className="text-2xl font-bold text-slate-900">Your SAIS'26 Dashboard</h1>
+        <div className="mb-6 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <Sparkles className="w-6 h-6 text-purple-600" />
+            <h1 className="text-2xl font-bold text-slate-900">Your SAIS'26 Dashboard</h1>
+          </div>
+          <Button asChild variant="outline" size="sm" className="gap-1.5">
+            <Link to={`/bangalore-activity?edit=${accessToken}`}>
+              <Pencil className="w-3.5 h-3.5" /> Edit Profile
+            </Link>
+          </Button>
         </div>
 
         <Card className="mb-8 border-2 border-purple-200 bg-gradient-to-br from-purple-50 to-white">
@@ -110,7 +118,7 @@ const FounderRoomEntry = () => {
         <p className="text-sm text-slate-600 mb-4 max-w-2xl">
           See which investors have joined the Bangalore event and view their profiles.
         </p>
-        <Sais26Room viewerRole="founder" highlightStartupId={startup.id} />
+        <Sais26Room viewerRole="founder" highlightStartupId={startup.id} founderAccessToken={accessToken} />
       </main>
       <Footer />
     </div>

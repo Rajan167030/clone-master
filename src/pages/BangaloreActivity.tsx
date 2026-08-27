@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import EventLocationVisualizer from "@/components/EventLocationVisualizer";
@@ -80,9 +80,14 @@ const FORM_LABEL_CLASS = "block font-mono text-xs font-bold uppercase tracking-w
 const FORM_INPUT_CLASS =
   "w-full border-[1.5px] border-[#0B0B09] rounded-none bg-white px-3.5 py-3 font-sans text-sm text-[#0B0B09] placeholder:text-[#6B6558]/60 focus:outline-none focus:ring-0 focus:border-[#0B0B09] focus:shadow-[3px_3px_0px_#4C1D95] transition-all";
 
+// Only Google Drive share links are accepted for the pitch deck — keeps every deck viewable
+// via a single, familiar flow instead of mixing in raw file uploads.
+const isGoogleDriveUrl = (url: string) => /^https?:\/\/(drive|docs)\.google\.com\//i.test(url.trim());
+
 const BangaloreActivity: React.FC = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   // Selected Role: null | "startup" | "investor"
   const [selectedRole, setSelectedRole] = useState<"startup" | "investor" | null>(null);
@@ -148,7 +153,6 @@ const BangaloreActivity: React.FC = () => {
 
   // Upload progress states
   const [isUploadingLogo, setIsUploadingLogo] = useState(false);
-  const [isUploadingDeck, setIsUploadingDeck] = useState(false);
   const [isUploadingInvestorPhoto, setIsUploadingInvestorPhoto] = useState(false);
 
   // Show newest registrations first — ranking is not pre-decided for visitors.
@@ -172,6 +176,13 @@ const BangaloreActivity: React.FC = () => {
     const savedInvestor = getSavedInvestorProfileLocal();
     if (savedInvestor) {
       setInvestorProfile(savedInvestor);
+    }
+
+    // Coming from the "Edit Profile" link on the founder's SAIS'26 dashboard — jump straight
+    // into the edit form instead of making them find the "Register Your Startup" card again.
+    const editToken = searchParams.get("edit");
+    if (editToken) {
+      void loadStartupForEditing(editToken);
     }
 
     // A logged-in founder may already have a Bangalore registration from a previous session
@@ -275,7 +286,7 @@ const BangaloreActivity: React.FC = () => {
   const handleStartupSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!founderName || !founderEmail || !startupName || !tagline || !description) {
+    if (!founderName || !founderEmail || !startupName || !tagline || !description || !pitchDeckUrl.trim()) {
       toast({
         variant: "destructive",
         title: "Missing Information",
@@ -284,8 +295,17 @@ const BangaloreActivity: React.FC = () => {
       return;
     }
 
+    if (!isGoogleDriveUrl(pitchDeckUrl)) {
+      toast({
+        variant: "destructive",
+        title: "Invalid Pitch Deck Link",
+        description: "Pitch deck must be a Google Drive link (https://drive.google.com/...).",
+      });
+      return;
+    }
+
     const defaultLogo = logoUrl.trim() || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=300&auto=format&fit=crop&q=80";
-    const defaultDeck = pitchDeckUrl.trim() || "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf";
+    const defaultDeck = pitchDeckUrl.trim();
 
     try {
       if (isEditingStartup && founderAccessToken) {
@@ -835,39 +855,25 @@ const BangaloreActivity: React.FC = () => {
                           )}
                         </div>
 
-                        {/* Pitch Deck */}
+                        {/* Pitch Deck — Google Drive link only, no direct file upload */}
                         <div className="space-y-2 p-4 border-[1.5px] border-[#0B0B09]/20 bg-white">
-                          <label className={FORM_LABEL_CLASS}>Pitch Deck <span className="text-[#4C1D95]">*</span></label>
+                          <label className={FORM_LABEL_CLASS}>Pitch Deck (Google Drive Link) <span className="text-[#4C1D95]">*</span></label>
                           <input
                             type="url"
                             className={FORM_INPUT_CLASS}
-                            placeholder="https://drive.google.com/your-pitch-deck.pdf"
+                            placeholder="https://drive.google.com/file/d/your-pitch-deck/view"
                             value={pitchDeckUrl}
                             onChange={(e) => setPitchDeckUrl(e.target.value)}
+                            required
                           />
-                          <div className="flex items-center gap-2 flex-wrap pt-1">
-                            <span className="text-xs text-[#6B6558]">or upload:</span>
-                            <label className={`inline-flex items-center gap-1.5 cursor-pointer px-3 py-1.5 border-[1.5px] border-[#0B0B09] font-mono text-[11px] font-bold uppercase tracking-wide transition-colors ${
-                              isUploadingDeck
-                                ? "bg-slate-100 text-slate-400 cursor-not-allowed"
-                                : "bg-white text-[#0B0B09] hover:bg-[#0B0B09] hover:text-white"
-                            }`}>
-                              {isUploadingDeck ? (
-                                <><svg className="w-3 h-3 animate-spin" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg> Uploading…</>
-                              ) : (
-                                <><Upload className="w-3 h-3" /> Choose File</>
-                              )}
-                              <input
-                                type="file"
-                                accept=".pdf,.ppt,.pptx"
-                                className="hidden"
-                                disabled={isUploadingDeck}
-                                onChange={(e) => void handleCloudinaryUpload(e, setPitchDeckUrl, setIsUploadingDeck, "founders-connect/activity-decks", "auto")}
-                              />
-                            </label>
-                          </div>
-                          {pitchDeckUrl && !pitchDeckUrl.startsWith("data:") && (
-                            <p className="text-[11px] text-[#4C1D95] font-medium pt-1">Deck ready</p>
+                          <p className="text-[11px] text-[#6B6558] pt-1">
+                            Upload your deck to Google Drive, set sharing to "Anyone with the link", and paste that link here.
+                          </p>
+                          {pitchDeckUrl && isGoogleDriveUrl(pitchDeckUrl) && (
+                            <p className="text-[11px] text-[#4C1D95] font-medium pt-1">Deck link ready</p>
+                          )}
+                          {pitchDeckUrl && !isGoogleDriveUrl(pitchDeckUrl) && (
+                            <p className="text-[11px] text-red-600 font-medium pt-1">Must be a drive.google.com link.</p>
                           )}
                         </div>
                       </div>
