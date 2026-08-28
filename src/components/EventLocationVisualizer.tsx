@@ -56,19 +56,19 @@ const EventLocationVisualizer = ({
   const mapContent = (
     <div className={`space-y-4 ${className}`}>
       {/* Map Header Meta Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-slate-900/90 border border-slate-800 p-4 text-white shadow-md">
-        <div className="flex items-center gap-3 min-w-0">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-red-500/20 text-red-400 border border-red-500/30">
-            <MapPin size={20} className="animate-bounce" />
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-slate-900/90 border border-slate-800 p-3 sm:p-4 text-white shadow-md">
+        <div className="flex items-center gap-3 min-w-0 max-w-full">
+          <div className="flex h-9 w-9 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-xl bg-red-500/20 text-red-400 border border-red-500/30">
+            <MapPin size={18} className="animate-bounce sm:w-5 sm:h-5" />
           </div>
-          <div className="min-w-0">
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">Venue Address</span>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-slate-400">Venue Address</span>
               <Badge variant="outline" className="border-emerald-500/40 bg-emerald-500/10 text-emerald-300 text-[10px]">
                 Live Location
               </Badge>
             </div>
-            <p className="font-semibold text-sm sm:text-base text-slate-100 truncate" title={displayAddress}>
+            <p className="font-semibold text-xs sm:text-sm md:text-base text-slate-100 truncate" title={displayAddress}>
               {displayAddress}
             </p>
           </div>
@@ -81,7 +81,7 @@ const EventLocationVisualizer = ({
             variant="outline"
             size="sm"
             onClick={handleCopyAddress}
-            className="h-9 gap-1.5 border-slate-700 bg-slate-800/80 text-slate-200 hover:bg-slate-700 hover:text-white text-xs font-medium"
+            className="h-8 sm:h-9 flex-1 sm:flex-initial gap-1.5 border-slate-700 bg-slate-800/80 text-slate-200 hover:bg-slate-700 hover:text-white text-[11px] sm:text-xs font-medium"
           >
             {copied ? <Check size={14} className="text-emerald-400" /> : <Copy size={14} />}
             {copied ? "Copied" : "Copy Address"}
@@ -90,22 +90,22 @@ const EventLocationVisualizer = ({
           <Button
             asChild
             size="sm"
-            className="h-9 gap-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-semibold shadow-md"
+            className="h-8 sm:h-9 flex-1 sm:flex-initial gap-1.5 bg-red-600 hover:bg-red-700 text-white text-[11px] sm:text-xs font-semibold shadow-md"
           >
             <a href={directionsUrl} target="_blank" rel="noopener noreferrer">
-              <Navigation size={14} /> Get Directions
+              <Navigation size={14} /> Directions
             </a>
           </Button>
         </div>
       </div>
 
       {/* Embedded Map Container */}
-      <div className="relative group overflow-hidden rounded-2xl border border-slate-800 bg-slate-950 shadow-xl min-h-[280px] sm:min-h-[340px]">
+      <div className="relative group overflow-hidden rounded-2xl border border-slate-800 bg-slate-950 shadow-xl min-h-[220px] sm:min-h-[340px]">
         <iframe
           key={embedUrl}
           src={embedUrl}
           title={`Google Map for ${eventTitle}`}
-          className={`w-full h-[280px] sm:h-[340px] transition-all duration-300 ${
+          className={`w-full h-[220px] sm:h-[340px] transition-all duration-300 ${
             isInteractive ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-90 group-hover:opacity-100"
           }`}
           loading="lazy"
@@ -114,27 +114,28 @@ const EventLocationVisualizer = ({
         />
 
         {/* Overlay Badges */}
-        <div className="absolute top-3 left-3 flex items-center gap-2">
+        <div className="absolute top-2.5 left-2.5 sm:top-3 sm:left-3 flex items-center gap-2">
           <button
             type="button"
             onClick={() => setIsInteractive(!isInteractive)}
-            className="flex items-center gap-1.5 rounded-lg bg-slate-950/85 px-3 py-1.5 text-xs font-medium text-slate-200 backdrop-blur-md border border-white/10 shadow-lg hover:bg-slate-900 transition-all"
+            className="flex items-center gap-1.5 rounded-lg bg-slate-950/85 px-2.5 sm:px-3 py-1 sm:py-1.5 text-[11px] sm:text-xs font-medium text-slate-200 backdrop-blur-md border border-white/10 shadow-lg hover:bg-slate-900 transition-all"
           >
-            <Compass size={14} className={isInteractive ? "text-emerald-400" : "text-slate-400"} />
-            {isInteractive ? "Map Interactivity Active" : "Click to Interact with Map"}
+            <Compass size={13} className={isInteractive ? "text-emerald-400" : "text-slate-400"} />
+            <span className="hidden xs:inline">{isInteractive ? "Map Active" : "Interact"}</span>
+            <span className="xs:hidden">{isInteractive ? "Active" : "Interact"}</span>
           </button>
         </div>
 
-        <div className="absolute bottom-3 right-3">
+        <div className="absolute bottom-2.5 right-2.5 sm:bottom-3 sm:right-3">
           <a
             href={mapsTargetUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-1.5 rounded-lg bg-slate-950/90 px-3.5 py-1.5 text-xs font-semibold text-white backdrop-blur-md border border-white/20 shadow-xl hover:scale-105 hover:bg-slate-900 transition-all"
+            className="flex items-center gap-1.5 rounded-lg bg-slate-950/90 px-2.5 sm:px-3.5 py-1 sm:py-1.5 text-[11px] sm:text-xs font-semibold text-white backdrop-blur-md border border-white/20 shadow-xl hover:scale-105 hover:bg-slate-900 transition-all"
           >
-            <MapPin size={14} className="text-red-400" />
-            Open in Google Maps
-            <ExternalLink size={12} className="opacity-80" />
+            <MapPin size={13} className="text-red-400" />
+            <span>Open in Maps</span>
+            <ExternalLink size={11} className="opacity-80" />
           </a>
         </div>
       </div>
