@@ -71,7 +71,7 @@ router.post("/startup", async (req, res) => {
       return res.status(400).json({ message: "Invalid promo code! Access requires promo code 'startup20'." });
     }
 
-    if (!founderName || !founderEmail || !startupName || !tagline || !pitchDeckUrl || !logoUrl) {
+    if (!founderName || !founderEmail || !startupName || !tagline || !logoUrl) {
       return res.status(400).json({ message: "Please fill all required startup details." });
     }
 
@@ -101,7 +101,7 @@ router.post("/startup", async (req, res) => {
       description,
       category,
       stage,
-      pitchDeckUrl,
+      pitchDeckUrl: pitchDeckUrl || "",
       logoUrl,
       promoCodeUsed: "startup20",
       accessToken,
@@ -128,7 +128,7 @@ router.post("/startup", async (req, res) => {
           startupName,
           startupStage: mapFounderStage(stage),
           teamSize: 1,
-          startupWebsite: pitchDeckUrl,
+          startupWebsite: pitchDeckUrl || "Not provided",
         });
         const dashboardTemplate = getDashboardTemplate("founder");
 
@@ -254,7 +254,7 @@ router.put("/startup/access/:accessToken", async (req, res) => {
 
     const { founderName, founderPhone, startupName, tagline, description, category, stage, pitchDeckUrl, logoUrl } = req.body || {};
 
-    if (!founderName || !startupName || !tagline || !description || !pitchDeckUrl || !logoUrl) {
+    if (!founderName || !startupName || !tagline || !description || !logoUrl) {
       return res.status(400).json({ message: "Please fill all required startup details." });
     }
 
@@ -265,7 +265,7 @@ router.put("/startup/access/:accessToken", async (req, res) => {
     startup.description = description;
     startup.category = category;
     startup.stage = stage;
-    startup.pitchDeckUrl = pitchDeckUrl;
+    startup.pitchDeckUrl = pitchDeckUrl || "";
     startup.logoUrl = logoUrl;
 
     await startup.save();

@@ -312,7 +312,7 @@ const BangaloreActivity: React.FC = () => {
   const handleStartupSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!founderName || !founderEmail || !startupName || !tagline || !description || !pitchDeckUrl.trim()) {
+    if (!founderName || !founderEmail || !startupName || !tagline || !description) {
       toast({
         variant: "destructive",
         title: "Missing Information",
@@ -330,7 +330,7 @@ const BangaloreActivity: React.FC = () => {
       return;
     }
 
-    if (!isGoogleDriveUrl(pitchDeckUrl)) {
+    if (pitchDeckUrl.trim() && !isGoogleDriveUrl(pitchDeckUrl)) {
       toast({
         variant: "destructive",
         title: "Invalid Pitch Deck Link",
@@ -912,14 +912,13 @@ const BangaloreActivity: React.FC = () => {
 
                         {/* Pitch Deck — Google Drive link only, no direct file upload */}
                         <div className="space-y-2 p-3.5 sm:p-4 border-[1.5px] border-[#0B0B09]/20 bg-white overflow-hidden">
-                          <label className={FORM_LABEL_CLASS}>Pitch Deck (Google Drive Link) <span className="text-[#4C1D95]">*</span></label>
+                          <label className={FORM_LABEL_CLASS}>Pitch Deck (Google Drive Link) <span className="text-[#6B6558] font-normal normal-case">(optional)</span></label>
                           <input
                             type="url"
                             className={FORM_INPUT_CLASS}
                             placeholder="https://drive.google.com/file/d/your-pitch-deck/view"
                             value={pitchDeckUrl}
                             onChange={(e) => setPitchDeckUrl(e.target.value)}
-                            required
                           />
                           <p className="text-[11px] text-[#6B6558] pt-1 break-words">
                             Upload your deck to Google Drive, set sharing to "Anyone with the link", and paste that link here.
@@ -1475,14 +1474,16 @@ const BangaloreActivity: React.FC = () => {
                   </div>
                 </div>
                 <div className="flex items-center gap-2 w-full sm:w-auto">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="border-purple-300 text-purple-700 hover:bg-purple-50 text-xs flex-1 sm:flex-initial"
-                    onClick={() => setViewDeckStartup(viewStartupProfile)}
-                  >
-                    <FileText className="w-3.5 h-3.5 mr-1.5" /> Pitch Deck
-                  </Button>
+                  {viewStartupProfile.pitchDeckUrl && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="border-purple-300 text-purple-700 hover:bg-purple-50 text-xs flex-1 sm:flex-initial"
+                      onClick={() => setViewDeckStartup(viewStartupProfile)}
+                    >
+                      <FileText className="w-3.5 h-3.5 mr-1.5" /> Pitch Deck
+                    </Button>
+                  )}
                   <Button
                     size="sm"
                     onClick={() => {

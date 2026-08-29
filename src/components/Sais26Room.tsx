@@ -484,9 +484,11 @@ const Sais26Room = ({ viewerRole, authToken, highlightStartupId, founderAccessTo
                           <Button variant="outline" size="sm" onClick={() => setProfileStartup(startup)} className="flex-1 md:flex-initial text-xs">
                             <Eye className="w-4 h-4 mr-1.5" /> View Profile
                           </Button>
-                          <Button variant="outline" size="sm" onClick={() => setViewDeckStartup(startup)} className="flex-1 md:flex-initial text-xs">
-                            <FileText className="w-4 h-4 mr-1.5" /> Pitch Deck
-                          </Button>
+                          {startup.pitchDeckUrl && (
+                            <Button variant="outline" size="sm" onClick={() => setViewDeckStartup(startup)} className="flex-1 md:flex-initial text-xs">
+                              <FileText className="w-4 h-4 mr-1.5" /> Pitch Deck
+                            </Button>
+                          )}
                           {viewerRole === "founder" && isMine && founderAccessToken && (
                             <Button asChild size="sm" className="flex-1 md:flex-initial text-xs bg-purple-600 hover:bg-purple-700 text-white">
                               <Link to={`/bangalore-activity?edit=${founderAccessToken}`}>

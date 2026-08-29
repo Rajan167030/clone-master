@@ -12,7 +12,7 @@ const activityStartupSchema = new mongoose.Schema(
     stage: { type: String, required: true },
     location: { type: String, default: "Bangalore" },
     promoCodeUsed: { type: String, default: "startup20" },
-    pitchDeckUrl: { type: String, required: true },
+    pitchDeckUrl: { type: String, default: "" },
     logoUrl: { type: String, required: true },
     ratings: [
       {
