@@ -95,6 +95,9 @@ import {
   type AdminChatMessage,
   listChatParticipantsApi,
   type ChatParticipant,
+  sendAdminHeartbeatApi,
+  getOnlineAdminsApi,
+  type OnlineAdmin,
   listTasksApi,
   createTaskApi,
   assignTaskApi,
@@ -446,6 +449,7 @@ const AdminDashboard = () => {
   const [sendingChat, setSendingChat] = useState(false);
   const chatEndRef = useRef<HTMLDivElement | null>(null);
   const [chatParticipants, setChatParticipants] = useState<ChatParticipant[]>([]);
+  const [onlineAdmins, setOnlineAdmins] = useState<OnlineAdmin[]>([]);
   const [mentionedIds, setMentionedIds] = useState<string[]>([]);
   const [mentionQuery, setMentionQuery] = useState<string | null>(null);
 
@@ -851,6 +855,36 @@ const AdminDashboard = () => {
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [chatMessages]);
+
+  // Presence: tell the server we're here every ~25s, and refresh who else is online every ~20s.
+  // Two separate intervals (rather than one) so a slow heartbeat request never delays the
+  // online-list refresh, and vice versa.
+  useEffect(() => {
+    if (!token) return;
+    let cancelled = false;
+
+    const beat = () => {
+      sendAdminHeartbeatApi(token).catch(() => {});
+    };
+    const refreshOnline = () => {
+      getOnlineAdminsApi(token)
+        .then((response) => {
+          if (!cancelled) setOnlineAdmins(response.online || []);
+        })
+        .catch(() => {});
+    };
+
+    beat();
+    refreshOnline();
+    const heartbeatInterval = setInterval(beat, 25000);
+    const refreshInterval = setInterval(refreshOnline, 20000);
+
+    return () => {
+      cancelled = true;
+      clearInterval(heartbeatInterval);
+      clearInterval(refreshInterval);
+    };
+  }, [token]);
 
   const mentionMatches = mentionQuery !== null
     ? chatParticipants.filter(
@@ -1841,6 +1875,30 @@ const AdminDashboard = () => {
             <BarChart3 size={12} />
             Administrator
           </div>
+        </div>
+
+        <div className="border-b border-slate-800 px-5 py-4">
+          <p className="text-xs uppercase tracking-wide text-slate-500">
+            Online Now {onlineAdmins.length > 0 && `(${onlineAdmins.length})`}
+          </p>
+          {onlineAdmins.length === 0 ? (
+            <p className="mt-2 text-xs text-slate-500">No other admins online.</p>
+          ) : (
+            <ul className="mt-2 space-y-1.5">
+              {onlineAdmins.map((admin) => (
+                <li key={admin._id} className="flex items-center gap-2 text-xs text-slate-300">
+                  <span className="relative flex h-2 w-2 shrink-0">
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+                    <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+                  </span>
+                  <span className="truncate">
+                    {admin.fullName}
+                    {admin._id === account?.id && <span className="text-slate-500"> (you)</span>}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
 
         <nav className="flex-1 space-y-1 px-3 py-4">

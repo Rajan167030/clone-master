@@ -2087,6 +2087,26 @@ export const listAdminChatMessagesApi = (token: string, after?: string) =>
     headers: { Authorization: `Bearer ${token}` },
   });
 
+export type OnlineAdmin = {
+  _id: string;
+  fullName: string;
+  email: string;
+  role: "admin" | "superadmin";
+  lastActiveAt: string;
+};
+
+export const sendAdminHeartbeatApi = (token: string) =>
+  request<{ ok: boolean }>("/admin/presence/heartbeat", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const getOnlineAdminsApi = (token: string) =>
+  request<{ online: OnlineAdmin[] }>("/admin/presence/online", {
+    method: "GET",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
 export const sendAdminChatMessageApi = (token: string, message: string, senderName?: string, mentionedIds?: string[]) =>
   request<{ chatMessage: AdminChatMessage }>("/admin/chat/messages", {
     method: "POST",

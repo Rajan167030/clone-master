@@ -97,7 +97,13 @@ import {
 } from "../controllers/investor-invite.controller.js";
 import { auditLogger } from "../middlewares/audit.middleware.js";
 import { listAuditLogs } from "../controllers/audit.controller.js";
-import { sendAdminMessage, listAdminMessages, listChatParticipants } from "../controllers/admin-chat.controller.js";
+import {
+  sendAdminMessage,
+  listAdminMessages,
+  listChatParticipants,
+  sendAdminHeartbeat,
+  listOnlineAdmins,
+} from "../controllers/admin-chat.controller.js";
 
 import {
   getAdminTeamMembers,
@@ -222,5 +228,9 @@ adminRouter.get("/super/audit-logs", requireSuperAdmin, listAuditLogs);
 adminRouter.get("/chat/participants", listChatParticipants);
 adminRouter.get("/chat/messages", listAdminMessages);
 adminRouter.post("/chat/messages", sendAdminMessage);
+
+// Presence: which admins currently have the panel open
+adminRouter.post("/presence/heartbeat", sendAdminHeartbeat);
+adminRouter.get("/presence/online", listOnlineAdmins);
 
 export default adminRouter;

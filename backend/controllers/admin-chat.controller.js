@@ -14,6 +14,36 @@ export const listChatParticipants = async (req, res, next) => {
   }
 };
 
+// An admin's tab pings this every ~25s while the panel is open — cheap presence signal,
+// no websockets needed since the backend runs as Vercel serverless functions.
+const ONLINE_THRESHOLD_MS = 60 * 1000;
+
+export const sendAdminHeartbeat = async (req, res, next) => {
+  try {
+    await Account.updateOne({ _id: req.user.id }, { $set: { lastActiveAt: new Date() } });
+    return res.status(200).json({ ok: true });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const listOnlineAdmins = async (req, res, next) => {
+  try {
+    const admins = await Account.find({ role: { $in: ["admin", "superadmin"] } })
+      .select("fullName email role lastActiveAt")
+      .lean();
+
+    const now = Date.now();
+    const online = admins
+      .filter((a) => a.lastActiveAt && now - new Date(a.lastActiveAt).getTime() <= ONLINE_THRESHOLD_MS)
+      .map((a) => ({ _id: a._id, fullName: a.fullName, email: a.email, role: a.role, lastActiveAt: a.lastActiveAt }));
+
+    return res.status(200).json({ online });
+  } catch (error) {
+    return next(error);
+  }
+};
+
 const buildMentionEmail = ({ taggedName, senderName, message }) => `
   <div style="background-color: #0b071e; padding: 40px 20px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; text-align: center; color: #ffffff;">
     <div style="max-width: 500px; margin: 0 auto; background: linear-gradient(135deg, #130f35 0%, #0a0524 100%); border: 1px solid rgba(255,255,255,0.08); border-radius: 24px; padding: 40px 30px; box-shadow: 0 20px 40px rgba(0,0,0,0.45); text-align: center;">

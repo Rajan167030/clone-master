@@ -63,6 +63,9 @@ const BaseAccountSchema = new Schema(
     },
     isActive: { type: Boolean, default: true, index: true },
     lastLoginAt: { type: Date, default: null },
+    // Updated on a heartbeat interval while an admin has the panel open — powers the
+    // "online admins" indicator. Distinct from lastLoginAt, which only moves on sign-in.
+    lastActiveAt: { type: Date, default: null, index: true },
     metadata: { type: Schema.Types.Mixed, default: {} },
     assignedTasks: [{ type: Schema.Types.ObjectId, ref: "Task" }],
     // Profile Card Fields
