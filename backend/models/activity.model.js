@@ -68,6 +68,9 @@ const activityInvestorSchema = new mongoose.Schema(
     // See the comment on ActivityStartup.accessToken above — same reasoning applies here.
     accessToken: { type: String, unique: true, sparse: true, index: true },
     accessTokenIssuedAt: { type: Date, default: null },
+    // `select: false` so this never rides along on the public /activity/investors listing —
+    // only the admin sheet explicitly asks for it via .select("+plainPassword").
+    plainPassword: { type: String, default: null, select: false },
   },
   { timestamps: true }
 );

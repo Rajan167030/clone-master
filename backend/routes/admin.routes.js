@@ -62,6 +62,8 @@ import { requireAdmin } from "../middlewares/admin.middleware.js";
 import {
   deleteAdminActivityStartup,
   deleteAdminActivityInvestor,
+  createAdminActivityInvestor,
+  listAdminActivityInvestors,
   announceAdminActivityResults,
   resetAdminActivityResults,
 } from "../controllers/activity-admin.controller.js";
@@ -188,6 +190,8 @@ adminRouter.get("/investors-directory", listAdminInvestorLeads);
 adminRouter.get("/members-directory", listAdminMembersDetailed);
 
 adminRouter.delete("/activity/startups/:id", deleteAdminActivityStartup);
+adminRouter.get("/activity/investors", listAdminActivityInvestors);
+adminRouter.post("/activity/investors", createAdminActivityInvestor);
 adminRouter.delete("/activity/investors/:id", deleteAdminActivityInvestor);
 adminRouter.post("/activity/results", announceAdminActivityResults);
 adminRouter.delete("/activity/results", resetAdminActivityResults);

@@ -1286,6 +1286,7 @@ export type ActivityInvestorProfile = {
   bio?: string;
   photoUrl: string;
   promoCodeUsed: string;
+  plainPassword?: string | null;
 };
 
 const INITIAL_BANGALORE_STARTUPS: ActivityStartupItem[] = [
@@ -1630,6 +1631,24 @@ export const deleteAdminActivityInvestorApi = (token: string, id: string) =>
   request<{ message: string }>(`/admin/activity/investors/${encodeURIComponent(id)}`, {
     method: "DELETE",
     headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const getAdminActivityInvestorsApi = (token: string): Promise<ActivityInvestorProfile[]> =>
+  request<{ investors: ActivityInvestorProfile[] }>("/admin/activity/investors", {
+    method: "GET",
+    headers: { Authorization: `Bearer ${token}` },
+  }).then((res) =>
+    (res.investors || []).map((item: any) => ({ ...item, id: item.id || item._id })),
+  );
+
+export const createAdminActivityInvestorApi = (
+  token: string,
+  payload: { fullName: string; email: string; firmName: string; designation?: string; phone?: string; sector?: string; password?: string },
+) =>
+  request<{ message: string; investor: ActivityInvestorProfile; password: string }>("/admin/activity/investors", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify(payload),
   });
 
 export const announceAdminActivityResultsApi = (

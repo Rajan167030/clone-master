@@ -65,9 +65,10 @@ import {
   type Campaign,
   type RecipientUploadStats,
   getBangaloreStartupsApi,
-  getBangaloreInvestorsApi,
+  getAdminActivityInvestorsApi,
   deleteAdminActivityStartupApi,
   deleteAdminActivityInvestorApi,
+  createAdminActivityInvestorApi,
   announceAdminActivityResultsApi,
   resetAdminActivityResultsApi,
   type ActivityStartupItem,
@@ -346,6 +347,12 @@ const AdminDashboard = () => {
   const [activityStartups, setActivityStartups] = useState<ActivityStartupItem[]>([]);
   const [adminViewDeckStartup, setAdminViewDeckStartup] = useState<ActivityStartupItem | null>(null);
   const [activityInvestors, setActivityInvestors] = useState<ActivityInvestorProfile[]>([]);
+  const [newInvestorName, setNewInvestorName] = useState("");
+  const [newInvestorEmail, setNewInvestorEmail] = useState("");
+  const [newInvestorFirm, setNewInvestorFirm] = useState("");
+  const [newInvestorDesignation, setNewInvestorDesignation] = useState("");
+  const [newInvestorSector, setNewInvestorSector] = useState("");
+  const [isAddingInvestor, setIsAddingInvestor] = useState(false);
   const [goldPick, setGoldPick] = useState("");
   const [silverPick, setSilverPick] = useState("");
   const [bronzePick, setBronzePick] = useState("");
@@ -564,7 +571,7 @@ const AdminDashboard = () => {
       getAdminSiteNoticeApi(token),
       getAdminSliderPromotionsApi(token),
       getBangaloreStartupsApi(),
-      getBangaloreInvestorsApi(),
+      getAdminActivityInvestorsApi(token),
       listAdminInvestorInvitesApi(token),
       getAdminInvestorsDirectoryApi(token),
     ])
@@ -4702,6 +4709,86 @@ const AdminDashboard = () => {
 
               <PitchDeckViewerModal startup={adminViewDeckStartup} onClose={() => setAdminViewDeckStartup(null)} />
 
+              {/* Add Investor */}
+              <Card className="border-2 border-violet-200 bg-violet-50">
+                <CardHeader className="pb-4">
+                  <CardTitle>Add Investor</CardTitle>
+                  <CardDescription>
+                    Adds a real login account for the Bangalore activity (SAIS'26 Room). Default password is{" "}
+                    <span className="font-semibold text-violet-700">sais2026</span> unless changed later.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4 bg-white rounded-b-lg p-4">
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <Input
+                      placeholder="Full name — e.g. Jane Doe"
+                      value={newInvestorName}
+                      onChange={(e) => setNewInvestorName(e.target.value)}
+                    />
+                    <Input
+                      type="email"
+                      placeholder="Email"
+                      value={newInvestorEmail}
+                      onChange={(e) => setNewInvestorEmail(e.target.value)}
+                    />
+                    <Input
+                      placeholder="VC / Firm name"
+                      value={newInvestorFirm}
+                      onChange={(e) => setNewInvestorFirm(e.target.value)}
+                    />
+                    <Input
+                      placeholder="Designation (optional) — e.g. Principal"
+                      value={newInvestorDesignation}
+                      onChange={(e) => setNewInvestorDesignation(e.target.value)}
+                    />
+                    <Input
+                      placeholder="Sector focus (optional) — e.g. FinTech"
+                      value={newInvestorSector}
+                      onChange={(e) => setNewInvestorSector(e.target.value)}
+                    />
+                  </div>
+                  <Button
+                    onClick={() => {
+                      if (!newInvestorName.trim() || !newInvestorEmail.trim() || !newInvestorFirm.trim()) {
+                        window.alert("Full name, email, and VC/firm name are required.");
+                        return;
+                      }
+                      setIsAddingInvestor(true);
+                      createAdminActivityInvestorApi(token, {
+                        fullName: newInvestorName.trim(),
+                        email: newInvestorEmail.trim(),
+                        firmName: newInvestorFirm.trim(),
+                        designation: newInvestorDesignation.trim() || undefined,
+                        sector: newInvestorSector.trim() || undefined,
+                      })
+                        .then((response) => {
+                          window.alert(`${response.message} Password: ${response.password}`);
+                          setActivityInvestors((prev) => [
+                            {
+                              ...response.investor,
+                              id: (response.investor as any)._id || response.investor.id,
+                              plainPassword: response.password,
+                            },
+                            ...prev,
+                          ]);
+                          setNewInvestorName("");
+                          setNewInvestorEmail("");
+                          setNewInvestorFirm("");
+                          setNewInvestorDesignation("");
+                          setNewInvestorSector("");
+                        })
+                        .catch((error) => window.alert(error instanceof Error ? error.message : "Unable to add investor."))
+                        .finally(() => setIsAddingInvestor(false));
+                    }}
+                    disabled={isAddingInvestor}
+                    className="gap-2 bg-violet-600 hover:bg-violet-700 text-white"
+                  >
+                    <Plus className="h-4 w-4" />
+                    {isAddingInvestor ? "Adding..." : "Add Investor"}
+                  </Button>
+                </CardContent>
+              </Card>
+
               {/* Investors Table */}
               <Card>
                 <CardHeader className="bg-slate-50 border-b">
@@ -4716,6 +4803,7 @@ const AdminDashboard = () => {
                           <th className="p-4 font-medium">Investor</th>
                           <th className="p-4 font-medium">Firm</th>
                           <th className="p-4 font-medium">Email</th>
+                          <th className="p-4 font-medium">Password</th>
                           <th className="p-4 font-medium">Designation</th>
                           <th className="p-4 font-medium">Actions</th>
                         </tr>
@@ -4723,7 +4811,7 @@ const AdminDashboard = () => {
                       <tbody className="divide-y divide-slate-100">
                         {activityInvestors.length === 0 ? (
                           <tr>
-                            <td colSpan={5} className="p-8 text-center text-slate-500">No investors registered yet.</td>
+                            <td colSpan={6} className="p-8 text-center text-slate-500">No investors registered yet.</td>
                           </tr>
                         ) : (
                           activityInvestors.map((investor) => (
@@ -4736,6 +4824,15 @@ const AdminDashboard = () => {
                               </td>
                               <td className="p-4">{investor.firmName}</td>
                               <td className="p-4">{investor.email}</td>
+                              <td className="p-4">
+                                {investor.plainPassword ? (
+                                  <code className="rounded bg-violet-50 border border-violet-200 px-2 py-1 text-xs font-mono text-violet-700">
+                                    {investor.plainPassword}
+                                  </code>
+                                ) : (
+                                  <span className="text-xs text-slate-400">unknown</span>
+                                )}
+                              </td>
                               <td className="p-4">{investor.designation}</td>
                               <td className="p-4">
                                 <Button
