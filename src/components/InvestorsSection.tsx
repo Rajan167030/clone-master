@@ -15,15 +15,6 @@ const RANDOM_AVATARS = [
   "https://i.pravatar.cc/300?img=7",
 ];
 
-const DEMO_INVESTORS: SpeakerInvestorProfile[] = [
-  { _id: "1", slug: "vikram-malhotra", category: "investor", name: "Mr. Vikram Malhotra",  designation: "Managing Partner",    company: "Sequoia India",   order: 1, linkedinUrl: "https://linkedin.com/in/vikram-malhotra", introduction: "Leading venture investor focused on enterprise SaaS and deep tech startups across India.", isActive: true },
-  { _id: "2", slug: "sunita-rao",      category: "investor", name: "Ms. Sunita Rao",       designation: "Angel Investor",       company: "100X.VC",         order: 2, linkedinUrl: "https://linkedin.com/in/sunita-rao",      introduction: "Angel investor and mentor supporting early-stage founders building consumer tech solutions.", isActive: true },
-  { _id: "3", slug: "rohit-bansal",    category: "investor", name: "Mr. Rohit Bansal",     designation: "Venture Partner",      company: "Kalaari Capital", order: 3, linkedinUrl: "https://linkedin.com/in/rohit-bansal",    introduction: "Focused on fintech, healthtech, and logistics innovation with expertise in India's startup ecosystem.", isActive: true },
-  { _id: "4", slug: "ananya-singh",    category: "investor", name: "Ms. Ananya Singh",     designation: "Principal",            company: "Accel India",     order: 4, linkedinUrl: "https://linkedin.com/in/ananya-singh",    introduction: "Investing in B2B SaaS and climate tech companies creating global impact from India.", isActive: true },
-  { _id: "5", slug: "deepak-verma",    category: "investor", name: "Mr. Deepak Verma",     designation: "Founder & GP",         company: "Blume Ventures",  order: 5, linkedinUrl: "https://linkedin.com/in/deepak-verma",    introduction: "Dedicated to supporting early-stage founders with mentorship and capital deployment.", isActive: true },
-  { _id: "6", slug: "kavitha-nair",    category: "investor", name: "Ms. Kavitha Nair",     designation: "Investment Director",  company: "Nexus VP",        order: 6, linkedinUrl: "https://linkedin.com/in/kavitha-nair",    introduction: "Passionate about diversity and backing women entrepreneurs in the startup space.", isActive: true },
-];
-
 const InvestorCard = ({
   profile,
   index,
@@ -98,13 +89,13 @@ const InvestorsSection = ({ className }: { className?: string }) => {
     getPublicSpeakerInvestorProfilesApi()
       .then((res) => {
         const inv = res.profiles.filter((p) => p.category === "investor").sort((a, b) => a.order - b.order);
-        setInvestors(inv.length > 0 ? inv : DEMO_INVESTORS);
+        setInvestors(inv);
       })
-      .catch(() => setInvestors(DEMO_INVESTORS))
+      .catch(() => setInvestors([]))
       .finally(() => setLoading(false));
   }, []);
 
-  const displayInvestors = investors.length > 0 ? investors : (loading ? [] : DEMO_INVESTORS);
+  if (!loading && investors.length === 0) return null;
 
   return (
     <section
@@ -141,7 +132,7 @@ const InvestorsSection = ({ className }: { className?: string }) => {
           </div>
         ) : (
           <div className="mx-auto mb-16 grid max-w-7xl grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-            {displayInvestors.map((investor, i) => (
+            {investors.map((investor, i) => (
               <InvestorCard key={investor.slug} profile={investor} index={i} />
             ))}
           </div>
