@@ -80,7 +80,7 @@ const FORM_LABEL_CLASS = "block font-mono text-xs font-bold uppercase tracking-w
 const FORM_INPUT_CLASS =
   "w-full max-w-full border-[1.5px] border-[#0B0B09] rounded-none bg-white px-3 py-2.5 sm:px-3.5 sm:py-3 font-sans text-xs sm:text-sm text-[#0B0B09] placeholder:text-[#6B6558]/60 focus:outline-none focus:ring-0 focus:border-[#0B0B09] focus:shadow-[2px_2px_0px_#4C1D95] sm:focus:shadow-[3px_3px_0px_#4C1D95] transition-all box-border";
 
-const MAX_DESCRIPTION_WORDS = 250;
+const MAX_DESCRIPTION_WORDS = 100;
 
 const countWords = (text: string): number => {
   const trimmed = text.trim();
@@ -837,7 +837,7 @@ const BangaloreActivity: React.FC = () => {
                             className={`font-mono text-[11px] sm:text-xs font-semibold ${
                               countWords(description) >= MAX_DESCRIPTION_WORDS
                                 ? "text-red-600 font-bold"
-                                : countWords(description) >= 225
+                                : countWords(description) >= 90
                                 ? "text-amber-600"
                                 : "text-[#6B6558]"
                             }`}
@@ -847,7 +847,7 @@ const BangaloreActivity: React.FC = () => {
                         </div>
                         <textarea
                           className={`${FORM_INPUT_CLASS} min-h-[95px] sm:min-h-[110px] resize-y`}
-                          placeholder="Describe your product, market opportunity, target audience, and business traction (maximum 250 words)..."
+                          placeholder="Describe your product, market opportunity, target audience, and business traction (maximum 100 words)..."
                           rows={4}
                           value={description}
                           onChange={handleDescriptionChange}
@@ -855,7 +855,7 @@ const BangaloreActivity: React.FC = () => {
                         />
                         {countWords(description) >= MAX_DESCRIPTION_WORDS && (
                           <p className="text-[11px] text-red-600 font-mono">
-                            Maximum limit of 250 words reached.
+                            Maximum limit of 100 words reached.
                           </p>
                         )}
                       </div>
