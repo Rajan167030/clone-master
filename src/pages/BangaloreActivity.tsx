@@ -1111,34 +1111,43 @@ const BangaloreActivity: React.FC = () => {
         <div className="space-y-6 sm:space-y-10 w-full">
           {startups.some((s) => s.resultRank) && (
             <div className="space-y-3 sm:space-y-4">
-              <h2 className="text-lg sm:text-2xl font-bold text-slate-900 flex items-center gap-2">
-                <Trophy className="w-5 h-5 sm:w-6 sm:h-6 text-amber-500" />
-                Results
-              </h2>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-                {(["gold", "silver", "bronze"] as const).map((rank) => {
+              <div>
+                <h2 className="text-lg sm:text-2xl font-bold text-slate-900 flex items-center gap-2">
+                  <Trophy className="w-5 h-5 sm:w-6 sm:h-6 text-purple-600" />
+                  Results — SAIS'26
+                </h2>
+                <p className="text-xs sm:text-sm text-slate-600 mt-0.5">
+                  Ranked by investor feedback. Tap a card for the full profile & investor comments.
+                </p>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
+                {(["1", "2", "3", "4", "5"] as const).map((rank) => {
                   const winner = startups.find((s) => s.resultRank === rank);
                   if (!winner) return null;
-                  const medal = rank === "gold" ? "🥇" : rank === "silver" ? "🥈" : "🥉";
-                  const ring =
-                    rank === "gold"
-                      ? "border-amber-300 bg-amber-50"
-                      : rank === "silver"
-                      ? "border-slate-300 bg-slate-50"
-                      : "border-orange-300 bg-orange-50";
+                  const medal = rank === "1" ? "🥇" : rank === "2" ? "🥈" : rank === "3" ? "🥉" : `#${rank}`;
+                  const topFeedback = [...(winner.ratings || [])]
+                    .filter((r) => r.comment)
+                    .sort((a, b) => b.totalScore - a.totalScore)[0];
                   return (
                     <Card
                       key={rank}
                       onClick={() => setViewStartupProfile(winner)}
-                      className={`cursor-pointer border ${ring} hover:shadow-md transition-shadow`}
+                      className="cursor-pointer border border-purple-200 bg-gradient-to-br from-purple-50 to-white hover:shadow-md transition-shadow"
                     >
-                      <CardContent className="p-3.5 sm:p-4 flex items-center gap-3">
-                        <span className="text-2xl">{medal}</span>
-                        <img src={winner.logoUrl} alt={winner.startupName} className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg object-cover border border-slate-200 shrink-0" />
-                        <div className="min-w-0">
-                          <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">{rank}</p>
-                          <p className="text-sm font-bold text-slate-900 truncate">{winner.startupName}</p>
+                      <CardContent className="p-3.5 sm:p-4 space-y-2.5">
+                        <div className="flex items-center gap-2.5">
+                          <span className="text-xl sm:text-2xl shrink-0">{medal}</span>
+                          <img src={winner.logoUrl} alt={winner.startupName} className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg object-cover border border-purple-200 shrink-0" />
+                          <div className="min-w-0">
+                            <p className="text-[10px] font-semibold uppercase tracking-wide text-purple-600">Rank {rank}</p>
+                            <p className="text-sm font-bold text-slate-900 truncate">{winner.startupName}</p>
+                          </div>
                         </div>
+                        {topFeedback && (
+                          <p className="text-[11px] text-slate-600 italic line-clamp-2 border-t border-purple-100 pt-2">
+                            "{topFeedback.comment}" — {topFeedback.investorName}
+                          </p>
+                        )}
                       </CardContent>
                     </Card>
                   );

@@ -533,4 +533,47 @@ router.get("/leaderboard/top", async (req, res) => {
   }
 });
 
+// Public "Results" section — startups the admin has published a Rank 1-5 for, each with a
+// sample of investor feedback. Distinct from /leaderboard/top (a live score ranking that's
+// always visible): this only returns startups the admin has explicitly announced, and is what
+// the homepage Results section and the Bangalore Activity page's Results block both read from.
+router.get("/results/published", async (req, res) => {
+  try {
+    const startups = await ActivityStartup.find({ resultRank: { $ne: null } })
+      .select("startupName tagline description category stage logoUrl founderName averageScore totalRatingsCount resultRank resultAnnouncedAt ratings")
+      .lean();
+
+    const results = startups
+      .map((s) => ({
+        rank: Number(s.resultRank),
+        startupName: s.startupName,
+        tagline: s.tagline,
+        description: s.description,
+        category: s.category,
+        stage: s.stage,
+        logoUrl: s.logoUrl,
+        founderName: s.founderName,
+        averageScore: s.averageScore,
+        totalRatingsCount: s.totalRatingsCount,
+        resultAnnouncedAt: s.resultAnnouncedAt,
+        feedback: (s.ratings || [])
+          .filter((r) => (r.comment || "").trim())
+          .sort((a, b) => b.totalScore - a.totalScore)
+          .slice(0, 3)
+          .map((r) => ({
+            investorName: r.investorName,
+            investorFirm: r.investorFirm,
+            investorPhoto: r.investorPhoto,
+            comment: r.comment,
+            totalScore: r.totalScore,
+          })),
+      }))
+      .sort((a, b) => a.rank - b.rank);
+
+    return res.json({ results });
+  } catch (error) {
+    return res.status(500).json({ message: error.message || "Failed to load results." });
+  }
+});
+
 export default router;

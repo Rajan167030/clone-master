@@ -356,28 +356,26 @@ const AdminDashboard = () => {
   const [newInvestorDesignation, setNewInvestorDesignation] = useState("");
   const [newInvestorSector, setNewInvestorSector] = useState("");
   const [isAddingInvestor, setIsAddingInvestor] = useState(false);
-  const [goldPick, setGoldPick] = useState("");
-  const [silverPick, setSilverPick] = useState("");
-  const [bronzePick, setBronzePick] = useState("");
+  // rankPicks[0] = startup id for Rank 1, ... rankPicks[4] = Rank 5.
+  const [rankPicks, setRankPicks] = useState<string[]>(["", "", "", "", ""]);
   const [isPublishingResults, setIsPublishingResults] = useState(false);
   const [resultsPicksInitialized, setResultsPicksInitialized] = useState(false);
 
-  // Pre-fill Gold/Silver/Bronze from an existing announcement, else suggest the top 3 by investor score.
+  // Pre-fill Rank 1-5 from an existing announcement, else suggest the formula ranking:
+  // average investor score (desc), tie-broken by number of ratings received (desc).
   useEffect(() => {
     if (resultsPicksInitialized || activityStartups.length === 0) return;
 
-    const alreadyAnnounced = activityStartups.find((s) => s.resultRank === "gold" || s.resultRank === "silver" || s.resultRank === "bronze");
+    const alreadyAnnounced = activityStartups.some((s) => s.resultRank);
     if (alreadyAnnounced) {
-      setGoldPick(activityStartups.find((s) => s.resultRank === "gold")?.id || "");
-      setSilverPick(activityStartups.find((s) => s.resultRank === "silver")?.id || "");
-      setBronzePick(activityStartups.find((s) => s.resultRank === "bronze")?.id || "");
+      setRankPicks(
+        ["1", "2", "3", "4", "5"].map((rank) => activityStartups.find((s) => s.resultRank === rank)?.id || ""),
+      );
     } else {
       const topScored = [...activityStartups]
         .filter((s) => s.totalRatingsCount > 0)
         .sort((a, b) => b.averageScore - a.averageScore || b.totalRatingsCount - a.totalRatingsCount);
-      setGoldPick(topScored[0]?.id || "");
-      setSilverPick(topScored[1]?.id || "");
-      setBronzePick(topScored[2]?.id || "");
+      setRankPicks([0, 1, 2, 3, 4].map((i) => topScored[i]?.id || ""));
     }
     setResultsPicksInitialized(true);
   }, [activityStartups, resultsPicksInitialized]);
@@ -4581,16 +4579,18 @@ const AdminDashboard = () => {
                 </div>
               </div>
 
-              {/* Announce Results — Gold / Silver / Bronze */}
+              {/* Announce Results — Rank 1 to 5 */}
               <Card className="border-2 border-amber-200 bg-amber-50/40">
                 <CardHeader className="border-b border-amber-200">
                   <CardTitle className="flex items-center gap-2">
                     <Trophy className="h-5 w-5 text-amber-600" />
-                    Announce Results
+                    Announce Results — Rank 1 to 5
                   </CardTitle>
                   <CardDescription>
-                    Score comes from investor feedback (average rating). Confirm or adjust the picks below, then publish —
-                    only published results are shown on the public activity page.
+                    Formula: startups are ranked by average investor score (highest first), tie-broken by number of
+                    investor ratings received. The five slots below are pre-filled using that formula — confirm or
+                    override any slot, then hit Publish Results to make it live instantly on the Bangalore Activity
+                    page and the site's Results section.
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="pt-6 space-y-4">
@@ -4601,18 +4601,16 @@ const AdminDashboard = () => {
                     </div>
                   )}
 
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    {[
-                      { label: "🥇 Gold", value: goldPick, setter: setGoldPick },
-                      { label: "🥈 Silver", value: silverPick, setter: setSilverPick },
-                      { label: "🥉 Bronze", value: bronzePick, setter: setBronzePick },
-                    ].map((slot) => (
-                      <div key={slot.label} className="space-y-1">
-                        <label className="text-xs font-semibold text-slate-700">{slot.label}</label>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+                    {(["🥇 Rank 1", "🥈 Rank 2", "🥉 Rank 3", "#4 Rank 4", "#5 Rank 5"] as const).map((label, index) => (
+                      <div key={label} className="space-y-1">
+                        <label className="text-xs font-semibold text-slate-700">{label}</label>
                         <select
                           className="w-full h-10 px-3 border border-slate-300 rounded-md bg-white text-sm"
-                          value={slot.value}
-                          onChange={(e) => slot.setter(e.target.value)}
+                          value={rankPicks[index]}
+                          onChange={(e) =>
+                            setRankPicks((prev) => prev.map((v, i) => (i === index ? e.target.value : v)))
+                          }
                         >
                           <option value="">— None —</option>
                           {[...activityStartups]
@@ -4629,15 +4627,21 @@ const AdminDashboard = () => {
 
                   <div className="flex gap-2">
                     <Button
-                      disabled={isPublishingResults || (!goldPick && !silverPick && !bronzePick)}
+                      disabled={isPublishingResults || rankPicks.every((p) => !p)}
                       onClick={() => {
-                        const picks = [goldPick, silverPick, bronzePick].filter(Boolean);
+                        const picks = rankPicks.filter(Boolean);
                         if (new Set(picks).size !== picks.length) {
-                          window.alert("Gold, Silver, and Bronze must be different startups.");
+                          window.alert("Each rank must be a different startup.");
                           return;
                         }
                         setIsPublishingResults(true);
-                        announceAdminActivityResultsApi(token, { goldId: goldPick, silverId: silverPick, bronzeId: bronzePick })
+                        announceAdminActivityResultsApi(token, {
+                          rank1Id: rankPicks[0],
+                          rank2Id: rankPicks[1],
+                          rank3Id: rankPicks[2],
+                          rank4Id: rankPicks[3],
+                          rank5Id: rankPicks[4],
+                        })
                           .then((response) => {
                             window.alert(response.message);
                             loadAdminData();
@@ -4660,9 +4664,7 @@ const AdminDashboard = () => {
                           resetAdminActivityResultsApi(token)
                             .then((response) => {
                               window.alert(response.message);
-                              setGoldPick("");
-                              setSilverPick("");
-                              setBronzePick("");
+                              setRankPicks(["", "", "", "", ""]);
                               setResultsPicksInitialized(false);
                               loadAdminData();
                             })

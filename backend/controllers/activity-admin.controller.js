@@ -176,20 +176,27 @@ export const deleteAdminActivityInvestor = async (req, res, next) => {
   }
 };
 
-// Admin announces Gold / Silver / Bronze based on the investor-feedback score.
-// The score itself always comes from investor ratings — the admin only confirms which
-// startup ids hold each position (pre-filled with the top 3 by averageScore on the client).
+// Admin publishes Rank 1-5 based on the investor-feedback formula: average score across all
+// investor ratings (desc), tie-broken by number of ratings received (desc). The formula only
+// drives the client's pre-filled suggestion for each slot — the admin confirms (or overrides)
+// which startup id holds each position before publishing.
 export const announceAdminActivityResults = async (req, res, next) => {
   try {
-    const { goldId, silverId, bronzeId } = req.body || {};
-    const picks = { gold: goldId || null, silver: silverId || null, bronze: bronzeId || null };
+    const { rank1Id, rank2Id, rank3Id, rank4Id, rank5Id } = req.body || {};
+    const picks = {
+      "1": rank1Id || null,
+      "2": rank2Id || null,
+      "3": rank3Id || null,
+      "4": rank4Id || null,
+      "5": rank5Id || null,
+    };
 
     const chosenIds = Object.values(picks).filter(Boolean);
     if (chosenIds.length === 0) {
-      return res.status(400).json({ message: "Select at least one startup for Gold, Silver, or Bronze." });
+      return res.status(400).json({ message: "Select at least one startup for Rank 1 to 5." });
     }
     if (new Set(chosenIds).size !== chosenIds.length) {
-      return res.status(400).json({ message: "Gold, Silver, and Bronze must be different startups." });
+      return res.status(400).json({ message: "Each rank must be a different startup." });
     }
 
     // Clear any previous announcement first.
@@ -200,11 +207,11 @@ export const announceAdminActivityResults = async (req, res, next) => {
       if (!id) continue;
       const updated = await ActivityStartup.findByIdAndUpdate(id, { $set: { resultRank: rank, resultAnnouncedAt: now } });
       if (!updated) {
-        return res.status(404).json({ message: `Startup selected for ${rank} was not found.` });
+        return res.status(404).json({ message: `Startup selected for Rank ${rank} was not found.` });
       }
     }
 
-    return res.status(200).json({ message: "Results announced." });
+    return res.status(200).json({ message: "Results published." });
   } catch (error) {
     return next(error);
   }

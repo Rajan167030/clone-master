@@ -1269,7 +1269,7 @@ export type ActivityStartupItem = {
   ratings: ActivityRatingItem[];
   averageScore: number; // 0 to 10 scale (average per criterion)
   totalRatingsCount: number;
-  resultRank?: "gold" | "silver" | "bronze" | null;
+  resultRank?: "1" | "2" | "3" | "4" | "5" | null;
   createdAt: string;
 };
 
@@ -1653,7 +1653,13 @@ export const createAdminActivityInvestorApi = (
 
 export const announceAdminActivityResultsApi = (
   token: string,
-  picks: { goldId?: string | null; silverId?: string | null; bronzeId?: string | null },
+  picks: {
+    rank1Id?: string | null;
+    rank2Id?: string | null;
+    rank3Id?: string | null;
+    rank4Id?: string | null;
+    rank5Id?: string | null;
+  },
 ) =>
   request<{ message: string }>("/admin/activity/results", {
     method: "POST",
@@ -1987,6 +1993,36 @@ export type PublicLeaderboardStartup = {
 
 export const getPublicTopStartupsApi = () =>
   request<{ startups: PublicLeaderboardStartup[] }>("/activity/leaderboard/top", {
+    method: "GET",
+  });
+
+// --- SAIS'26 Room: published Rank 1-5 results (admin-announced, with investor feedback) ---
+
+export type PublishedResultFeedback = {
+  investorName: string;
+  investorFirm: string;
+  investorPhoto?: string;
+  comment: string;
+  totalScore: number;
+};
+
+export type PublishedResultItem = {
+  rank: number;
+  startupName: string;
+  tagline: string;
+  description: string;
+  category: string;
+  stage: string;
+  logoUrl: string;
+  founderName: string;
+  averageScore: number;
+  totalRatingsCount: number;
+  resultAnnouncedAt: string;
+  feedback: PublishedResultFeedback[];
+};
+
+export const getPublishedActivityResultsApi = () =>
+  request<{ results: PublishedResultItem[] }>("/activity/results/published", {
     method: "GET",
   });
 

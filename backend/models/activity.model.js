@@ -38,7 +38,10 @@ const activityStartupSchema = new mongoose.Schema(
     ],
     averageScore: { type: Number, default: 0 },
     totalRatingsCount: { type: Number, default: 0 },
-    resultRank: { type: String, enum: ["gold", "silver", "bronze", null], default: null, index: true },
+    // "1".."5" = published leaderboard position (Rank 1 to Rank 5). Kept as a string enum,
+    // not a Number, so it plays the same way the old gold/silver/bronze enum did (easy to
+    // query/index, no risk of stray numeric ranks outside the announced top 5).
+    resultRank: { type: String, enum: ["1", "2", "3", "4", "5", null], default: null, index: true },
     resultAnnouncedAt: { type: Date, default: null },
     // No `default: null` here on purpose: Mongoose would then write an explicit `null` into
     // every document, and a sparse unique index still treats present-but-null as a value —
