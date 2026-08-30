@@ -356,29 +356,15 @@ const AdminDashboard = () => {
   const [newInvestorDesignation, setNewInvestorDesignation] = useState("");
   const [newInvestorSector, setNewInvestorSector] = useState("");
   const [isAddingInvestor, setIsAddingInvestor] = useState(false);
-  // rankPicks[0] = startup id for Rank 1, ... rankPicks[4] = Rank 5.
-  const [rankPicks, setRankPicks] = useState<string[]>(["", "", "", "", ""]);
   const [isPublishingResults, setIsPublishingResults] = useState(false);
-  const [resultsPicksInitialized, setResultsPicksInitialized] = useState(false);
 
-  // Pre-fill Rank 1-5 from an existing announcement, else suggest the formula ranking:
-  // average investor score (desc), tie-broken by number of ratings received (desc).
-  useEffect(() => {
-    if (resultsPicksInitialized || activityStartups.length === 0) return;
-
-    const alreadyAnnounced = activityStartups.some((s) => s.resultRank);
-    if (alreadyAnnounced) {
-      setRankPicks(
-        ["1", "2", "3", "4", "5"].map((rank) => activityStartups.find((s) => s.resultRank === rank)?.id || ""),
-      );
-    } else {
-      const topScored = [...activityStartups]
-        .filter((s) => s.totalRatingsCount > 0)
-        .sort((a, b) => b.averageScore - a.averageScore || b.totalRatingsCount - a.totalRatingsCount);
-      setRankPicks([0, 1, 2, 3, 4].map((i) => topScored[i]?.id || ""));
-    }
-    setResultsPicksInitialized(true);
-  }, [activityStartups, resultsPicksInitialized]);
+  // Read-only preview of what the formula would publish right now — the admin never picks
+  // ranks by hand. Formula: average investor score (desc), tie-broken by number of ratings
+  // received (desc). Same ordering the backend computes at publish time.
+  const formulaRanking = [...activityStartups]
+    .filter((s) => s.totalRatingsCount > 0)
+    .sort((a, b) => b.averageScore - a.averageScore || b.totalRatingsCount - a.totalRatingsCount)
+    .slice(0, 5);
   const [templates, setTemplates] = useState<EmailTemplate[]>([]);
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [selectedCampaignId, setSelectedCampaignId] = useState<string>("");
@@ -4587,10 +4573,10 @@ const AdminDashboard = () => {
                     Announce Results — Rank 1 to 5
                   </CardTitle>
                   <CardDescription>
-                    Formula: startups are ranked by average investor score (highest first), tie-broken by number of
-                    investor ratings received. The five slots below are pre-filled using that formula — confirm or
-                    override any slot, then hit Publish Results to make it live instantly on the Bangalore Activity
-                    page and the site's Results section.
+                    Rank 1 to 5 is decided entirely by the formula — average investor score (highest first), tie-broken
+                    by number of investor ratings received. Admin does not pick who's best; publishing just locks in
+                    whatever the formula ranks highest right now, live on the Bangalore Activity page and the site's
+                    Results section.
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="pt-6 space-y-4">
@@ -4601,47 +4587,49 @@ const AdminDashboard = () => {
                     </div>
                   )}
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-                    {(["🥇 Rank 1", "🥈 Rank 2", "🥉 Rank 3", "#4 Rank 4", "#5 Rank 5"] as const).map((label, index) => (
-                      <div key={label} className="space-y-1">
-                        <label className="text-xs font-semibold text-slate-700">{label}</label>
-                        <select
-                          className="w-full h-10 px-3 border border-slate-300 rounded-md bg-white text-sm"
-                          value={rankPicks[index]}
-                          onChange={(e) =>
-                            setRankPicks((prev) => prev.map((v, i) => (i === index ? e.target.value : v)))
-                          }
-                        >
-                          <option value="">— None —</option>
-                          {[...activityStartups]
-                            .sort((a, b) => b.averageScore - a.averageScore || b.totalRatingsCount - a.totalRatingsCount)
-                            .map((s) => (
-                              <option key={s.id} value={s.id}>
-                                {s.startupName} — ⭐ {s.averageScore > 0 ? s.averageScore.toFixed(1) : "Unrated"} ({s.totalRatingsCount})
-                              </option>
-                            ))}
-                        </select>
-                      </div>
-                    ))}
-                  </div>
+                  {formulaRanking.length === 0 ? (
+                    <div className="flex items-center gap-2 text-xs font-semibold text-slate-500 bg-slate-100 border border-slate-200 px-3 py-2 rounded-lg">
+                      <Clock3 className="h-4 w-4 shrink-0" />
+                      Publish is locked — waiting for the first investor rating to come in. It unlocks automatically
+                      once rating starts.
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2 text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-2 rounded-lg">
+                      <CheckCircle2 className="h-4 w-4 shrink-0" />
+                      Rating is in progress — {formulaRanking.length} startup{formulaRanking.length === 1 ? "" : "s"} rated
+                      so far. Publish is unlocked; review the ranking and investor feedback below, then click Publish
+                      Results whenever you've finished reviewing.
+                    </div>
+                  )}
+
+                  {formulaRanking.length > 0 && (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+                      {formulaRanking.map((s, index) => {
+                        const medal = ["🥇", "🥈", "🥉", "#4", "#5"][index];
+                        return (
+                          <div
+                            key={s.id}
+                            className="flex items-center gap-2.5 rounded-lg border border-amber-200 bg-white px-3 py-2.5"
+                          >
+                            <span className="text-lg shrink-0">{medal}</span>
+                            <div className="min-w-0">
+                              <p className="text-sm font-bold text-slate-900 truncate">{s.startupName}</p>
+                              <p className="text-[11px] text-slate-500">
+                                ⭐ {s.averageScore.toFixed(1)} ({s.totalRatingsCount})
+                              </p>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
 
                   <div className="flex gap-2">
                     <Button
-                      disabled={isPublishingResults || rankPicks.every((p) => !p)}
+                      disabled={isPublishingResults || formulaRanking.length === 0}
                       onClick={() => {
-                        const picks = rankPicks.filter(Boolean);
-                        if (new Set(picks).size !== picks.length) {
-                          window.alert("Each rank must be a different startup.");
-                          return;
-                        }
                         setIsPublishingResults(true);
-                        announceAdminActivityResultsApi(token, {
-                          rank1Id: rankPicks[0],
-                          rank2Id: rankPicks[1],
-                          rank3Id: rankPicks[2],
-                          rank4Id: rankPicks[3],
-                          rank5Id: rankPicks[4],
-                        })
+                        announceAdminActivityResultsApi(token)
                           .then((response) => {
                             window.alert(response.message);
                             loadAdminData();
@@ -4664,8 +4652,6 @@ const AdminDashboard = () => {
                           resetAdminActivityResultsApi(token)
                             .then((response) => {
                               window.alert(response.message);
-                              setRankPicks(["", "", "", "", ""]);
-                              setResultsPicksInitialized(false);
                               loadAdminData();
                             })
                             .catch((error) => window.alert(error instanceof Error ? error.message : "Unable to reset results."))

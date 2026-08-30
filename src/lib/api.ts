@@ -1651,20 +1651,12 @@ export const createAdminActivityInvestorApi = (
     body: JSON.stringify(payload),
   });
 
-export const announceAdminActivityResultsApi = (
-  token: string,
-  picks: {
-    rank1Id?: string | null;
-    rank2Id?: string | null;
-    rank3Id?: string | null;
-    rank4Id?: string | null;
-    rank5Id?: string | null;
-  },
-) =>
+// No picks to send — the backend computes Rank 1-5 itself, purely from investor ratings.
+// Admin only triggers *when* to publish, never *who* wins.
+export const announceAdminActivityResultsApi = (token: string) =>
   request<{ message: string }>("/admin/activity/results", {
     method: "POST",
     headers: { Authorization: `Bearer ${token}` },
-    body: JSON.stringify(picks),
   });
 
 export const resetAdminActivityResultsApi = (token: string) =>

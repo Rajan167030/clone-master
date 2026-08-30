@@ -176,42 +176,32 @@ export const deleteAdminActivityInvestor = async (req, res, next) => {
   }
 };
 
-// Admin publishes Rank 1-5 based on the investor-feedback formula: average score across all
-// investor ratings (desc), tie-broken by number of ratings received (desc). The formula only
-// drives the client's pre-filled suggestion for each slot — the admin confirms (or overrides)
-// which startup id holds each position before publishing.
+// Admin never hand-picks Rank 1-5 — the formula decides who's best, purely from investor
+// ratings and feedback: average score across all investor ratings (desc), tie-broken by
+// number of ratings received (desc, i.e. more investors having weighed in wins a tie). Admin
+// only confirms *when* to publish; this computes the top 5 fresh at that moment and locks it in.
 export const announceAdminActivityResults = async (req, res, next) => {
   try {
-    const { rank1Id, rank2Id, rank3Id, rank4Id, rank5Id } = req.body || {};
-    const picks = {
-      "1": rank1Id || null,
-      "2": rank2Id || null,
-      "3": rank3Id || null,
-      "4": rank4Id || null,
-      "5": rank5Id || null,
-    };
+    const ranked = await ActivityStartup.find({ totalRatingsCount: { $gt: 0 } })
+      .sort({ averageScore: -1, totalRatingsCount: -1 })
+      .limit(5)
+      .select("_id");
 
-    const chosenIds = Object.values(picks).filter(Boolean);
-    if (chosenIds.length === 0) {
-      return res.status(400).json({ message: "Select at least one startup for Rank 1 to 5." });
-    }
-    if (new Set(chosenIds).size !== chosenIds.length) {
-      return res.status(400).json({ message: "Each rank must be a different startup." });
+    if (ranked.length === 0) {
+      return res.status(400).json({ message: "No startup has investor ratings yet — nothing to publish." });
     }
 
     // Clear any previous announcement first.
     await ActivityStartup.updateMany({ resultRank: { $ne: null } }, { $set: { resultRank: null, resultAnnouncedAt: null } });
 
     const now = new Date();
-    for (const [rank, id] of Object.entries(picks)) {
-      if (!id) continue;
-      const updated = await ActivityStartup.findByIdAndUpdate(id, { $set: { resultRank: rank, resultAnnouncedAt: now } });
-      if (!updated) {
-        return res.status(404).json({ message: `Startup selected for Rank ${rank} was not found.` });
-      }
-    }
+    await Promise.all(
+      ranked.map((startup, index) =>
+        ActivityStartup.findByIdAndUpdate(startup._id, { $set: { resultRank: String(index + 1), resultAnnouncedAt: now } }),
+      ),
+    );
 
-    return res.status(200).json({ message: "Results published." });
+    return res.status(200).json({ message: `Results published — top ${ranked.length} by investor score.` });
   } catch (error) {
     return next(error);
   }
