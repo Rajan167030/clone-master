@@ -1269,7 +1269,7 @@ export type ActivityStartupItem = {
   ratings: ActivityRatingItem[];
   averageScore: number; // 0 to 10 scale (average per criterion)
   totalRatingsCount: number;
-  resultRank?: "1" | "2" | "3" | "4" | "5" | null;
+  resultRank?: "1" | "2" | "3" | null;
   createdAt: string;
 };
 

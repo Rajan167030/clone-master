@@ -103,14 +103,14 @@ const ActivityResultsSection = ({ className }: { className?: string }) => {
             </span>
           </div>
           <h2 className="font-heading text-4xl font-bold tracking-tight text-slate-900 md:text-5xl">
-            Top 5 Startups, Backed by <span className="text-purple-600">Investor Verdict</span>
+            Top 3 Startups, Backed by <span className="text-purple-600">Investor Verdict</span>
           </h2>
           <p className="mt-4 text-base text-slate-600">
             Ranked live by the investors who sat across the table — real scores, real feedback.
           </p>
         </div>
 
-        <div className="mx-auto mb-10 grid max-w-6xl grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mx-auto mb-10 grid max-w-5xl grid-cols-1 gap-6 sm:grid-cols-3">
           {results.map((item, i) => (
             <ResultCard key={`${item.rank}-${item.startupName}`} item={item} index={i} />
           ))}

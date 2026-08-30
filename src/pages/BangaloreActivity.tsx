@@ -1120,11 +1120,11 @@ const BangaloreActivity: React.FC = () => {
                   Ranked by investor feedback. Tap a card for the full profile & investor comments.
                 </p>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
-                {(["1", "2", "3", "4", "5"] as const).map((rank) => {
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+                {(["1", "2", "3"] as const).map((rank) => {
                   const winner = startups.find((s) => s.resultRank === rank);
                   if (!winner) return null;
-                  const medal = rank === "1" ? "🥇" : rank === "2" ? "🥈" : rank === "3" ? "🥉" : `#${rank}`;
+                  const medal = rank === "1" ? "🥇" : rank === "2" ? "🥈" : "🥉";
                   const topFeedback = [...(winner.ratings || [])]
                     .filter((r) => r.comment)
                     .sort((a, b) => b.totalScore - a.totalScore)[0];

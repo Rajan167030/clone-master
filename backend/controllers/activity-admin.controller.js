@@ -176,15 +176,15 @@ export const deleteAdminActivityInvestor = async (req, res, next) => {
   }
 };
 
-// Admin never hand-picks Rank 1-5 — the formula decides who's best, purely from investor
+// Admin never hand-picks Rank 1-3 — the formula decides who's best, purely from investor
 // ratings and feedback: average score across all investor ratings (desc), tie-broken by
 // number of ratings received (desc, i.e. more investors having weighed in wins a tie). Admin
-// only confirms *when* to publish; this computes the top 5 fresh at that moment and locks it in.
+// only confirms *when* to publish; this computes the top 3 fresh at that moment and locks it in.
 export const announceAdminActivityResults = async (req, res, next) => {
   try {
     const ranked = await ActivityStartup.find({ totalRatingsCount: { $gt: 0 } })
       .sort({ averageScore: -1, totalRatingsCount: -1 })
-      .limit(5)
+      .limit(3)
       .select("_id");
 
     if (ranked.length === 0) {

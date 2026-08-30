@@ -533,7 +533,7 @@ router.get("/leaderboard/top", async (req, res) => {
   }
 });
 
-// Public "Results" section — startups the admin has published a Rank 1-5 for, each with a
+// Public "Results" section — startups the admin has published a Rank 1-3 for, each with a
 // sample of investor feedback. Distinct from /leaderboard/top (a live score ranking that's
 // always visible): this only returns startups the admin has explicitly announced, and is what
 // the homepage Results section and the Bangalore Activity page's Results block both read from.

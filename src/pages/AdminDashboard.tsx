@@ -364,7 +364,7 @@ const AdminDashboard = () => {
   const formulaRanking = [...activityStartups]
     .filter((s) => s.totalRatingsCount > 0)
     .sort((a, b) => b.averageScore - a.averageScore || b.totalRatingsCount - a.totalRatingsCount)
-    .slice(0, 5);
+    .slice(0, 3);
   const [templates, setTemplates] = useState<EmailTemplate[]>([]);
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [selectedCampaignId, setSelectedCampaignId] = useState<string>("");
@@ -4565,15 +4565,15 @@ const AdminDashboard = () => {
                 </div>
               </div>
 
-              {/* Announce Results — Rank 1 to 5 */}
+              {/* Announce Results — Rank 1 to 3 */}
               <Card className="border-2 border-amber-200 bg-amber-50/40">
                 <CardHeader className="border-b border-amber-200">
                   <CardTitle className="flex items-center gap-2">
                     <Trophy className="h-5 w-5 text-amber-600" />
-                    Announce Results — Rank 1 to 5
+                    Announce Results — Rank 1 to 3
                   </CardTitle>
                   <CardDescription>
-                    Rank 1 to 5 is decided entirely by the formula — average investor score (highest first), tie-broken
+                    Rank 1 to 3 is decided entirely by the formula — average investor score (highest first), tie-broken
                     by number of investor ratings received. Admin does not pick who's best; publishing just locks in
                     whatever the formula ranks highest right now, live on the Bangalore Activity page and the site's
                     Results section.
@@ -4603,9 +4603,9 @@ const AdminDashboard = () => {
                   )}
 
                   {formulaRanking.length > 0 && (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                       {formulaRanking.map((s, index) => {
-                        const medal = ["🥇", "🥈", "🥉", "#4", "#5"][index];
+                        const medal = ["🥇", "🥈", "🥉"][index];
                         return (
                           <div
                             key={s.id}
