@@ -2018,6 +2018,22 @@ export const getPublishedActivityResultsApi = () =>
     method: "GET",
   });
 
+// A founder/investor tab pings this every ~25s while logged in — powers the admin panel's
+// "active now" indicator for Bangalore Activity investors/startups.
+export const sendActivityHeartbeatApi = (token: string) =>
+  request<{ ok: boolean }>("/activity/presence/heartbeat", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export type ActivityActiveStatus = { activeInvestorIds: string[]; activeStartupIds: string[] };
+
+export const getAdminActivityActiveStatusApi = (token: string) =>
+  request<ActivityActiveStatus>("/admin/activity/active-status", {
+    method: "GET",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
 // --- Admin team management, audit log, and admin chat ---
 
 export type AdminAccountSummary = {

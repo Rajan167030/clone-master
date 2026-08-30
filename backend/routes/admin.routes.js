@@ -66,6 +66,7 @@ import {
   listAdminActivityInvestors,
   announceAdminActivityResults,
   resetAdminActivityResults,
+  getAdminActivityActiveStatus,
 } from "../controllers/activity-admin.controller.js";
 import { requireSuperAdmin } from "../middlewares/admin.middleware.js";
 import {
@@ -201,6 +202,7 @@ adminRouter.post("/activity/investors", createAdminActivityInvestor);
 adminRouter.delete("/activity/investors/:id", deleteAdminActivityInvestor);
 adminRouter.post("/activity/results", announceAdminActivityResults);
 adminRouter.delete("/activity/results", resetAdminActivityResults);
+adminRouter.get("/activity/active-status", getAdminActivityActiveStatus);
 
 adminRouter.get("/investor-invites", listAdminInvestorInvites);
 adminRouter.post("/investor-invites", createAdminInvestorInvite);

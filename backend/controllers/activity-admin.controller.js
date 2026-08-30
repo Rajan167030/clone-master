@@ -207,6 +207,45 @@ export const announceAdminActivityResults = async (req, res, next) => {
   }
 };
 
+// "Active now" for the admin panel's Bangalore Activity tables — an investor/founder counts
+// as active if their Account has pinged POST /activity/presence/heartbeat within the last
+// minute. Investors link to an Account via ActivityInvestor.accountId; startups don't store
+// one, so we match the founder's Account by email instead.
+const ACTIVE_THRESHOLD_MS = 60 * 1000;
+
+export const getAdminActivityActiveStatus = async (req, res, next) => {
+  try {
+    const activeAccounts = await Account.find({
+      role: { $in: ["founder", "investor"] },
+      lastActiveAt: { $gte: new Date(Date.now() - ACTIVE_THRESHOLD_MS) },
+    })
+      .select("_id email role")
+      .lean();
+
+    const activeAccountIds = new Set(activeAccounts.map((a) => String(a._id)));
+    const activeFounderEmails = new Set(
+      activeAccounts.filter((a) => a.role === "founder").map((a) => String(a.email || "").toLowerCase()),
+    );
+
+    const [investors, startups] = await Promise.all([
+      ActivityInvestor.find({ accountId: { $ne: null } }).select("_id accountId").lean(),
+      ActivityStartup.find().select("_id founderEmail").lean(),
+    ]);
+
+    const activeInvestorIds = investors
+      .filter((inv) => inv.accountId && activeAccountIds.has(String(inv.accountId)))
+      .map((inv) => String(inv._id));
+
+    const activeStartupIds = startups
+      .filter((s) => activeFounderEmails.has(String(s.founderEmail || "").toLowerCase()))
+      .map((s) => String(s._id));
+
+    return res.status(200).json({ activeInvestorIds, activeStartupIds });
+  } catch (error) {
+    return next(error);
+  }
+};
+
 export const resetAdminActivityResults = async (req, res, next) => {
   try {
     await ActivityStartup.updateMany({ resultRank: { $ne: null } }, { $set: { resultRank: null, resultAnnouncedAt: null } });

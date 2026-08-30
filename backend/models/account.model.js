@@ -38,7 +38,11 @@ const BaseAccountSchema = new Schema(
     passwordHash: { type: String, required: true },
     resetPasswordOtp: { type: String, default: null },
     resetPasswordOtpExpiry: { type: Date, default: null },
-    phone: { type: String, required: true, trim: true },
+    // Not required at the schema level: the Bangalore Activity investor flow never collects a
+    // phone number at all, and forcing it here used to silently break that investor's
+    // site-wide account creation. Flows that do want phone (e.g. general "/register/user")
+    // still enforce it themselves in the form before calling the API.
+    phone: { type: String, default: "", trim: true },
     city: { type: String, required: true, trim: true },
     role: {
       type: String,

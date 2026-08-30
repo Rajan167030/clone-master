@@ -71,6 +71,7 @@ import {
   createAdminActivityInvestorApi,
   announceAdminActivityResultsApi,
   resetAdminActivityResultsApi,
+  getAdminActivityActiveStatusApi,
   type ActivityStartupItem,
   type ActivityInvestorProfile,
   listAdminInvestorInvitesApi,
@@ -357,6 +358,33 @@ const AdminDashboard = () => {
   const [newInvestorSector, setNewInvestorSector] = useState("");
   const [isAddingInvestor, setIsAddingInvestor] = useState(false);
   const [isPublishingResults, setIsPublishingResults] = useState(false);
+  const [activeInvestorIds, setActiveInvestorIds] = useState<Set<string>>(new Set());
+  const [activeStartupIds, setActiveStartupIds] = useState<Set<string>>(new Set());
+
+  // Which Bangalore Activity investors/startups are on the site right now — polled from the
+  // presence heartbeat founders/investors ping via Navbar. Independent of loadAdminData's own
+  // refresh cadence since this needs to update much more often to feel "live".
+  useEffect(() => {
+    if (!token) return;
+    let cancelled = false;
+
+    const refresh = () => {
+      getAdminActivityActiveStatusApi(token)
+        .then((response) => {
+          if (cancelled) return;
+          setActiveInvestorIds(new Set(response.activeInvestorIds || []));
+          setActiveStartupIds(new Set(response.activeStartupIds || []));
+        })
+        .catch(() => {});
+    };
+
+    refresh();
+    const interval = setInterval(refresh, 20000);
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
+  }, [token]);
 
   // Read-only preview of what the formula would publish right now — the admin never picks
   // ranks by hand. Formula: average investor score (desc), tie-broken by number of ratings
@@ -4680,6 +4708,7 @@ const AdminDashboard = () => {
                           <th className="p-4 font-medium">Founder</th>
                           <th className="p-4 font-medium">Email</th>
                           <th className="p-4 font-medium">Category / Stage</th>
+                          <th className="p-4 font-medium">Status</th>
                           <th className="p-4 font-medium">Score</th>
                           <th className="p-4 font-medium">Actions</th>
                         </tr>
@@ -4687,7 +4716,7 @@ const AdminDashboard = () => {
                       <tbody className="divide-y divide-slate-100">
                         {activityStartups.length === 0 ? (
                           <tr>
-                            <td colSpan={6} className="p-8 text-center text-slate-500">No startups registered yet.</td>
+                            <td colSpan={7} className="p-8 text-center text-slate-500">No startups registered yet.</td>
                           </tr>
                         ) : (
                           activityStartups.map((startup) => (
@@ -4706,6 +4735,19 @@ const AdminDashboard = () => {
                               <td className="p-4">
                                 <Badge variant="secondary" className="mr-2">{startup.category}</Badge>
                                 <Badge variant="outline">{startup.stage}</Badge>
+                              </td>
+                              <td className="p-4">
+                                {activeStartupIds.has(startup.id) ? (
+                                  <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-1 rounded-full">
+                                    <span className="relative flex h-2 w-2">
+                                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                                      <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+                                    </span>
+                                    Active
+                                  </span>
+                                ) : (
+                                  <span className="text-xs font-medium text-slate-400">Offline</span>
+                                )}
                               </td>
                               <td className="p-4">
                                 <div className="flex items-center gap-1 font-semibold">
@@ -4851,6 +4893,7 @@ const AdminDashboard = () => {
                           <th className="p-4 font-medium">Investor</th>
                           <th className="p-4 font-medium">Firm</th>
                           <th className="p-4 font-medium">Email</th>
+                          <th className="p-4 font-medium">Status</th>
                           <th className="p-4 font-medium">Password</th>
                           <th className="p-4 font-medium">Designation</th>
                           <th className="p-4 font-medium">Actions</th>
@@ -4859,7 +4902,7 @@ const AdminDashboard = () => {
                       <tbody className="divide-y divide-slate-100">
                         {activityInvestors.length === 0 ? (
                           <tr>
-                            <td colSpan={6} className="p-8 text-center text-slate-500">No investors registered yet.</td>
+                            <td colSpan={7} className="p-8 text-center text-slate-500">No investors registered yet.</td>
                           </tr>
                         ) : (
                           activityInvestors.map((investor) => (
@@ -4872,6 +4915,19 @@ const AdminDashboard = () => {
                               </td>
                               <td className="p-4">{investor.firmName}</td>
                               <td className="p-4">{investor.email}</td>
+                              <td className="p-4">
+                                {activeInvestorIds.has(investor.id) ? (
+                                  <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-1 rounded-full">
+                                    <span className="relative flex h-2 w-2">
+                                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                                      <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+                                    </span>
+                                    Active
+                                  </span>
+                                ) : (
+                                  <span className="text-xs font-medium text-slate-400">Offline</span>
+                                )}
+                              </td>
                               <td className="p-4">
                                 {investor.plainPassword ? (
                                   <code className="rounded bg-violet-50 border border-violet-200 px-2 py-1 text-xs font-mono text-violet-700">

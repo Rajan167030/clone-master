@@ -334,6 +334,8 @@ router.post("/investor", async (req, res) => {
           fullName,
           email: normalizedEmail,
           passwordHash,
+          // The Bangalore Activity investor form doesn't collect a phone number — Account.phone
+          // is no longer required at the schema level, so this is genuinely optional now.
           phone: phone || "",
           city: "Bangalore",
           role: "investor",
@@ -504,6 +506,21 @@ router.post("/room/rate", requireAuth, async (req, res) => {
     return res.json({ message: "Rating submitted successfully!", startup: stripAccessToken(startup) });
   } catch (error) {
     return res.status(500).json({ message: error.message || "Failed to submit rating." });
+  }
+});
+
+// A founder or investor's tab pings this every ~25s while they're on the site — cheap presence
+// signal (mirrors the admin panel's own heartbeat) that powers the admin panel's "active now"
+// indicator on the Bangalore Activity investors/startups tables.
+router.post("/presence/heartbeat", requireAuth, async (req, res, next) => {
+  try {
+    if (req.user?.role !== "founder" && req.user?.role !== "investor") {
+      return res.status(200).json({ ok: true });
+    }
+    await Account.updateOne({ _id: req.user.sub }, { $set: { lastActiveAt: new Date() } });
+    return res.status(200).json({ ok: true });
+  } catch (error) {
+    return next(error);
   }
 });
 

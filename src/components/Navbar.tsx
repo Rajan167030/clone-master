@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Menu, X, ChevronDown, LogOut, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { clearSession, getAccount, getToken, isAuthenticated } from "@/lib/session";
-import { getMyFounderAccessApi } from "@/lib/api";
+import { getMyFounderAccessApi, sendActivityHeartbeatApi } from "@/lib/api";
 
 type NavDropdown = {
   label: string;
@@ -62,6 +62,21 @@ const Navbar = () => {
     getMyFounderAccessApi(token)
       .then((response) => setFounderAccessToken(response.accessToken))
       .catch(() => setFounderAccessToken(null));
+  }, [account?.role]);
+
+  // Presence heartbeat: lets the admin panel show which investors/startups are active on the
+  // site right now (Bangalore Activity tables). Only founders/investors are tracked for this.
+  useEffect(() => {
+    if (account?.role !== "founder" && account?.role !== "investor") return;
+    const token = getToken();
+    if (!token) return;
+
+    const beat = () => {
+      sendActivityHeartbeatApi(token).catch(() => {});
+    };
+    beat();
+    const interval = setInterval(beat, 25000);
+    return () => clearInterval(interval);
   }, [account?.role]);
 
   const handleLogout = () => {
