@@ -110,7 +110,7 @@ const About = () => {
             </h1>
             <p className="mt-5 text-lg text-muted-foreground">
               Founders Connect is a curated ecosystem where founders, builders, and investors meet with intent, not noise.
-              We design high-signal events and membership experiences that help startups grow faster.
+              We design high-signal events and experiences that help startups grow faster.
             </p>
           </div>
 

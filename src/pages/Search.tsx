@@ -69,13 +69,6 @@ const Search = () => {
             url: '/blog/startup-funding-guide',
           },
           {
-            id: '3',
-            title: 'Premium Membership',
-            description: 'Unlock exclusive access to events and networking opportunities',
-            type: 'page',
-            url: '/membership',
-          },
-          {
             id: '4',
             title: 'Speaker & Investor Directory',
             description: 'Connect with industry experts and potential investors',
@@ -244,12 +237,6 @@ const Search = () => {
                   className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
                 >
                   Read Blog
-                </Link>
-                <Link
-                  to="/membership"
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                >
-                  View Membership
                 </Link>
               </div>
             </div>

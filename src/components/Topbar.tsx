@@ -1,4 +1,4 @@
-import { Bell, CalendarDays, LogOut, Menu, Ticket, User } from "lucide-react";
+import { Bell, CalendarDays, LogOut, Menu, User } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   DropdownMenu,
@@ -70,13 +70,6 @@ const Topbar = ({
             <span className="hidden md:inline">Events</span>
           </Link>
 
-          <Link
-            to="/membership"
-            className="hidden items-center gap-2 rounded-xl bg-gradient-to-r from-violet-500 to-violet-600 px-3 py-2 text-sm font-medium text-white sm:inline-flex"
-          >
-            <Ticket size={16} />
-            <span className="hidden md:inline">Membership</span>
-          </Link>
 
           <button type="button" className="relative rounded-xl p-2 text-slate-600 transition-colors hover:bg-slate-100">
             <Bell size={18} />

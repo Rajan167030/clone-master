@@ -394,7 +394,7 @@ const RegisterUser = () => {
 
             <div className="mt-8 pt-6 border-t border-gray-200">
               <p className="text-center text-sm text-gray-600">
-                Want to register as a different role? <Link to="/membership" className="text-blue-600 font-semibold hover:underline">View all options</Link>
+                Want to register as a different role? <Link to="/register" className="text-blue-600 font-semibold hover:underline">View all options</Link>
               </p>
             </div>
           </section>

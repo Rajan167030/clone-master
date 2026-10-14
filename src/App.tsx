@@ -28,10 +28,10 @@ const Blog = lazy(() => import("./pages/Blog.tsx"));
 const BlogDetails = lazy(() => import("./pages/BlogDetails.tsx"));
 const Events = lazy(() => import("./pages/Events.tsx"));
 const EventDetails = lazy(() => import("./pages/EventDetails.tsx"));
-const Membership = lazy(() => import("./pages/Membership.tsx"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy.tsx"));
 const TermsOfService = lazy(() => import("./pages/TermsOfService.tsx"));
 const JoinUs = lazy(() => import("./pages/JoinUs.tsx"));
+const Chapters = lazy(() => import("./pages/Chapters.tsx"));
 const Gallery = lazy(() => import("./pages/Gallery.tsx"));
 const GetFunding = lazy(() => import("./pages/GetFunding.tsx"));
 const PartnerWithUs = lazy(() => import("./pages/PartnerWithUs.tsx"));
@@ -147,6 +147,7 @@ const App = () => (
             />
             <Route path="/about" element={<About />} />
             <Route path="/join-us" element={<JoinUs />} />
+            <Route path="/chapters" element={<Chapters />} />
             <Route path="/gallery" element={<Gallery />} />
             <Route path="/get-funding" element={<GetFunding />} />
             <Route path="/funding-application" element={<FundingApplication />} />
@@ -155,7 +156,7 @@ const App = () => (
             <Route path="/past-speakers-investors" element={<PastSpeakersInvestors />} />
             <Route path="/blog" element={<Blog />} />
             <Route path="/blog/:slug" element={<BlogDetails />} />
-            <Route path="/membership" element={<Membership />} />
+            <Route path="/membership" element={<Navigate to="/" replace />} />
             <Route path="/terms" element={<TermsOfService />} />
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
             <Route path="/terms-of-service" element={<TermsOfService />} />

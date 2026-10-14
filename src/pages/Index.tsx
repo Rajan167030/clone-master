@@ -35,7 +35,7 @@ const Index = () => {
   // SEO Hook
   useSEO({
     title: "Founders Connect | India's Founder & Investor Network",
-    description: "Connect with startup founders, investors, and builders at curated events, founder meetups, and exclusive membership experiences. Build meaningful relationships in India's founder ecosystem.",
+    description: "Connect with startup founders, investors, and builders at curated events, founder meetups, and exclusive community experiences. Build meaningful relationships in India's founder ecosystem.",
     keywords: "founder network, investor meetup, startup events, founder community, startup networking, India startups, entrepreneur events",
     ogImage: "https://foundersconnect.co.in/og-image.jpg",
     ogType: "website",

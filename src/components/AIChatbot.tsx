@@ -3,7 +3,7 @@ import { Bot, Loader2, MessageCircle, Mic, Sparkles, Send, X } from "lucide-reac
 
 const FAQ = [
   { q: "How do I register for an event?", a: "Go to the Events page, select an event, and click 'Register Event'." },
-  { q: "How do I upgrade my membership?", a: "Visit the Membership page and choose your preferred plan." },
+  { q: "How do I connect with founders?", a: "Join our Community and attend our regular Bangalore meetups and pitch days." },
   { q: "How do I reset my password?", a: "Go to Login, click 'Forgot password?', and follow the instructions." },
   { q: "How do I contact support?", a: "Type your question here or email support@foundersconnect.com." },
 ];
@@ -24,7 +24,7 @@ export default function AIChatbot() {
 
   const suggestions = [
     "How do I register for an event?",
-    "How do I upgrade my membership?",
+    "How do I connect with founders?",
     "How do I reset my password?",
   ];
 
@@ -32,7 +32,7 @@ export default function AIChatbot() {
     const normalized = userText.toLowerCase();
 
     if (normalized.includes("event") || normalized.includes("register")) return FAQ[0].a;
-    if (normalized.includes("membership") || normalized.includes("plan")) return FAQ[1].a;
+    if (normalized.includes("connect") || normalized.includes("community") || normalized.includes("founder")) return FAQ[1].a;
     if (normalized.includes("password") || normalized.includes("reset")) return FAQ[2].a;
     if (normalized.includes("support") || normalized.includes("contact")) return FAQ[3].a;
 
@@ -102,7 +102,7 @@ export default function AIChatbot() {
                     Live
                   </span>
                 </div>
-                <p className="text-xs text-slate-500">Ask about events, membership, or support.</p>
+                <p className="text-xs text-slate-500">Ask about events, community, or support.</p>
               </div>
             </div>
             <button
@@ -157,7 +157,7 @@ export default function AIChatbot() {
             <div className="relative">
               <input
                 className="w-full rounded-2xl border border-purple-200/60 bg-white px-4 py-3 pr-12 text-sm text-slate-800 placeholder:text-slate-400 outline-none transition focus:border-purple-400"
-                placeholder="Ask me about events, membership..."
+                placeholder="Ask me about events, community..."
                 value={input}
                 onChange={e => setInput(e.target.value)}
                 onKeyDown={e => e.key === "Enter" && handleSend()}

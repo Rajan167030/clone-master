@@ -2,8 +2,10 @@ import { useId, useState } from "react";
 import type React from "react";
 
 export interface ExpandingCardItem {
+  category?: string;
   title: string;
   description: React.ReactNode;
+  actionText?: string;
 }
 
 interface ExpandingCardStackProps {
@@ -75,26 +77,36 @@ const ExpandingCardStack = ({ cards, trigger = "click", className }: ExpandingCa
                 {String(index + 1).padStart(2, "0")}
               </span>
 
-              <h3 className="max-w-[70%] font-heading text-2xl font-extrabold uppercase leading-[1.05] tracking-tight md:text-3xl">
+              {card.category && (
+                <span
+                  className={`text-[11px] font-bold tracking-[0.2em] uppercase mb-2 ${
+                    isActive ? "text-purple-600" : "text-purple-400"
+                  }`}
+                >
+                  {card.category}
+                </span>
+              )}
+
+              <h3 className="max-w-[85%] font-heading text-xl md:text-2xl font-extrabold uppercase leading-[1.1] tracking-tight">
                 {card.title}
               </h3>
 
               <p
-                className={`mt-4 max-w-[85%] text-sm leading-relaxed ${
-                  isActive ? "text-black/60" : "text-white/60"
+                className={`mt-3 max-w-[90%] text-xs md:text-sm leading-relaxed ${
+                  isActive ? "text-black/70" : "text-white/70"
                 }`}
               >
                 {card.description}
               </p>
 
-              <div className="flex-1" />
+              <div className="flex-1 min-h-[1rem]" />
 
               <span
-                className={`w-fit rounded-full border px-6 py-3 text-xs font-bold uppercase tracking-widest ${
-                  isActive ? "border-black/30 text-black" : "border-white/30 text-white"
+                className={`w-fit rounded-full border px-5 py-2.5 text-xs font-bold uppercase tracking-widest ${
+                  isActive ? "border-black/30 text-black hover:bg-black/5" : "border-white/30 text-white hover:bg-white/5"
                 }`}
               >
-                Read More
+                {card.actionText || "Read More"}
               </span>
             </div>
           </li>

@@ -332,13 +332,6 @@ const Dashboard = () => {
                 <CalendarDays size={16} />
                 Explore Events
               </Link>
-              <Link
-                to="/membership"
-                className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-500 to-violet-600 px-4 py-3 text-sm font-medium text-white shadow-sm"
-              >
-                <Sparkles size={16} />
-                Membership Access
-              </Link>
             </div>
           </div>
 

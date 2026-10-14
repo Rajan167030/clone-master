@@ -4,24 +4,34 @@ import ExpandingCardStack, { type ExpandingCardItem } from "@/components/Expandi
 
 const networkCards: ExpandingCardItem[] = [
   {
-    title: "Networking & Community",
-    description: "Connect with founders, investors, and industry experts at curated events.",
+    category: "STARTUP EDUCATION",
+    title: "COURSES & LEARNING",
+    description: "Offers practical courses, business playbooks, case studies, and real-world lessons to learn directly from startup founders.",
+    actionText: "READ MORE",
   },
   {
-    title: "Talent & Hiring",
-    description: "Find co-founders, early employees, and advisors for your startup.",
+    category: "PRACTICAL EXECUTION",
+    title: "COHORTS & MENTORSHIP",
+    description: "Provides live programs, expert guidance, assignments, and masterclasses to build alongside actual founders.",
+    actionText: "READ MORE",
   },
   {
-    title: "Legal & Compliance",
-    description: "Contracts, IP protection, and regulatory compliance made simple.",
+    category: "FOUNDER NETWORK",
+    title: "COMMUNITY & EVENTS",
+    description: "Focuses on connecting users with founders, investors, mentors, and industry experts through curated events and networking.",
+    actionText: "READ MORE",
   },
   {
-    title: "Growth & Marketing",
-    description: "Customer acquisition strategies and growth playbooks for early-stage startups.",
+    category: "MEDIA & STORYTELLING",
+    title: "FOUNDER STORIES & CONTENT",
+    description: "Features founder interviews, podcasts, startup news, business insights, and inspiring entrepreneurial journeys.",
+    actionText: "READ MORE",
   },
   {
-    title: "Pitch Deck & Fundraising Prep",
-    description: "Craft investor-ready pitch decks and fundraising strategy.",
+    category: "GROWTH & ECOSYSTEM",
+    title: "STARTUP GROWTH, BRANDING & INCUBATION",
+    description: "Provides access to startup growth resources, brand campaigns, college entrepreneurship programs, investor-readiness support, and venture-building opportunities.",
+    actionText: "READ MORE",
   },
 ];
 

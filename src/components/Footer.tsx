@@ -25,19 +25,6 @@ const socials = [
       </svg>
     ),
   },
-  {
-    name: "Twitter",
-    href: "https://twitter.com",
-    icon: (
-      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" className="h-6 w-6">
-        <path
-          d="M19.6 7.3c.01.2.01.4.01.6 0 6-4.56 12.93-12.93 12.93-2.57 0-4.96-.75-6.97-2.04.36.04.71.05 1.08.05 2.13 0 4.08-.73 5.63-1.96a4.55 4.55 0 0 1-4.25-3.15c.28.04.56.07.86.07.41 0 .82-.06 1.2-.16A4.54 4.54 0 0 1 1.6 9.12v-.06c.6.33 1.27.53 1.99.56a4.52 4.52 0 0 1-1.98-3.77c0-.83.22-1.61.61-2.28a12.9 12.9 0 0 0 9.37 4.75 4.56 4.56 0 0 1 7.76-4.16 9.12 9.12 0 0 0 2.88-1.1 4.55 4.55 0 0 1-2 2.51 9.04 9.04 0 0 0 2.61-.72 9.76 9.76 0 0 1-2.28 2.36Z"
-          fill="currentColor"
-        />
-      </svg>
-    ),
-  },
- 
 ];
 
 const Footer = ({ className }: { className?: string }) => {
@@ -58,7 +45,7 @@ const Footer = ({ className }: { className?: string }) => {
                 />
               </div>
               <p className="text-sm text-muted-foreground max-w-sm leading-relaxed">
-                A curated ecosystem where founders, builders, and investors meet with intent. We create high-signal events and membership experiences for startups.
+                A curated ecosystem where founders, builders, and investors meet with intent. We create high-signal events and experiences for startups.
               </p>
               <div className="flex items-center gap-3 mt-6">
                 {socials.map(({ name, href, icon }) => (
@@ -80,7 +67,6 @@ const Footer = ({ className }: { className?: string }) => {
               <div className="font-heading font-semibold text-foreground mb-4">Explore</div>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li><a href="/events" className="hover:text-primary transition-colors">Events</a></li>
-                <li><a href="/membership" className="hover:text-primary transition-colors">Membership</a></li>
                 <li><a href="/blog" className="hover:text-primary transition-colors">Blog</a></li>
                 <li><a href="/" className="hover:text-primary transition-colors">Home</a></li>
               </ul>
@@ -92,7 +78,7 @@ const Footer = ({ className }: { className?: string }) => {
                 <li><a href="#" className="hover:text-primary transition-colors">Founders</a></li>
                 <li><a href="#" className="hover:text-primary transition-colors">Investors</a></li>
                 <li><a href="#" className="hover:text-primary transition-colors">Partners</a></li>
-                <li><a href="#" className="hover:text-primary transition-colors">Chapters</a></li>
+                <li><a href="/chapters" className="hover:text-primary transition-colors">Chapters</a></li>
               </ul>
             </div>
 
@@ -100,7 +86,6 @@ const Footer = ({ className }: { className?: string }) => {
               <div className="font-heading font-semibold text-foreground mb-4">About</div>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li><a href="/about" className="hover:text-primary transition-colors">About Us</a></li>
-                <li><a href="#" className="hover:text-primary transition-colors">Press</a></li>
                 <li><a href="#" className="hover:text-primary transition-colors">Careers</a></li>
                 <li><a href="#" className="hover:text-primary transition-colors">Contact</a></li>
               </ul>

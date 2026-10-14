@@ -13,7 +13,7 @@ type NavDropdown = {
 const topLevelLinks = [
   { label: "Events", href: "/events" },
   { label: "Speakers", href: "/past-speakers-investors" },
-  { label: "GetFunding", href: "/get-funding" },
+  { label: "Chapters", href: "/chapters" },
   { label: "Partner", href: "/partner-with-us" },
 ];
 
@@ -31,7 +31,6 @@ const navDropdowns: NavDropdown[] = [
     label: "Explore",
     items: [
       { label: "College Partners", href: "/college-partners" },
-      { label: "Membership", href: "/membership" },
       { label: "Product", href: "/product" },
     ],
   },
@@ -40,7 +39,7 @@ const navDropdowns: NavDropdown[] = [
     items: [
       { label: "Activity (Bangalore)", href: "/activity" },
       { label: "Join Us", href: "/join-us" },
-      { label: "Get Funding", href: "/get-funding" },
+      { label: "Chapters", href: "/chapters" },
     ],
   },
 ];
@@ -97,18 +96,6 @@ const Navbar = () => {
 
   return (
     <header className="sticky top-0 z-50 flex flex-col w-full shadow-sm">
-      {/* Membership Ticker */}
-      <Link to="/membership" className="w-full bg-purple-600 text-white hover:bg-purple-700 transition-colors overflow-hidden py-1.5 flex items-center group cursor-pointer">
-        <div className="animate-marquee flex whitespace-nowrap items-center" style={{ width: '200%' }}>
-          {[...Array(40)].map((_, i) => (
-            <span key={i} className="mx-4 md:mx-8 text-[10px] md:text-xs font-bold tracking-[0.2em] uppercase flex items-center">
-              Membership
-              <span className="ml-4 md:ml-8 w-1 h-1 rounded-full bg-white/50 block group-hover:bg-white transition-colors"></span>
-            </span>
-          ))}
-        </div>
-      </Link>
-
       <nav className="w-full border-b border-white/20 bg-white/60 backdrop-blur-lg backdrop-saturate-150 supports-[backdrop-filter]:bg-white/50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">

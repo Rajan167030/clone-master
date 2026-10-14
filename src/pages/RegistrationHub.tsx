@@ -187,15 +187,7 @@ const RegistrationHub = () => {
 
           {/* FAQ Quick Links */}
           <div className="mt-16 text-center">
-            <p className="text-gray-600 mb-6">
-              Want to learn more about our membership options?
-            </p>
             <div className="flex flex-wrap justify-center gap-4">
-              <Button asChild variant="outline" size="lg" className="gap-2">
-                <Link to="/membership">
-                  View Membership Plans <ArrowRight size={16} />
-                </Link>
-              </Button>
               <Button asChild size="lg" className="bg-gradient-to-r from-gray-800 to-gray-900 hover:from-gray-900 hover:to-black gap-2">
                 <Link to="/login">
                   Already Have an Account? <ArrowRight size={16} />

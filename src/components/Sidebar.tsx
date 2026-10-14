@@ -8,7 +8,6 @@ import { Sheet, SheetContent } from "@/components/ui/sheet";
 const menuItems = [
   { label: "Overview", to: "/dashboard", icon: LayoutDashboard },
   { label: "My Events", to: "/events", icon: CalendarDays },
-  { label: "Membership", to: "/membership", icon: ShieldCheck },
   { label: "Community", to: "/community", icon: Users },
   { label: "Matchmaking", to: "/matchmaking", icon: Sparkles, premiumOnly: true },
   { label: "Settings", to: "/settings", icon: Settings },
