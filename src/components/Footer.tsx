@@ -44,11 +44,9 @@ const Footer = ({ className }: { className?: string }) => {
   return (
     <footer className={`relative pt-2 overflow-hidden bg-background ${className || ""}`}>
       <div className="relative px-4 sm:px-6 lg:px-8">
-        <div className="pointer-events-none absolute inset-0 -top-24 bg-gradient-to-b from-transparent to-secondary/20" />
+
         <div className="mx-auto w-full max-w-[95%] rounded-[2rem] border border-border/70 bg-secondary/35 px-6 pt-8 pb-5 shadow-[0_20px_50px_-25px_hsl(var(--primary)/0.4),0_25px_60px_-20px_hsl(var(--foreground)/0.25)] backdrop-blur-md sm:px-8 lg:px-10 relative overflow-hidden">
-          {/* Purple Glow Effects */}
-          <div className="pointer-events-none absolute -top-40 -right-40 h-[40rem] w-[40rem] rounded-full bg-primary/20 blur-[120px]" />
-          <div className="pointer-events-none absolute -bottom-40 -left-40 h-[40rem] w-[40rem] rounded-full bg-purple-600/20 blur-[120px]" />
+
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1.6fr_1fr_1fr_1fr_1fr_1.3fr] gap-6 lg:gap-8 mb-4 relative z-10">
             <div className="sm:col-span-2 lg:col-span-1">
