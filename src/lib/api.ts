@@ -342,6 +342,26 @@ export type SpeakerInvestorProfile = {
   updatedAt?: string;
 };
 
+export type Cohort = {
+  _id?: string;
+  title: string;
+  slug: string;
+  category: "startup" | "d2c" | "general" | "upcoming";
+  tagline?: string;
+  description?: string;
+  imageUrl?: string;
+  duration?: string;
+  mode?: string;
+  startDate?: string;
+  status?: string;
+  applicationUrl?: string;
+  highlights?: string[];
+  order: number;
+  isActive: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+};
+
 export type PartnerInquiry = {
   _id: string;
   companyName: string;
@@ -664,6 +684,19 @@ export const getPublicSpeakerInvestorProfilesApi = (category?: string) =>
 
 export const getPublicMentorsApi = () =>
   request<{ mentors: SpeakerInvestorProfile[]; profiles: SpeakerInvestorProfile[] }>("/content/mentors", {
+    method: "GET",
+  });
+
+export const getPublicCohortsApi = (category?: string) =>
+  request<{ cohorts: Cohort[] }>(
+    category ? `/content/cohorts?category=${encodeURIComponent(category)}` : "/content/cohorts",
+    {
+      method: "GET",
+    },
+  );
+
+export const getPublicCohortBySlugApi = (slug: string) =>
+  request<{ cohort: Cohort }>(`/content/cohorts/${encodeURIComponent(slug)}`, {
     method: "GET",
   });
 
@@ -1133,6 +1166,32 @@ export const updateAdminSpeakerInvestorProfileApi = (
 
 export const deleteAdminSpeakerInvestorProfileApi = (token: string, slug: string) =>
   request<{ message: string }>(`/admin/speaker-investors/${slug}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const getAdminCohortsApi = (token: string) =>
+  request<{ cohorts: Cohort[] }>("/admin/cohorts", {
+    method: "GET",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const createAdminCohortApi = (token: string, payload: Partial<Cohort>) =>
+  request<{ message: string; cohort: Cohort }>("/admin/cohorts", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify(payload),
+  });
+
+export const updateAdminCohortApi = (token: string, slug: string, payload: Partial<Cohort>) =>
+  request<{ message: string; cohort: Cohort }>(`/admin/cohorts/${encodeURIComponent(slug)}`, {
+    method: "PATCH",
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify(payload),
+  });
+
+export const deleteAdminCohortApi = (token: string, slug: string) =>
+  request<{ message: string }>(`/admin/cohorts/${encodeURIComponent(slug)}`, {
     method: "DELETE",
     headers: { Authorization: `Bearer ${token}` },
   });

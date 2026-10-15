@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import BackButton from "@/components/BackButton";
@@ -6,31 +7,63 @@ import { Button } from "@/components/ui/button";
 import { useSEO } from "@/hooks/useSEO";
 import {
   Rocket,
-  ShoppingBag,
   Clock,
   ArrowRight,
   Sparkles,
   Calendar,
   CheckCircle2,
-  Bell,
+  ExternalLink,
+  MapPin,
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
+import { getPublicCohortsApi, type Cohort } from "@/lib/api";
 
 const CohortPage = () => {
+  const location = useLocation();
+  const [cohorts, setCohorts] = useState<Cohort[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [activeCategory, setActiveCategory] = useState<string>("all");
+
   useSEO({
     title: "Cohorts & Programs | Founders Connect",
-    description: "Founders Connect cohort programs for early-stage tech startups and D2C brands. Join the waitlist for upcoming cohort announcements.",
+    description: "Founders Connect cohort programs for early-stage tech startups and D2C brands. Real accelerator programs backed by operators and investors.",
     keywords: "startup accelerator, D2C cohort, founder bootcamp, startup program India, early stage cohort",
     ogType: "website",
     canonicalUrl: "https://founders.connect/cohorts",
   });
+
+  useEffect(() => {
+    // If route is /cohorts/d2c, auto-select d2c
+    if (location.pathname.includes("/d2c")) {
+      setActiveCategory("d2c");
+    } else if (location.pathname.includes("/upcoming")) {
+      setActiveCategory("upcoming");
+    } else {
+      setActiveCategory("all");
+    }
+  }, [location.pathname]);
+
+  useEffect(() => {
+    setLoading(true);
+    getPublicCohortsApi()
+      .then((res) => {
+        setCohorts(res.cohorts || []);
+      })
+      .catch(() => setCohorts([]))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const filteredCohorts =
+    activeCategory === "all"
+      ? cohorts
+      : cohorts.filter((c) => c.category === activeCategory);
 
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
 
       {/* Hero Header */}
-      <section className="relative overflow-hidden bg-[#FAF7F0] bg-[radial-gradient(circle,#EFE9D8_1px,transparent_1px)] bg-[length:22px_22px] pt-8 pb-16 md:pt-12 md:pb-20 border-b border-[#1B1B1F]/10">
+      <section className="relative overflow-hidden bg-[#FAF7F0] bg-[radial-gradient(circle,#EFE9D8_1px,transparent_1px)] bg-[length:22px_22px] pt-8 pb-14 md:pt-12 md:pb-18 border-b border-[#1B1B1F]/10">
         <div className="container mx-auto px-4">
           <BackButton className="px-0 mx-0 max-w-none mb-6 animate-reveal-left" />
 
@@ -49,82 +82,204 @@ const CohortPage = () => {
         </div>
       </section>
 
-      {/* Coming Soon Showcase */}
-      <section className="py-20 bg-white">
-        <div className="container mx-auto px-4 max-w-4xl">
-          <div className="text-center py-14 px-6 sm:px-12 rounded-3xl bg-slate-50 border border-slate-200 shadow-sm">
-            <div className="w-16 h-16 rounded-2xl bg-purple-100 text-purple-700 flex items-center justify-center mx-auto mb-5 shadow-sm">
-              <Clock size={32} />
+      {/* Dynamic Cohorts Section */}
+      <section className="py-16 md:py-20 bg-white">
+        <div className="container mx-auto px-4 max-w-7xl">
+          {loading ? (
+            <div className="flex items-center justify-center py-20">
+              <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
             </div>
-
-            <Badge className="bg-purple-100 text-purple-700 hover:bg-purple-100 border-none px-3.5 py-1 text-xs mb-3 font-semibold">
-              Coming Soon
-            </Badge>
-
-            <h2 className="text-2xl sm:text-3xl font-extrabold font-['Space_Grotesk'] text-slate-900 leading-snug">
-              Accelerator Cohorts Launching Soon
-            </h2>
-
-            <p className="text-sm sm:text-base text-slate-600 mt-4 leading-relaxed max-w-xl mx-auto">
-              We are finalizing the curriculum, mentor lineup, and partner funds for our upcoming Startup and D2C accelerator programs. Applications will open shortly.
-            </p>
-
-            {/* Upcoming Cohort Tracks Preview */}
-            <div className="mt-10 grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
-              <div id="startup-cohorts" className="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center">
-                    <Rocket size={20} />
-                  </div>
-                  <div>
-                    <h3 className="font-['Space_Grotesk'] font-bold text-slate-900 text-base">
-                      Tech & SaaS Startup Cohort
-                    </h3>
-                    <p className="text-xs text-slate-500">For early-stage tech founders</p>
-                  </div>
+          ) : cohorts.length > 0 ? (
+            <div>
+              {/* Category Filter Pills */}
+              <div className="flex flex-wrap items-center justify-between gap-4 mb-10 pb-4 border-b border-slate-100">
+                <div>
+                  <h2 className="text-2xl sm:text-3xl font-extrabold font-['Space_Grotesk'] text-slate-900">
+                    Active & Upcoming Cohorts ({cohorts.length})
+                  </h2>
+                  <p className="text-xs sm:text-sm text-slate-500 mt-1">
+                    Select a program to review curriculum details and apply.
+                  </p>
                 </div>
-                <p className="text-xs text-slate-600 leading-relaxed">
-                  Focusing on PMF validation, technical architecture, B2B enterprise sales pipelines, and investor readiness.
-                </p>
-                <div className="mt-4 pt-4 border-t border-slate-100 flex items-center justify-between text-xs font-semibold text-purple-600">
-                  <span>Applications Opening Soon</span>
-                  <span className="text-[11px] bg-purple-50 px-2 py-0.5 rounded border border-purple-200">Waitlist Open</span>
+
+                <div className="flex flex-wrap items-center gap-2">
+                  {[
+                    { key: "all", label: "All Programs" },
+                    { key: "startup", label: "Startup Cohorts" },
+                    { key: "d2c", label: "D2C Cohorts" },
+                    { key: "upcoming", label: "Upcoming" },
+                  ].map((tab) => (
+                    <button
+                      key={tab.key}
+                      onClick={() => setActiveCategory(tab.key)}
+                      className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all ${
+                        activeCategory === tab.key
+                          ? "bg-purple-600 text-white shadow-sm"
+                          : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                      }`}
+                    >
+                      {tab.label}
+                    </button>
+                  ))}
                 </div>
               </div>
 
-              <div id="d2c" className="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 rounded-xl bg-rose-100 text-rose-700 flex items-center justify-center">
-                    <ShoppingBag size={20} />
+              {/* Grid of Real Cohort Cards from Database */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+                {filteredCohorts.map((cohort) => (
+                  <div
+                    key={cohort.slug}
+                    className="group flex flex-col overflow-hidden rounded-3xl border border-slate-200/90 bg-white shadow-sm hover:shadow-xl transition-all duration-300"
+                  >
+                    {/* Banner Image */}
+                    <div className="relative aspect-[16/9] w-full overflow-hidden bg-slate-900">
+                      {cohort.imageUrl ? (
+                        <img
+                          src={cohort.imageUrl}
+                          alt={cohort.title}
+                          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-purple-900 to-slate-900 text-purple-200">
+                          <Rocket size={42} />
+                        </div>
+                      )}
+
+                      <div className="absolute top-3 left-3 flex items-center gap-1.5">
+                        <Badge className="bg-slate-900/85 backdrop-blur-md text-white border-white/20 text-[11px] font-bold uppercase tracking-wider">
+                          {cohort.category}
+                        </Badge>
+                      </div>
+
+                      <div className="absolute top-3 right-3">
+                        <Badge className="bg-emerald-600/90 text-white border-none text-[11px] font-semibold">
+                          {cohort.status || "Waitlist Open"}
+                        </Badge>
+                      </div>
+                    </div>
+
+                    {/* Content Details */}
+                    <div className="flex-1 flex flex-col justify-between p-6">
+                      <div>
+                        <h3 className="font-['Space_Grotesk'] text-xl font-bold text-slate-900 leading-snug group-hover:text-purple-600 transition-colors">
+                          {cohort.title}
+                        </h3>
+
+                        {cohort.tagline && (
+                          <p className="mt-1 text-xs font-semibold text-purple-700">
+                            {cohort.tagline}
+                          </p>
+                        )}
+
+                        {cohort.description && (
+                          <p className="mt-3 text-xs sm:text-sm text-slate-600 leading-relaxed line-clamp-3">
+                            {cohort.description}
+                          </p>
+                        )}
+
+                        {/* Meta Tags */}
+                        <div className="mt-4 flex flex-wrap items-center gap-2 text-[11px] text-slate-500">
+                          {cohort.duration && (
+                            <span className="inline-flex items-center gap-1 rounded-md bg-slate-100 px-2.5 py-1">
+                              <Clock size={12} className="text-purple-600" /> {cohort.duration}
+                            </span>
+                          )}
+                          {cohort.mode && (
+                            <span className="inline-flex items-center gap-1 rounded-md bg-slate-100 px-2.5 py-1">
+                              <MapPin size={12} className="text-purple-600" /> {cohort.mode}
+                            </span>
+                          )}
+                          {cohort.startDate && (
+                            <span className="inline-flex items-center gap-1 rounded-md bg-slate-100 px-2.5 py-1">
+                              <Calendar size={12} className="text-purple-600" /> {cohort.startDate}
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Highlights List */}
+                        {cohort.highlights && cohort.highlights.length > 0 && (
+                          <ul className="mt-4 pt-4 border-t border-slate-100 space-y-1.5 text-xs text-slate-700">
+                            {cohort.highlights.slice(0, 3).map((item, i) => (
+                              <li key={i} className="flex items-center gap-2">
+                                <CheckCircle2 size={14} className="text-emerald-600 shrink-0" />
+                                <span className="line-clamp-1">{item}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </div>
+
+                      {/* Action Button */}
+                      <div className="mt-6 pt-4 border-t border-slate-100">
+                        {cohort.applicationUrl.startsWith("http") ? (
+                          <Button asChild className="w-full bg-purple-600 hover:bg-purple-700 text-white gap-2 font-semibold">
+                            <a href={cohort.applicationUrl} target="_blank" rel="noopener noreferrer">
+                              Apply Now <ExternalLink size={14} />
+                            </a>
+                          </Button>
+                        ) : (
+                          <Button asChild className="w-full bg-purple-600 hover:bg-purple-700 text-white gap-2 font-semibold">
+                            <Link to={cohort.applicationUrl || "/join-us"}>
+                              Apply for Cohort <ArrowRight size={14} />
+                            </Link>
+                          </Button>
+                        )}
+                      </div>
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="font-['Space_Grotesk'] font-bold text-slate-900 text-base">
-                      D2C Launchpad Cohort
-                    </h3>
-                    <p className="text-xs text-slate-500">For consumer brand builders</p>
-                  </div>
-                </div>
-                <p className="text-xs text-slate-600 leading-relaxed">
-                  Focusing on unit economics, repeat customer cohorts, omnichannel retail distribution, and brand positioning.
-                </p>
-                <div className="mt-4 pt-4 border-t border-slate-100 flex items-center justify-between text-xs font-semibold text-purple-600">
-                  <span>Applications Opening Soon</span>
-                  <span className="text-[11px] bg-purple-50 px-2 py-0.5 rounded border border-purple-200">Waitlist Open</span>
-                </div>
+                ))}
               </div>
             </div>
+          ) : (
+            /* Coming Soon State if DB has 0 cohorts */
+            <div className="max-w-3xl mx-auto text-center py-14 px-6 sm:px-12 rounded-3xl bg-slate-50 border border-slate-200 shadow-sm">
+              <div className="w-16 h-16 rounded-2xl bg-purple-100 text-purple-700 flex items-center justify-center mx-auto mb-5 shadow-sm">
+                <Clock size={32} />
+              </div>
 
-            <div id="upcoming" className="mt-10 flex flex-wrap gap-4 justify-center">
-              <Button asChild className="btn-metallic btn-metallic-purple text-white px-6">
-                <Link to="/join-us">
-                  Join Waitlist & Get Notified <ArrowRight size={16} className="ml-2" />
-                </Link>
-              </Button>
-              <Button asChild variant="outline" className="border-slate-300">
-                <Link to="/get-funding">Explore Funding Programs</Link>
-              </Button>
+              <Badge className="bg-purple-100 text-purple-700 hover:bg-purple-100 border-none px-3.5 py-1 text-xs mb-3 font-semibold">
+                Coming Soon
+              </Badge>
+
+              <h2 className="text-2xl sm:text-3xl font-extrabold font-['Space_Grotesk'] text-slate-900 leading-snug">
+                Accelerator Cohorts Launching Soon
+              </h2>
+
+              <p className="text-sm sm:text-base text-slate-600 mt-4 leading-relaxed max-w-xl mx-auto">
+                We are curating high-intensity accelerator batches for early-stage founders and consumer brands. New cohorts will be published here directly from our leadership network.
+              </p>
+
+              <div className="mt-8 pt-8 border-t border-slate-200/80 max-w-md mx-auto grid grid-cols-1 sm:grid-cols-2 gap-3 text-left text-xs sm:text-sm text-slate-700">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 size={16} className="text-emerald-600 shrink-0" />
+                  <span>1-on-1 Operator Mentorship</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 size={16} className="text-emerald-600 shrink-0" />
+                  <span>Direct VC Demo Days</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 size={16} className="text-emerald-600 shrink-0" />
+                  <span>Zero Equity Pressure</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 size={16} className="text-emerald-600 shrink-0" />
+                  <span>$100K+ Cloud Perks</span>
+                </div>
+              </div>
+
+              <div className="mt-10 flex flex-wrap gap-4 justify-center">
+                <Button asChild className="bg-purple-600 hover:bg-purple-700 text-white px-6">
+                  <Link to="/join-us">
+                    Join Waitlist & Get Notified <ArrowRight size={16} className="ml-2" />
+                  </Link>
+                </Button>
+                <Button asChild variant="outline" className="border-slate-300">
+                  <Link to="/get-funding">Explore Funding Programs</Link>
+                </Button>
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </section>
 
@@ -141,7 +296,7 @@ const CohortPage = () => {
             Our upcoming cohorts will operate on a founder-friendly structure with hands-on operator office hours, pitch demo days, and cloud perk grants.
           </p>
           <div className="mt-6 flex flex-wrap gap-4 justify-center">
-            <Button asChild className="btn-metallic btn-metallic-purple text-white px-6">
+            <Button asChild className="bg-purple-600 hover:bg-purple-700 text-white px-6">
               <Link to="/contact-us">Inquire About Cohort Sponsorships</Link>
             </Button>
           </div>

@@ -21,6 +21,7 @@ import AdminMembers from "./pages/AdminMembers.tsx";
 import AdminLogin from "./pages/AdminLogin.tsx";
 
 const AdminSpeakerInvestors = lazy(() => import("./pages/AdminSpeakerInvestors.tsx"));
+const AdminCohorts = lazy(() => import("./pages/AdminCohorts.tsx"));
 const AdminTeam = lazy(() => import("./pages/AdminTeam.tsx"));
 const About = lazy(() => import("./pages/About.tsx"));
 
@@ -194,6 +195,14 @@ const App = () => (
               element={(
                 <ProtectedRoute allowedRoles={["admin", "superadmin"]}>
                   <AdminSpeakerInvestors />
+                </ProtectedRoute>
+              )}
+            />
+            <Route
+              path="/admin/cohorts"
+              element={(
+                <ProtectedRoute allowedRoles={["admin", "superadmin"]}>
+                  <AdminCohorts />
                 </ProtectedRoute>
               )}
             />

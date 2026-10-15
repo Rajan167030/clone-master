@@ -38,6 +38,12 @@ import {
   deleteAdminSliderPromotion,
 } from "../controllers/content.controller.js";
 import { listSubscribersAdmin } from "../controllers/newsletter.controller.js";
+import {
+  listAdminCohorts,
+  createAdminCohort,
+  updateAdminCohort,
+  deleteAdminCohort,
+} from "../controllers/cohort.controller.js";
 import { getConsentStats } from "../controllers/cookie-consent.controller.js";
 import { sendBulkEmail } from "../controllers/email-automation.controller.js";
 import {
@@ -139,6 +145,11 @@ adminRouter.get("/speaker-investors", listAdminSpeakerInvestorProfiles);
 adminRouter.post("/speaker-investors", createAdminSpeakerInvestorProfile);
 adminRouter.patch("/speaker-investors/:slug", updateAdminSpeakerInvestorProfile);
 adminRouter.delete("/speaker-investors/:slug", deleteAdminSpeakerInvestorProfile);
+
+adminRouter.get("/cohorts", listAdminCohorts);
+adminRouter.post("/cohorts", createAdminCohort);
+adminRouter.patch("/cohorts/:slug", updateAdminCohort);
+adminRouter.delete("/cohorts/:slug", deleteAdminCohort);
 
 adminRouter.get("/blogs", listAdminBlogs);
 adminRouter.post("/blogs", createAdminBlog);
