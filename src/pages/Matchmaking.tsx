@@ -333,7 +333,7 @@ const Matchmaking = () => {
                 </button>
                 <button
                   onClick={() => deck[0] && handleSwiped(deck[0].id, "like")}
-                  className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-pink-500 text-white shadow-lg transition-transform hover:scale-105"
+                  className="flex h-16 w-16 items-center justify-center rounded-full bg-rose-500 text-white shadow-lg transition-transform hover:scale-105 hover:bg-rose-600"
                   aria-label="Like"
                 >
                   <Heart className="w-7 h-7 fill-white" />

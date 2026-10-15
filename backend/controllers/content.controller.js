@@ -140,7 +140,9 @@ const sanitizeTestimonialPayload = (body = {}) => ({
 
 const sanitizeSpeakerInvestorPayload = (body = {}) => ({
   slug: slugify(body.slug || body.name),
-  category: String(body.category || "speaker").trim().toLowerCase() === "investor" ? "investor" : "speaker",
+  category: ["investor", "mentor", "speaker"].includes(String(body.category || "speaker").trim().toLowerCase())
+    ? String(body.category || "speaker").trim().toLowerCase()
+    : "speaker",
   name: String(body.name || "").trim(),
   designation: String(body.designation || "").trim(),
   company: String(body.company || "").trim(),
@@ -309,15 +311,39 @@ export const listPublicPartnerLogos = async (req, res, next) => {
 
 export const listPublicSpeakerInvestorProfiles = async (req, res, next) => {
   try {
-    const cacheKey = "public:speaker-investors";
+    const requestedCategory = String(req.query?.category || "").trim().toLowerCase();
+    const filter = { isActive: true };
+    if (["speaker", "investor", "mentor"].includes(requestedCategory)) {
+      filter.category = requestedCategory;
+    }
+
+    const cacheKey = requestedCategory ? `public:speaker-investors:${requestedCategory}` : "public:speaker-investors";
     const cached = await getCache(cacheKey);
     if (cached) return res.status(200).json(cached);
 
-    const profiles = await SpeakerInvestorProfile.find({ isActive: true })
+    const profiles = await SpeakerInvestorProfile.find(filter)
       .sort({ order: 1, createdAt: -1 })
       .lean();
 
     const payload = { profiles };
+    await setCache(cacheKey, payload, 300);
+    return res.status(200).json(payload);
+  } catch (error) {
+    return next(error);
+  }
+};
+
+export const listPublicMentors = async (req, res, next) => {
+  try {
+    const cacheKey = "public:mentors";
+    const cached = await getCache(cacheKey);
+    if (cached) return res.status(200).json(cached);
+
+    const mentors = await SpeakerInvestorProfile.find({ category: "mentor", isActive: true })
+      .sort({ order: 1, createdAt: -1 })
+      .lean();
+
+    const payload = { mentors, profiles: mentors };
     await setCache(cacheKey, payload, 300);
     return res.status(200).json(payload);
   } catch (error) {
@@ -717,7 +743,14 @@ export const createAdminSpeakerInvestorProfile = async (req, res, next) => {
     }
 
     const profile = await SpeakerInvestorProfile.create(payload);
-    await deleteCache("public:speaker-investors", "admin:speaker-investors");
+    await deleteCache(
+      "public:speaker-investors",
+      "public:speaker-investors:speaker",
+      "public:speaker-investors:investor",
+      "public:speaker-investors:mentor",
+      "public:mentors",
+      "admin:speaker-investors"
+    );
     return res.status(201).json({ message: "Speaker/investor profile created successfully.", profile });
   } catch (error) {
     return next(error);
@@ -744,7 +777,14 @@ export const updateAdminSpeakerInvestorProfile = async (req, res, next) => {
       return res.status(404).json({ message: "Speaker/investor profile not found." });
     }
 
-    await deleteCache("public:speaker-investors", "admin:speaker-investors");
+    await deleteCache(
+      "public:speaker-investors",
+      "public:speaker-investors:speaker",
+      "public:speaker-investors:investor",
+      "public:speaker-investors:mentor",
+      "public:mentors",
+      "admin:speaker-investors"
+    );
     return res.status(200).json({ message: "Speaker/investor profile updated successfully.", profile });
   } catch (error) {
     return next(error);
@@ -760,7 +800,14 @@ export const deleteAdminSpeakerInvestorProfile = async (req, res, next) => {
       return res.status(404).json({ message: "Speaker/investor profile not found." });
     }
 
-    await deleteCache("public:speaker-investors", "admin:speaker-investors");
+    await deleteCache(
+      "public:speaker-investors",
+      "public:speaker-investors:speaker",
+      "public:speaker-investors:investor",
+      "public:speaker-investors:mentor",
+      "public:mentors",
+      "admin:speaker-investors"
+    );
     return res.status(200).json({ message: "Speaker/investor profile deleted successfully." });
   } catch (error) {
     return next(error);

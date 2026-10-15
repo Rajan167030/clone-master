@@ -141,23 +141,23 @@ const BecomeAMember = () => {
               Exclusive Founder Network
             </p>
             <h1 className="font-['Space_Grotesk'] text-4xl sm:text-5xl font-extrabold tracking-tight text-[#1B1B1F]">
-              Your Unfair Advantage in <span className="text-[#E4572E]">Scaling</span> Startups
+              Your Strategic Network in <span className="text-[#E4572E]">Scaling</span> Startups
             </h1>
             <p className="mt-4 text-base md:text-lg text-[#6B6558] max-w-2xl mx-auto leading-relaxed">
-              Surround yourself with 10,000+ ambitious builders, get warm investor intros, and unlock masterclasses from unicorn operators.
+              Connect with ambitious builders, access warm investor intros, and collaborate with experienced operators.
             </p>
           </div>
 
-          {/* Social Proof Badges */}
+          {/* Value Badges */}
           <div className="mt-8 flex flex-wrap justify-center items-center gap-6 text-xs md:text-sm font-medium text-slate-600">
             <span className="flex items-center gap-2">
               <ShieldCheck className="text-emerald-600" size={18} /> Verified Founder Community
             </span>
             <span className="flex items-center gap-2">
-              <Zap className="text-amber-500" size={18} /> ₹250Cr+ Capital Facilitated
+              <Zap className="text-amber-500" size={18} /> Direct Investor Deal Rooms
             </span>
             <span className="flex items-center gap-2">
-              <Users className="text-purple-600" size={18} /> 12+ Active City Chapters
+              <Users className="text-purple-600" size={18} /> Regional City Chapters
             </span>
           </div>
         </div>
@@ -246,23 +246,23 @@ const BecomeAMember = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center md:text-left">
             <div className="p-6 rounded-xl bg-slate-800/60 border border-slate-700/60">
               <Award className="text-amber-400 mb-3 mx-auto md:mx-0" size={32} />
-              <h4 className="text-lg font-bold font-['Space_Grotesk'] text-white">Warm Investor Intros</h4>
+              <h4 className="text-lg font-bold font-['Space_Grotesk'] text-white">Direct Investor Intros</h4>
               <p className="text-xs sm:text-sm text-slate-400 mt-2">
-                Over 78% of our Venture Members secure initial partner calls within 30 days of profile activation.
+                Curated introductions to accredited angel investors, family offices, and venture capital partners.
               </p>
             </div>
             <div className="p-6 rounded-xl bg-slate-800/60 border border-slate-700/60">
               <TrendingUp className="text-purple-400 mb-3 mx-auto md:mx-0" size={32} />
               <h4 className="text-lg font-bold font-['Space_Grotesk'] text-white">Curated City Chapters</h4>
               <p className="text-xs sm:text-sm text-slate-400 mt-2">
-                Private monthly dinners and closed-room demo days across 12+ tech hubs across India.
+                Private in-person founder meetups, demo days, and co-working sessions across active Indian startup hubs.
               </p>
             </div>
             <div className="p-6 rounded-xl bg-slate-800/60 border border-slate-700/60">
               <Sparkles className="text-emerald-400 mb-3 mx-auto md:mx-0" size={32} />
-              <h4 className="text-lg font-bold font-['Space_Grotesk'] text-white">$50k+ Cloud Credits</h4>
+              <h4 className="text-lg font-bold font-['Space_Grotesk'] text-white">Cloud & Tool Perks</h4>
               <p className="text-xs sm:text-sm text-slate-400 mt-2">
-                Instant access to AWS Activate, Google Cloud credits, Stripe processing discounts, and legal perks.
+                Access to partner cloud credits, payment processing credits, and dev tool perks for accepted founders.
               </p>
             </div>
           </div>

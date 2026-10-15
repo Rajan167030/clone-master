@@ -5,7 +5,7 @@ const { Schema } = mongoose;
 const SpeakerInvestorProfileSchema = new Schema(
   {
     slug: { type: String, required: true, trim: true, unique: true, index: true },
-    category: { type: String, required: true, enum: ["speaker", "investor"], index: true },
+    category: { type: String, required: true, enum: ["speaker", "investor", "mentor"], index: true },
     name: { type: String, required: true, trim: true },
     designation: { type: String, required: true, trim: true },
     company: { type: String, default: "", trim: true },

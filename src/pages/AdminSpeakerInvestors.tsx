@@ -238,6 +238,7 @@ const AdminSpeakerInvestors = () => {
                   >
                     <option value="speaker">Speaker</option>
                     <option value="investor">Investor</option>
+                    <option value="mentor">Mentor</option>
                   </select>
                 </label>
                 <label className="block text-sm font-medium text-slate-700">

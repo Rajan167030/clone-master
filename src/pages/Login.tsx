@@ -301,7 +301,7 @@ const Login = ({ role = "user" }: LoginProps) => {
                   type="submit"
                   disabled={isLoading}
                   size="lg"
-                  className="mt-2 h-12 w-full rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 text-base font-bold text-white hover:from-violet-500 hover:to-indigo-500 shadow-lg shadow-violet-500/20 active:scale-[0.98] transition-all disabled:opacity-50"
+                  className="mt-2 h-12 w-full rounded-xl bg-violet-600 text-base font-bold text-white hover:bg-violet-700 shadow-md shadow-violet-500/20 active:scale-[0.98] transition-all disabled:opacity-50"
                 >
                   {isLoading ? "Logging in..." : "LOGIN TO ACCOUNT"}
                 </Button>
@@ -357,7 +357,7 @@ const Login = ({ role = "user" }: LoginProps) => {
                   type="submit"
                   disabled={isLoading}
                   size="lg"
-                  className="mt-4 h-12 w-full rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 text-base font-bold text-white hover:from-violet-500 hover:to-indigo-500 shadow-lg shadow-violet-500/20 active:scale-[0.98] transition-all disabled:opacity-50"
+                  className="mt-4 h-12 w-full rounded-xl bg-violet-600 text-base font-bold text-white hover:bg-violet-700 shadow-md shadow-violet-500/20 active:scale-[0.98] transition-all disabled:opacity-50"
                 >
                   {isLoading ? "Sending..." : "SEND OTP"}
                 </Button>
@@ -403,7 +403,7 @@ const Login = ({ role = "user" }: LoginProps) => {
                   type="submit"
                   disabled={isLoading}
                   size="lg"
-                  className="mt-4 h-12 w-full rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 text-base font-bold text-white hover:from-violet-500 hover:to-indigo-500 shadow-lg shadow-violet-500/20 active:scale-[0.98] transition-all disabled:opacity-50"
+                  className="mt-4 h-12 w-full rounded-xl bg-violet-600 text-base font-bold text-white hover:bg-violet-700 shadow-md shadow-violet-500/20 active:scale-[0.98] transition-all disabled:opacity-50"
                 >
                   {isLoading ? "Verifying..." : "VERIFY CODE"}
                 </Button>
@@ -456,7 +456,7 @@ const Login = ({ role = "user" }: LoginProps) => {
                   type="submit"
                   disabled={isLoading}
                   size="lg"
-                  className="mt-4 h-12 w-full rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-base font-bold text-white hover:from-emerald-500 hover:to-teal-500 shadow-lg shadow-emerald-500/20 active:scale-[0.98] transition-all disabled:opacity-50"
+                  className="mt-4 h-12 w-full rounded-xl bg-emerald-600 text-base font-bold text-white hover:bg-emerald-700 shadow-md shadow-emerald-500/20 active:scale-[0.98] transition-all disabled:opacity-50"
                 >
                   {isLoading ? "Saving..." : "SAVE NEW PASSWORD"}
                 </Button>

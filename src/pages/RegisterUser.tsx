@@ -379,12 +379,12 @@ const RegisterUser = () => {
                 )}
 
                 {currentStep < 3 ? (
-                  <Button type="button" onClick={handleNextStep} className="gap-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white hover:from-blue-700 hover:to-blue-800">
+                  <Button type="button" onClick={handleNextStep} className="gap-2 bg-blue-600 text-white hover:bg-blue-700">
                     Next Step
                     <ArrowRight size={18} />
                   </Button>
                 ) : (
-                  <Button type="submit" disabled={isLoading} size="lg" className="h-12 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold text-base gap-2">
+                  <Button type="submit" disabled={isLoading} size="lg" className="h-12 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-base gap-2">
                     {isLoading ? "Creating Account..." : "Create Account"}
                     <ArrowRight size={18} />
                   </Button>

@@ -188,7 +188,7 @@ const RegistrationHub = () => {
           {/* FAQ Quick Links */}
           <div className="mt-16 text-center">
             <div className="flex flex-wrap justify-center gap-4">
-              <Button asChild size="lg" className="bg-gradient-to-r from-gray-800 to-gray-900 hover:from-gray-900 hover:to-black gap-2">
+              <Button asChild size="lg" className="bg-slate-900 hover:bg-black text-white gap-2">
                 <Link to="/login">
                   Already Have an Account? <ArrowRight size={16} />
                 </Link>

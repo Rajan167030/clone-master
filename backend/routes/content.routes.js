@@ -5,6 +5,7 @@ import {
   listPublicGalleryImages,
   listPublicPartnerLogos,
   listPublicSpeakerInvestorProfiles,
+  listPublicMentors,
   getPublicSiteNotice,
   listPublicBlogs,
   listPublicEvents,
@@ -42,6 +43,7 @@ contentRouter.get("/site-notice", getPublicSiteNotice);
 contentRouter.get("/gallery", listPublicGalleryImages);
 contentRouter.get("/partners", listPublicPartnerLogos);
 contentRouter.get("/speakers-investors", listPublicSpeakerInvestorProfiles);
+contentRouter.get("/mentors", listPublicMentors);
 contentRouter.get("/testimonials", listPublicTestimonials);
 contentRouter.get("/team", getTeamMembers);
 contentRouter.get("/partner-types", listPublicPartnerTypes);

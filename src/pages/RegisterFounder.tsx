@@ -449,12 +449,12 @@ const RegisterFounder = () => {
                 )}
 
                 {currentStep < 3 ? (
-                  <Button type="button" onClick={handleNextStep} className="gap-2 bg-gradient-to-r from-purple-600 to-purple-700 text-white hover:from-purple-700 hover:to-purple-800">
+                  <Button type="button" onClick={handleNextStep} className="gap-2 bg-purple-600 text-white hover:bg-purple-700">
                     Next Step
                     <ArrowRight size={18} />
                   </Button>
                 ) : (
-                  <Button type="submit" disabled={isLoading} size="lg" className="h-12 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white font-semibold text-base gap-2">
+                  <Button type="submit" disabled={isLoading} size="lg" className="h-12 bg-purple-600 hover:bg-purple-700 text-white font-semibold text-base gap-2">
                     {isLoading ? "Creating Account..." : "Create Founder Account"}
                     <ArrowRight size={18} />
                   </Button>

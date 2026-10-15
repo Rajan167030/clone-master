@@ -416,7 +416,7 @@ const Register = () => {
               type="submit"
               disabled={isLoading}
               size="lg"
-              className="mt-2 h-12 w-full rounded-xl bg-gradient-to-r from-violet-500 to-violet-600 text-base font-semibold text-white hover:opacity-95 disabled:opacity-50"
+              className="mt-2 h-12 w-full rounded-xl bg-violet-600 text-base font-semibold text-white hover:bg-violet-700 disabled:opacity-50"
             >
               {isLoading ? "Creating Account..." : `CREATE ${roleTitle.toUpperCase()} ACCOUNT`}
             </Button>

@@ -169,10 +169,10 @@ const JoinUsSection = ({ showSocial = true, className }: { showSocial?: boolean,
             <div className="mt-8 flex justify-center">
               <Link
                 to="/join-us"
-                className="btn-metallic btn-metallic-silver inline-flex items-center gap-3 rounded-full px-9 py-4 text-lg font-medium text-black transition-transform duration-300 hover:-translate-y-0.5"
+                className="inline-flex items-center gap-3 rounded-full bg-white text-slate-900 hover:bg-slate-100 px-9 py-4 text-lg font-semibold transition-all duration-300 hover:-translate-y-0.5 shadow-lg shadow-white/10"
               >
-                <span className="relative z-[2]">Join us</span>
-                <span aria-hidden="true" className="relative z-[2] text-xl leading-none">
+                <span>Join us</span>
+                <span aria-hidden="true" className="text-xl leading-none">
                   →
                 </span>
               </Link>

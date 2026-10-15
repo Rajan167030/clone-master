@@ -326,7 +326,7 @@ export type PartnerLogo = {
 export type SpeakerInvestorProfile = {
   _id: string;
   slug: string;
-  category: "speaker" | "investor";
+  category: "speaker" | "investor" | "mentor";
   name: string;
   designation: string;
   company?: string;
@@ -654,8 +654,16 @@ export const getPublicPartnersApi = () =>
     method: "GET",
   });
 
-export const getPublicSpeakerInvestorProfilesApi = () =>
-  request<{ profiles: SpeakerInvestorProfile[] }>("/content/speakers-investors", {
+export const getPublicSpeakerInvestorProfilesApi = (category?: string) =>
+  request<{ profiles: SpeakerInvestorProfile[] }>(
+    category ? `/content/speakers-investors?category=${encodeURIComponent(category)}` : "/content/speakers-investors",
+    {
+      method: "GET",
+    },
+  );
+
+export const getPublicMentorsApi = () =>
+  request<{ mentors: SpeakerInvestorProfile[]; profiles: SpeakerInvestorProfile[] }>("/content/mentors", {
     method: "GET",
   });
 

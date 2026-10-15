@@ -1,205 +1,206 @@
+import { useEffect, useState } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import BackButton from "@/components/BackButton";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useSEO } from "@/hooks/useSEO";
-import { Lightbulb, Users, Star, ArrowRight, Briefcase, Globe, Award } from "lucide-react";
+import {
+  Lightbulb,
+  Clock,
+  ArrowRight,
+  Sparkles,
+  Users,
+  Compass,
+  CheckCircle2,
+  ExternalLink,
+} from "lucide-react";
 import { Link } from "react-router-dom";
-
-const mentorData = [
-  {
-    name: "Priya Sharma",
-    role: "Serial Entrepreneur & Mentor",
-    expertise: ["Product Strategy", "GTM", "Fundraising"],
-    company: "Ex-Flipkart, 3× Founder",
-    bio: "15+ years building consumer internet products. Mentored 50+ early-stage startups across Southeast Asia.",
-    avatar: null,
-    initials: "PS",
-    color: "from-purple-500 to-pink-500",
-  },
-  {
-    name: "Rahul Mehta",
-    role: "Venture Builder",
-    expertise: ["B2B SaaS", "Sales", "Scaling"],
-    company: "Managing Director, Surge Labs",
-    bio: "Helped 30+ B2B startups find product-market fit and scale their first $1M ARR.",
-    avatar: null,
-    initials: "RM",
-    color: "from-blue-500 to-cyan-500",
-  },
-  {
-    name: "Anjali Gupta",
-    role: "Deep Tech Specialist",
-    expertise: ["AI/ML", "Hardware", "R&D Commercialisation"],
-    company: "IIT Alumni | CTO turned Investor",
-    bio: "Bridges the gap between cutting-edge research and scalable product development.",
-    avatar: null,
-    initials: "AG",
-    color: "from-emerald-500 to-teal-500",
-  },
-  {
-    name: "Vikram Nair",
-    role: "D2C & Brand Expert",
-    expertise: ["Brand Building", "D2C", "Performance Marketing"],
-    company: "Founder, BrandCraft Studio",
-    bio: "Built and scaled multiple D2C brands from ₹0 to ₹100Cr. Expert in digital-first brand growth.",
-    avatar: null,
-    initials: "VN",
-    color: "from-orange-500 to-amber-500",
-  },
-  {
-    name: "Deepika Rao",
-    role: "Legal & Compliance Advisor",
-    expertise: ["Startup Law", "IP", "Compliance"],
-    company: "Partner, Rao & Associates",
-    bio: "Specialises in startup structuring, term-sheet negotiation and IP protection for early-stage ventures.",
-    avatar: null,
-    initials: "DR",
-    color: "from-rose-500 to-red-500",
-  },
-  {
-    name: "Aditya Patel",
-    role: "FinTech Growth Mentor",
-    expertise: ["FinTech", "Regulatory", "Partnerships"],
-    company: "Ex-RBI | FinTech Advisor",
-    bio: "Navigated complex regulatory landscapes for 20+ fintech startups across lending and payments.",
-    avatar: null,
-    initials: "AP",
-    color: "from-violet-500 to-purple-500",
-  },
-];
+import { getPublicMentorsApi, type SpeakerInvestorProfile } from "@/lib/api";
 
 const Mentors = () => {
+  const [mentors, setMentors] = useState<SpeakerInvestorProfile[]>([]);
+  const [loading, setLoading] = useState(true);
+
   useSEO({
-    title: "Mentors | Founders Connect",
-    description:
-      "Meet our world-class mentors — seasoned founders, operators, and domain experts who guide early-stage startups to success.",
+    title: "Mentorship Network | Founders Connect",
+    description: "Get guidance from seasoned founders, angel investors, and domain experts in the Founders Connect mentorship network.",
+    keywords: "startup mentorship, founder advice, business mentor India, startup advisor, executive coaching",
+    ogType: "website",
+    canonicalUrl: "https://founders.connect/mentors",
   });
+
+  useEffect(() => {
+    getPublicMentorsApi()
+      .then((res) => {
+        setMentors(res.mentors || res.profiles || []);
+      })
+      .catch(() => setMentors([]))
+      .finally(() => setLoading(false));
+  }, []);
 
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
 
-      {/* Hero */}
-      <section className="relative overflow-hidden pt-8 md:pt-12 pb-20">
-        <div className="pointer-events-none absolute -left-24 top-0 h-72 w-72 rounded-full bg-primary/5 blur-3xl" />
-        <div className="pointer-events-none absolute right-0 top-20 h-80 w-80 rounded-full bg-purple-400/5 blur-3xl" />
-
+      {/* Hero Header */}
+      <section className="relative overflow-hidden bg-[#FAF7F0] bg-[radial-gradient(circle,#EFE9D8_1px,transparent_1px)] bg-[length:22px_22px] pt-8 pb-16 md:pt-12 md:pb-20 border-b border-[#1B1B1F]/10">
         <div className="container mx-auto px-4">
-          <BackButton className="mb-6" />
-          <div className="text-center max-w-3xl mx-auto">
-            <Badge variant="outline" className="mb-4 gap-1.5 px-4 py-1 text-primary border-primary/20 bg-primary/5">
-              <Lightbulb size={14} /> World-Class Mentorship
-            </Badge>
-            <h1 className="font-heading text-4xl font-extrabold tracking-tight md:text-6xl">
-              Learn from Those Who've{" "}
-              <span className="text-primary italic">Done It</span>
+          <BackButton className="px-0 mx-0 max-w-none mb-6 animate-reveal-left" />
+
+          <div className="max-w-3xl mx-auto text-center">
+            <p className="mb-3 inline-flex items-center gap-2 font-['IBM_Plex_Mono'] text-xs font-semibold uppercase tracking-[0.22em] text-[#6B8F71]">
+              <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-[#6B8F71]" />
+              Expert Guidance
+            </p>
+            <h1 className="font-['Space_Grotesk'] text-4xl sm:text-5xl font-extrabold tracking-tight text-[#1B1B1F]">
+              Learn From Operators Who Have <span className="text-[#E4572E]">Done It</span>
             </h1>
-            <p className="mt-6 text-lg text-muted-foreground md:text-xl">
-              Our mentors are battle-tested founders, operators, and investors who bring
-              hands-on expertise to help you navigate your startup journey.
+            <p className="mt-4 text-base md:text-lg text-[#6B6558] max-w-2xl mx-auto leading-relaxed">
+              1-on-1 strategic mentorship sessions with vetted operators, exited founders, and functional experts who understand the trenches.
             </p>
-            <div className="mt-8 flex flex-wrap justify-center gap-4">
-              <Button asChild size="lg" className="btn-metallic btn-metallic-purple text-white">
-                <Link to="/join-us">
-                  <span className="relative z-[2] flex items-center gap-2">
-                    Apply for Mentorship <ArrowRight size={16} />
-                  </span>
-                </Link>
-              </Button>
-              <Button asChild size="lg" variant="outline">
-                <Link to="/become-a-member">Become a Member</Link>
-              </Button>
+          </div>
+        </div>
+      </section>
+
+      {/* Mentors Content Section */}
+      <section className="py-16 md:py-20 bg-white">
+        <div className="container mx-auto px-4 max-w-7xl">
+          {loading ? (
+            <div className="flex items-center justify-center py-20">
+              <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Stats */}
-      <section className="py-12 bg-secondary/30">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
-            {[
-              { icon: Users, value: "100+", label: "Active Mentors" },
-              { icon: Briefcase, value: "500+", label: "Startups Mentored" },
-              { icon: Globe, value: "20+", label: "Cities Covered" },
-              { icon: Award, value: "12+", label: "Domains of Expertise" },
-            ].map((stat) => (
-              <div key={stat.label} className="flex flex-col items-center gap-2">
-                <div className="p-3 rounded-xl bg-primary/10">
-                  <stat.icon size={24} className="text-primary" />
+          ) : mentors.length > 0 ? (
+            <div>
+              <div className="flex items-center justify-between mb-8">
+                <div>
+                  <h2 className="text-2xl sm:text-3xl font-extrabold font-['Space_Grotesk'] text-slate-900">
+                    Verified Mentors ({mentors.length})
+                  </h2>
+                  <p className="text-sm text-slate-500 mt-1">Book sessions or connect directly with our network.</p>
                 </div>
-                <p className="text-3xl font-extrabold text-foreground">{stat.value}</p>
-                <p className="text-sm text-muted-foreground">{stat.label}</p>
+                <Button asChild size="sm" className="hidden sm:inline-flex">
+                  <Link to="/contact-us">Apply as Mentor</Link>
+                </Button>
               </div>
-            ))}
-          </div>
-        </div>
-      </section>
 
-      {/* Mentor Grid */}
-      <section className="py-20">
-        <div className="container mx-auto px-4">
-          <div className="mb-12 text-center">
-            <h2 className="text-3xl font-bold">Featured Mentors</h2>
-            <p className="mt-2 text-muted-foreground">
-              A curated selection from our growing mentor community
-            </p>
-          </div>
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {mentorData.map((mentor) => (
-              <Card
-                key={mentor.name}
-                className="group relative overflow-hidden border border-border hover:border-primary/30 hover:shadow-lg transition-all duration-300"
-              >
-                <CardContent className="p-6">
-                  <div className="flex items-start gap-4 mb-4">
-                    <div
-                      className={`h-14 w-14 rounded-full bg-gradient-to-br ${mentor.color} flex items-center justify-center text-white font-bold text-lg flex-shrink-0`}
-                    >
-                      {mentor.initials}
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                {mentors.map((mentor) => (
+                  <div
+                    key={mentor.slug}
+                    className="group flex flex-col rounded-2xl border border-slate-200 bg-white p-5 shadow-sm hover:shadow-md transition-all"
+                  >
+                    <div className="relative aspect-square w-full rounded-xl overflow-hidden bg-slate-100 mb-4">
+                      {mentor.photoUrl ? (
+                        <img
+                          src={mentor.photoUrl}
+                          alt={mentor.name}
+                          className="h-full w-full object-cover transition-transform group-hover:scale-105"
+                        />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center bg-purple-50 text-purple-600 font-bold text-2xl">
+                          {mentor.name.slice(0, 2).toUpperCase()}
+                        </div>
+                      )}
                     </div>
-                    <div>
-                      <h3 className="font-semibold text-lg leading-tight">{mentor.name}</h3>
-                      <p className="text-sm text-primary">{mentor.role}</p>
-                      <p className="text-xs text-muted-foreground mt-0.5">{mentor.company}</p>
+                    <div className="flex-1">
+                      <h3 className="font-heading font-bold text-lg text-slate-900">{mentor.name}</h3>
+                      <p className="text-xs font-semibold text-purple-700 mt-0.5">{mentor.designation}</p>
+                      {mentor.company && (
+                        <p className="text-xs text-slate-500 mt-0.5">{mentor.company}</p>
+                      )}
+                      {(mentor.summary || mentor.introduction) && (
+                        <p className="text-xs text-slate-600 mt-3 line-clamp-3 leading-relaxed">
+                          {mentor.summary || mentor.introduction}
+                        </p>
+                      )}
                     </div>
+                    {mentor.linkedinUrl && (
+                      <div className="mt-4 pt-3 border-t border-slate-100">
+                        <a
+                          href={mentor.linkedinUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex items-center gap-1.5 text-xs font-semibold text-purple-600 hover:text-purple-700"
+                        >
+                          <ExternalLink size={13} /> LinkedIn Profile
+                        </a>
+                      </div>
+                    )}
                   </div>
-                  <p className="text-sm text-muted-foreground mb-4 leading-relaxed">{mentor.bio}</p>
-                  <div className="flex flex-wrap gap-2">
-                    {mentor.expertise.map((tag) => (
-                      <Badge key={tag} variant="secondary" className="text-xs">
-                        {tag}
-                      </Badge>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div className="max-w-3xl mx-auto text-center py-14 px-6 sm:px-10 rounded-3xl bg-slate-50 border border-slate-200 shadow-sm">
+              <div className="w-16 h-16 rounded-2xl bg-purple-100 text-purple-700 flex items-center justify-center mx-auto mb-5 shadow-sm">
+                <Clock size={32} />
+              </div>
+              
+              <Badge className="bg-purple-100 text-purple-700 hover:bg-purple-100 border-none px-3.5 py-1 text-xs mb-3 font-semibold">
+                Coming Soon
+              </Badge>
+
+              <h2 className="text-2xl sm:text-3xl font-extrabold font-['Space_Grotesk'] text-slate-900 leading-snug">
+                Curated Mentorship Network Launching Soon
+              </h2>
+
+              <p className="text-sm sm:text-base text-slate-600 mt-4 leading-relaxed max-w-xl mx-auto">
+                We are carefully vetting and onboarding experienced operators, serial founders, and domain experts across Product Strategy, B2B Sales, Tech Architecture, and Fundraising.
+              </p>
+
+              <div className="mt-8 pt-8 border-t border-slate-200/80 max-w-md mx-auto grid grid-cols-1 sm:grid-cols-2 gap-3 text-left text-xs sm:text-sm text-slate-700">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 size={16} className="text-emerald-600 shrink-0" />
+                  <span>Verified Operators</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 size={16} className="text-emerald-600 shrink-0" />
+                  <span>Direct 1-on-1 Sessions</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 size={16} className="text-emerald-600 shrink-0" />
+                  <span>Zero Equity Pressure</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 size={16} className="text-emerald-600 shrink-0" />
+                  <span>Custom Bottleneck Matching</span>
+                </div>
+              </div>
+
+              <div className="mt-10 flex flex-wrap gap-4 justify-center">
+                <Button asChild className="btn-metallic btn-metallic-purple text-white px-6">
+                  <Link to="/contact-us">
+                    Apply to Become a Mentor <ArrowRight size={16} className="ml-2" />
+                  </Link>
+                </Button>
+                <Button asChild variant="outline" className="border-slate-300">
+                  <Link to="/join-us">Join Founder Community</Link>
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
       </section>
 
       {/* CTA */}
-      <section className="container mx-auto px-4 pb-24">
-        <Card className="bg-gradient-primary border-none text-primary-foreground overflow-hidden">
-          <div className="relative px-8 py-12 text-center md:py-20">
-            <div className="pointer-events-none absolute -left-10 top-0 h-40 w-40 rounded-full bg-white/10 blur-3xl" />
-            <div className="pointer-events-none absolute -right-10 bottom-0 h-40 w-40 rounded-full bg-white/10 blur-3xl" />
-            <h2 className="text-3xl font-bold md:text-4xl">Become a Mentor</h2>
-            <p className="mt-4 mx-auto max-w-xl text-primary-foreground/80">
-              Share your expertise and give back to the startup ecosystem. Join our community of
-              mentors shaping India's next generation of founders.
-            </p>
-            <div className="mt-8 flex flex-wrap justify-center gap-4">
-              <Button asChild variant="secondary" size="lg" className="px-8">
-                <Link to="/partner-with-us">Apply as Mentor</Link>
-              </Button>
-            </div>
+      <section className="py-16 bg-[#FAF7F0] border-t border-slate-200">
+        <div className="container mx-auto px-4 max-w-3xl text-center">
+          <Badge className="mb-3 bg-purple-100 text-purple-700 border-none px-3 py-1 text-xs">
+            Founder Support
+          </Badge>
+          <h2 className="text-3xl font-extrabold text-slate-900 font-['Space_Grotesk']">
+            Need Immediate Founder Guidance?
+          </h2>
+          <p className="mt-3 text-slate-600 text-sm md:text-base leading-relaxed">
+            Connect with active founders and community leaders across our private WhatsApp & Slack channels today.
+          </p>
+          <div className="mt-6 flex flex-wrap gap-4 justify-center">
+            <Button asChild className="btn-metallic btn-metallic-purple text-white px-6">
+              <Link to="/join-us">Join Founders Connect</Link>
+            </Button>
           </div>
-        </Card>
+        </div>
       </section>
 
       <Footer />

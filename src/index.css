@@ -277,47 +277,36 @@
   box-shadow: 0 20px 60px -20px hsl(var(--primary) / 0.4);
 }
 
-/* Metallic button effect: brushed-metal gradient body + a light sweep that
-   passes across the surface on hover, like light glinting off chrome. */
-@keyframes metallic-shine {
-  0% { transform: translateX(-150%) skewX(-20deg); }
-  100% { transform: translateX(150%) skewX(-20deg); }
-}
-
+/* Button styling: Clean solid colors with no glare sweep or gradient stripes */
 .btn-metallic {
   position: relative;
   overflow: hidden;
   isolation: isolate;
+  background-image: none !important;
 }
 
 .btn-metallic::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  background: linear-gradient(
-    115deg,
-    transparent 20%,
-    rgba(255, 255, 255, 0.55) 40%,
-    rgba(255, 255, 255, 0.9) 50%,
-    rgba(255, 255, 255, 0.55) 60%,
-    transparent 80%
-  );
-  transform: translateX(-150%) skewX(-20deg);
-  pointer-events: none;
+  content: none !important;
+  display: none !important;
 }
 
 .btn-metallic:hover::before {
-  animation: metallic-shine 1.1s ease;
+  animation: none !important;
+  display: none !important;
 }
 
 .btn-metallic-silver {
-  background: linear-gradient(180deg, #ffffff 0%, #f2f2f5 20%, #d7d9df 45%, #ffffff 58%, #c2c5cd 78%, #f4f4f6 100%);
-  border: 1px solid rgba(255, 255, 255, 0.7);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.9),
-    inset 0 -1px 2px rgba(0, 0, 0, 0.15),
-    0 10px 30px rgba(0, 0, 0, 0.25);
+  background: #0f172a !important;
+  background-image: none !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+  text-shadow: none !important;
+  transition: all 0.2s ease;
+}
+
+.btn-metallic-silver:hover {
+  background: #1e293b !important;
 }
 
 /* Curtain reveal: plays whenever a multi-step form's step content mounts
@@ -333,13 +322,39 @@
 }
 
 .btn-metallic-purple {
-  background: linear-gradient(180deg, #d8b4fe 0%, #9333ea 25%, #5b1a94 50%, #9333ea 75%, #d8b4fe 100%);
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.45),
-    inset 0 -2px 4px rgba(0, 0, 0, 0.35),
-    0 8px 20px rgba(88, 28, 135, 0.45);
-  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.35);
+  background: hsl(var(--primary)) !important;
+  background-image: none !important;
+  color: #ffffff !important;
+  border: 1px solid hsl(var(--primary) / 0.25);
+  box-shadow: 0 4px 12px hsl(var(--primary) / 0.25);
+  text-shadow: none !important;
+  transition: all 0.2s ease;
+}
+
+.btn-metallic-purple:hover {
+  background: hsl(263.4 70% 45%) !important;
+}
+
+/* Global button rule: ensure no button has gradient background-image or shine sweeps */
+button,
+a.btn,
+.btn,
+button.btn-metallic,
+a.btn-metallic,
+button[class*="bg-gradient-"],
+a[class*="bg-gradient-"][role="button"],
+button[class*="bg-gradient-primary"],
+a[class*="bg-gradient-primary"] {
+  background-image: none !important;
+}
+
+button::before,
+button::after,
+a.btn::before,
+a.btn::after,
+.btn-metallic::before,
+.btn-metallic::after {
+  animation: none !important;
 }
 
 .bg-blob {
