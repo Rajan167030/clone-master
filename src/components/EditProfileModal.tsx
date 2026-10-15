@@ -21,6 +21,11 @@ interface EditProfileModalProps {
   initialData?: {
     headline?: string;
     profilePhoto?: string;
+    cardColors?: {
+      primary?: string;
+      secondary?: string;
+      [key: string]: any;
+    };
   };
 }
 

@@ -147,21 +147,21 @@ const EventLocationVisualizer = ({
   }
 
   return (
-    <Card className="border-border/80 shadow-xl overflow-hidden bg-card">
-      <CardHeader className="pb-4">
+    <Card className="border-border/80 shadow-md sm:shadow-xl overflow-hidden bg-card">
+      <CardHeader className="p-4 sm:p-6 pb-3 sm:pb-4">
         <div className="flex items-center gap-2">
-          <Badge variant="secondary" className="bg-red-500/10 text-red-500 hover:bg-red-500/20 border-red-500/20">
+          <Badge variant="secondary" className="bg-red-500/10 text-red-500 hover:bg-red-500/20 border-red-500/20 text-xs">
             <MapPin size={12} className="mr-1" /> Venue Location
           </Badge>
         </div>
-        <CardTitle className="text-2xl font-bold flex items-center gap-2">
-          Event Venue & Google Map Visualizer
+        <CardTitle className="text-xl sm:text-2xl font-bold flex items-center gap-2 font-['Space_Grotesk']">
+          Event Venue & Map Visualizer
         </CardTitle>
-        <CardDescription>
+        <CardDescription className="text-xs sm:text-sm">
           Explore the event venue location on Google Maps, copy the address, or get turn-by-turn directions.
         </CardDescription>
       </CardHeader>
-      <CardContent>{mapContent}</CardContent>
+      <CardContent className="p-4 sm:p-6 pt-0">{mapContent}</CardContent>
     </Card>
   );
 };

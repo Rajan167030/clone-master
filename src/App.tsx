@@ -53,6 +53,15 @@ const Community = lazy(() => import("./pages/Community.tsx"));
 const CommunityMessages = lazy(() => import("./pages/CommunityMessages.tsx"));
 const CommunityDirectory = lazy(() => import("./pages/CommunityDirectory.tsx"));
 const Matchmaking = lazy(() => import("./pages/Matchmaking.tsx"));
+const Mentors = lazy(() => import("./pages/Mentors.tsx"));
+const InvestorsPublic = lazy(() => import("./pages/InvestorsPublic.tsx"));
+const CityCommunities = lazy(() => import("./pages/CityCommunities.tsx"));
+const CorporatePartners = lazy(() => import("./pages/CorporatePartners.tsx"));
+const EcosystemPartners = lazy(() => import("./pages/EcosystemPartners.tsx"));
+const CohortPage = lazy(() => import("./pages/CohortPage.tsx"));
+const StartupResources = lazy(() => import("./pages/StartupResources.tsx"));
+const BecomeAMember = lazy(() => import("./pages/BecomeAMember.tsx"));
+const ContactUs = lazy(() => import("./pages/ContactUs.tsx"));
 
 const queryClient = new QueryClient();
 
@@ -147,7 +156,20 @@ const App = () => (
             />
             <Route path="/about" element={<About />} />
             <Route path="/join-us" element={<JoinUs />} />
+            <Route path="/become-a-member" element={<BecomeAMember />} />
+            <Route path="/membership" element={<BecomeAMember />} />
+            <Route path="/contact-us" element={<ContactUs />} />
             <Route path="/chapters" element={<Chapters />} />
+            <Route path="/city-communities" element={<CityCommunities />} />
+            <Route path="/mentors" element={<Mentors />} />
+            <Route path="/investors" element={<InvestorsPublic />} />
+            <Route path="/speakers" element={<PastSpeakersInvestors />} />
+            <Route path="/corporate-partners" element={<CorporatePartners />} />
+            <Route path="/ecosystem-partners" element={<EcosystemPartners />} />
+            <Route path="/cohorts" element={<CohortPage />} />
+            <Route path="/cohorts/d2c" element={<CohortPage />} />
+            <Route path="/cohorts/upcoming" element={<CohortPage />} />
+            <Route path="/startup-resources" element={<StartupResources />} />
             <Route path="/gallery" element={<Gallery />} />
             <Route path="/get-funding" element={<GetFunding />} />
             <Route path="/funding-application" element={<FundingApplication />} />
@@ -156,7 +178,6 @@ const App = () => (
             <Route path="/past-speakers-investors" element={<PastSpeakersInvestors />} />
             <Route path="/blog" element={<Blog />} />
             <Route path="/blog/:slug" element={<BlogDetails />} />
-            <Route path="/membership" element={<Navigate to="/" replace />} />
             <Route path="/terms" element={<TermsOfService />} />
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
             <Route path="/terms-of-service" element={<TermsOfService />} />

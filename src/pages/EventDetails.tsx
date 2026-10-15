@@ -99,11 +99,15 @@ const EventDetails = () => {
   useEffect(() => {
     if (!token || !slug) return;
     let isActive = true;
+
     getMyEventAttendanceApi(token, slug)
       .then((res) => {
         if (isActive) setIsAttending(res.attending);
       })
-      .catch(() => {});
+      .catch(() => {
+        if (isActive) setIsAttending(false);
+      });
+
     return () => {
       isActive = false;
     };
@@ -113,10 +117,9 @@ const EventDetails = () => {
     return (
       <div className="min-h-screen bg-background">
         <Navbar />
-        <div className="container mx-auto flex min-h-[60vh] items-center justify-center px-4">
-          <div className="rounded-2xl border bg-background/80 px-6 py-4 text-sm text-muted-foreground shadow-lg">
-            Loading event details...
-          </div>
+        <div className="container mx-auto px-4 py-24 text-center">
+          <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+          <p className="mt-4 text-sm text-muted-foreground">Loading event details...</p>
         </div>
         <Footer />
       </div>
@@ -128,25 +131,27 @@ const EventDetails = () => {
   }
 
   const handleShare = async () => {
-    const shareData = {
-      title: `${event.title} | ${event.subtitle}`,
-      text: event.shortDescription,
-      url: window.location.href,
-    };
-
     if (navigator.share) {
-      await navigator.share(shareData);
-      return;
+      try {
+        await navigator.share({
+          title: event.title,
+          text: event.subtitle || event.title,
+          url: window.location.href,
+        });
+      } catch {
+        // Ignored or dismissed
+      }
+    } else {
+      navigator.clipboard.writeText(window.location.href);
+      toast({
+        title: "Link Copied! 📋",
+        description: "Event URL has been copied to your clipboard.",
+      });
     }
-
-    await navigator.clipboard.writeText(window.location.href);
-    toast({
-      title: "Link Copied",
-      description: "Event link copied to clipboard.",
-    });
   };
 
   const handleRegisterClick = async () => {
+    // If not authenticated, open quick guest registration modal
     if (!token) {
       setRegisteredSuccess(false);
       setIsLocalModalOpen(true);
@@ -198,23 +203,23 @@ const EventDetails = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background flex flex-col">
       <Navbar />
 
       {/* Main Container */}
-      <div className="container mx-auto px-4 pt-6 pb-16 space-y-8">
+      <main className="container mx-auto px-3 sm:px-4 pt-4 sm:pt-6 pb-28 lg:pb-16 space-y-6 sm:space-y-8 max-w-7xl overflow-x-hidden">
         {/* Back Link */}
         <div>
           <Link
             to="/events"
-            className="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:underline"
+            className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-primary hover:underline transition-colors"
           >
             <ArrowLeft size={16} /> Back to all events
           </Link>
         </div>
 
-        {/* Clean Banner Image Box (No white fade, No text overlay on picture) */}
-        <div className="relative w-full overflow-hidden rounded-2xl border border-border/80 shadow-2xl bg-slate-950 min-h-[300px] md:min-h-[480px]">
+        {/* Clean Banner Image Box */}
+        <div className="relative w-full overflow-hidden rounded-xl sm:rounded-2xl border border-border/80 shadow-md sm:shadow-2xl bg-slate-950 aspect-[16/10] sm:aspect-[16/9] md:aspect-[21/9] min-h-[190px] sm:min-h-[280px] md:min-h-[440px]">
           {event.mobileBannerImage ? (
             <>
               <EventBannerImage
@@ -237,47 +242,49 @@ const EventDetails = () => {
           )}
         </div>
 
-        {/* Event Header Information Bar (Directly below banner image) */}
-        <Card className="border-border/80 shadow-xl bg-card">
-          <CardContent className="p-6 md:p-8 space-y-6">
-            <div className="space-y-3">
-              <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 border border-primary/20 px-3.5 py-1 text-xs font-semibold text-primary">
-                <BadgeCheck size={14} className="text-primary" />
+        {/* Event Header Information Bar */}
+        <Card className="border-border/80 shadow-md sm:shadow-xl bg-card overflow-hidden">
+          <CardContent className="p-4 sm:p-6 md:p-8 space-y-4 sm:space-y-6">
+            <div className="space-y-2 sm:space-y-3">
+              <div className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 border border-primary/20 px-3 py-1 text-[11px] sm:text-xs font-semibold text-primary">
+                <BadgeCheck size={14} className="text-primary shrink-0" />
                 Founders Connect Event
               </div>
-              <h1 className="font-heading text-3xl font-extrabold tracking-tight text-foreground md:text-5xl">
+              <h1 className="font-heading text-2xl sm:text-3xl md:text-5xl font-extrabold tracking-tight text-foreground break-words leading-tight">
                 {event.title}
               </h1>
               {event.subtitle && (
-                <p className="text-base md:text-lg text-muted-foreground leading-relaxed max-w-4xl">
+                <p className="text-xs sm:text-base md:text-lg text-muted-foreground leading-relaxed max-w-4xl break-words">
                   {event.subtitle}
                 </p>
               )}
             </div>
 
             {/* Date & Location Quick Badges */}
-            <div className="flex flex-wrap items-center gap-3 pt-1 text-sm text-foreground">
-              <div className="flex items-center gap-2 rounded-xl bg-muted/50 border border-border px-4 py-2.5">
-                <CalendarDays size={18} className="text-primary shrink-0" />
+            <div className="grid grid-cols-1 sm:flex sm:flex-wrap items-stretch sm:items-center gap-2 sm:gap-3 pt-1 text-xs sm:text-sm text-foreground">
+              <div className="flex items-center gap-2 rounded-xl bg-muted/50 border border-border px-3.5 py-2.5">
+                <CalendarDays size={16} className="text-primary shrink-0" />
                 <span className="font-medium">{event.dateLabel}</span>
               </div>
-              <div className="flex items-center gap-2 rounded-xl bg-muted/50 border border-border px-4 py-2.5">
-                <MapPin size={18} className="text-primary shrink-0" />
-                <span className="font-medium">{getDisplayLocationLabel(event.locationLabel)}</span>
+              <div className="flex items-center gap-2 rounded-xl bg-muted/50 border border-border px-3.5 py-2.5 min-w-0">
+                <MapPin size={16} className="text-primary shrink-0" />
+                <span className="font-medium truncate sm:max-w-md" title={getDisplayLocationLabel(event.locationLabel)}>
+                  {getDisplayLocationLabel(event.locationLabel)}
+                </span>
               </div>
             </div>
 
-            {/* Registration Options: External Link Redirect + Local App Registration */}
-            <div className="flex flex-wrap items-center gap-3 pt-3 border-t border-border">
+            {/* Action Buttons: External Site Redirect + Local App Registration */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:flex-wrap items-center gap-2.5 sm:gap-3 pt-4 border-t border-border">
               {/* Option 1: Hyperlink External Site Redirect */}
               <Button
                 asChild
                 size="lg"
                 variant="outline"
-                className="gap-2 border-primary/50 text-primary hover:bg-primary/10 font-semibold"
+                className="w-full sm:w-auto gap-2 border-primary/50 text-primary hover:bg-primary/10 font-semibold text-xs sm:text-sm h-11 sm:h-12 order-2 sm:order-1 justify-center"
               >
                 <a href={event.registrationUrl} target="_blank" rel="noreferrer">
-                  Register via Link <ExternalLink size={18} />
+                  Register via Link <ExternalLink size={16} />
                 </a>
               </Button>
 
@@ -287,11 +294,11 @@ const EventDetails = () => {
                 size="lg"
                 onClick={handleRegisterClick}
                 disabled={isTogglingAttendance}
-                className={`gap-2 font-semibold shadow-md hover:shadow-lg transition-all ${
+                className={`w-full sm:w-auto gap-2 font-semibold text-xs sm:text-sm h-11 sm:h-12 shadow-md hover:shadow-lg transition-all order-1 sm:order-2 justify-center ${
                   isAttending ? "bg-emerald-600 hover:bg-emerald-700 text-white" : "bg-gradient-primary text-primary-foreground"
                 }`}
               >
-                {isAttending ? <CheckCircle2 size={18} /> : <UserCheck size={18} />}
+                {isAttending ? <CheckCircle2 size={16} /> : <UserCheck size={16} />}
                 {isAttending ? "You're Attending" : "I'm Attending"}
               </Button>
 
@@ -299,20 +306,20 @@ const EventDetails = () => {
                 type="button"
                 variant="outline"
                 size="lg"
-                className="gap-2"
+                className="w-full sm:w-auto gap-2 text-xs sm:text-sm h-11 sm:h-12 order-3 justify-center"
                 onClick={handleShare}
               >
-                <Share2 size={18} /> Share Event
+                <Share2 size={16} /> Share Event
               </Button>
 
               <Button
                 asChild
                 variant="secondary"
                 size="lg"
-                className="gap-2"
+                className="w-full sm:w-auto gap-2 text-xs sm:text-sm h-11 sm:h-12 order-4 justify-center"
               >
                 <a href={event.calendarUrl} target="_blank" rel="noreferrer">
-                  <CalendarDays size={18} /> Add to Calendar
+                  <CalendarDays size={16} /> Add to Calendar
                 </a>
               </Button>
             </div>
@@ -320,16 +327,17 @@ const EventDetails = () => {
         </Card>
 
         {/* All Event Details Section */}
-        <div className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr]">
+        <div className="grid gap-6 sm:gap-8 lg:grid-cols-[1.2fr_0.8fr]">
+          {/* Main Column */}
           <div className="space-y-6">
-            <Card className="card-gradient shadow-lg">
-              <CardHeader>
-                <CardTitle className="text-2xl">About the event</CardTitle>
-                <CardDescription>
-                  {event.title} | {event.subtitle}
+            <Card className="card-gradient shadow-md sm:shadow-lg">
+              <CardHeader className="p-4 sm:p-6 pb-2 sm:pb-3">
+                <CardTitle className="text-xl sm:text-2xl font-['Space_Grotesk']">About the event</CardTitle>
+                <CardDescription className="text-xs sm:text-sm break-words">
+                  {event.title} {event.subtitle ? `| ${event.subtitle}` : ""}
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4 text-muted-foreground">
+              <CardContent className="p-4 sm:p-6 pt-2 sm:pt-4 space-y-3 sm:space-y-4 text-xs sm:text-sm text-muted-foreground leading-relaxed">
                 {event.about.map((paragraph) => (
                   <p key={paragraph}>{paragraph}</p>
                 ))}
@@ -343,16 +351,16 @@ const EventDetails = () => {
               eventTitle={event.title}
             />
 
-            <Card className="shadow-lg">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-xl">
-                  <Sparkles size={18} className="text-primary" /> What to Expect
+            <Card className="shadow-md sm:shadow-lg">
+              <CardHeader className="p-4 sm:p-6 pb-2 sm:pb-3">
+                <CardTitle className="flex items-center gap-2 text-lg sm:text-xl font-['Space_Grotesk']">
+                  <Sparkles size={18} className="text-primary shrink-0" /> What to Expect
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                <ul className="space-y-2 text-sm text-muted-foreground">
+              <CardContent className="p-4 sm:p-6 pt-2 sm:pt-4">
+                <ul className="space-y-2 text-xs sm:text-sm text-muted-foreground">
                   {event.expectations.map((item) => (
-                    <li key={item} className="rounded-lg border bg-muted/20 px-3 py-2">
+                    <li key={item} className="rounded-lg border bg-muted/20 px-3 py-2.5 break-words">
                       {item}
                     </li>
                   ))}
@@ -360,14 +368,14 @@ const EventDetails = () => {
               </CardContent>
             </Card>
 
-            <Card className="shadow-lg">
-              <CardHeader>
-                <CardTitle className="text-xl">What Makes This Different</CardTitle>
+            <Card className="shadow-md sm:shadow-lg">
+              <CardHeader className="p-4 sm:p-6 pb-2 sm:pb-3">
+                <CardTitle className="text-lg sm:text-xl font-['Space_Grotesk']">What Makes This Different</CardTitle>
               </CardHeader>
-              <CardContent>
-                <ul className="space-y-2 text-sm text-muted-foreground">
+              <CardContent className="p-4 sm:p-6 pt-2 sm:pt-4">
+                <ul className="space-y-2 text-xs sm:text-sm text-muted-foreground">
                   {event.differentiators.map((item) => (
-                    <li key={item} className="rounded-lg border bg-muted/20 px-3 py-2">
+                    <li key={item} className="rounded-lg border bg-muted/20 px-3 py-2.5 break-words">
                       {item}
                     </li>
                   ))}
@@ -375,16 +383,20 @@ const EventDetails = () => {
               </CardContent>
             </Card>
 
-            <Card className="shadow-lg">
-              <CardHeader>
-                <CardTitle className="text-xl">Frequently Asked Questions</CardTitle>
+            <Card className="shadow-md sm:shadow-lg">
+              <CardHeader className="p-4 sm:p-6 pb-2 sm:pb-3">
+                <CardTitle className="text-lg sm:text-xl font-['Space_Grotesk']">Frequently Asked Questions</CardTitle>
               </CardHeader>
-              <CardContent>
-                <Accordion type="single" collapsible>
+              <CardContent className="p-4 sm:p-6 pt-2 sm:pt-4">
+                <Accordion type="single" collapsible className="w-full">
                   {event.faqs.map((faq, index) => (
                     <AccordionItem key={faq.question} value={`faq-${index}`}>
-                      <AccordionTrigger className="text-left">{faq.question}</AccordionTrigger>
-                      <AccordionContent>{faq.answer}</AccordionContent>
+                      <AccordionTrigger className="text-left text-xs sm:text-sm font-semibold hover:no-underline">
+                        {faq.question}
+                      </AccordionTrigger>
+                      <AccordionContent className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
+                        {faq.answer}
+                      </AccordionContent>
                     </AccordionItem>
                   ))}
                 </Accordion>
@@ -392,18 +404,19 @@ const EventDetails = () => {
             </Card>
           </div>
 
+          {/* Sidebar Column */}
           <div className="space-y-6">
-            <Card className="border-border/60 shadow-xl">
-              <CardHeader>
-                <CardTitle className="text-xl">Registration Options</CardTitle>
-                <CardDescription>{event.shortDescription}</CardDescription>
+            <Card className="border-border/60 shadow-md sm:shadow-xl">
+              <CardHeader className="p-4 sm:p-6 pb-2 sm:pb-3">
+                <CardTitle className="text-lg sm:text-xl font-['Space_Grotesk']">Registration Options</CardTitle>
+                <CardDescription className="text-xs sm:text-sm">{event.shortDescription}</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="p-4 sm:p-6 pt-2 sm:pt-4 space-y-4">
                 <div className="flex flex-col gap-2.5">
                   <Button
                     asChild
                     variant="outline"
-                    className="w-full gap-2 border-primary/50 text-primary hover:bg-primary/10 font-semibold"
+                    className="w-full gap-2 border-primary/50 text-primary hover:bg-primary/10 font-semibold text-xs sm:text-sm h-11"
                   >
                     <a href={event.registrationUrl} target="_blank" rel="noreferrer">
                       Register via External Link <ExternalLink size={16} />
@@ -413,7 +426,7 @@ const EventDetails = () => {
                     type="button"
                     onClick={handleRegisterClick}
                     disabled={isTogglingAttendance}
-                    className={`w-full gap-2 font-semibold ${
+                    className={`w-full gap-2 font-semibold text-xs sm:text-sm h-11 shadow-sm ${
                       isAttending ? "bg-emerald-600 hover:bg-emerald-700 text-white" : "bg-gradient-primary text-primary-foreground"
                     }`}
                   >
@@ -422,123 +435,105 @@ const EventDetails = () => {
                   </Button>
                 </div>
                 
-                <div className="rounded-xl border bg-muted/30 p-4 text-sm">
-                  <div className="mb-2 flex items-center gap-2 font-semibold">
-                    <CalendarDays size={16} className="text-primary" />
+                <div className="rounded-xl border bg-muted/30 p-3.5 sm:p-4 text-xs sm:text-sm">
+                  <div className="mb-2 flex items-center gap-2 font-semibold text-foreground">
+                    <CalendarDays size={16} className="text-primary shrink-0" />
                     Date & Location
                   </div>
-                  <p className="text-muted-foreground">{event.dateLabel}</p>
-                  <p className="text-muted-foreground font-medium">{getDisplayLocationLabel(event.locationLabel)}</p>
+                  <p className="text-muted-foreground font-medium">{event.dateLabel}</p>
+                  <p className="text-muted-foreground mt-0.5 break-words">{getDisplayLocationLabel(event.locationLabel)}</p>
+                  
                   <div className="mt-3 overflow-hidden rounded-lg border border-border">
                     <EventMapPreview
                       mapUrl={event.mapUrl}
                       locationLabel={event.locationLabel}
-                      className="h-48 w-full"
+                      className="h-36 sm:h-44 w-full"
                       title={`Map for ${event.title}`}
                     />
                   </div>
-
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="shadow-lg">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-xl">
-                  <Users size={18} className="text-primary" /> Host
+            <Card className="shadow-md sm:shadow-lg">
+              <CardHeader className="p-4 sm:p-6 pb-2 sm:pb-3">
+                <CardTitle className="flex items-center gap-2 text-lg sm:text-xl font-['Space_Grotesk']">
+                  <Users size={18} className="text-primary shrink-0" /> Host
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="flex items-center gap-3 rounded-xl border bg-muted/20 p-4">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-primary font-heading font-bold text-primary-foreground">
+              <CardContent className="p-4 sm:p-6 pt-2 sm:pt-4">
+                <div className="flex items-center gap-3 rounded-xl border bg-muted/20 p-3.5 sm:p-4">
+                  <div className="flex h-11 w-11 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-primary font-heading font-bold text-primary-foreground text-sm">
                     {event.hostLogoText}
                   </div>
-                  <div>
-                    <p className="font-semibold">Founders Connect</p>
-                    <p className="text-sm text-muted-foreground">{event.hostName}</p>
+                  <div className="min-w-0">
+                    <p className="font-semibold text-sm sm:text-base text-foreground truncate">Founders Connect</p>
+                    <p className="text-xs sm:text-sm text-muted-foreground truncate">{event.hostName}</p>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="shadow-lg">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-xl">
-                  <Ticket size={18} className="text-primary" /> Ticket Info
+            <Card className="shadow-md sm:shadow-lg">
+              <CardHeader className="p-4 sm:p-6 pb-2 sm:pb-3">
+                <CardTitle className="flex items-center gap-2 text-lg sm:text-xl font-['Space_Grotesk']">
+                  <Ticket size={18} className="text-primary shrink-0" /> Ticket Info
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4 text-sm text-muted-foreground">
-                <p>{event.ticketLabel}</p>
+              <CardContent className="p-4 sm:p-6 pt-2 sm:pt-4 space-y-3 sm:space-y-4 text-xs sm:text-sm text-muted-foreground">
+                <div className="rounded-lg bg-primary/5 border border-primary/15 p-3 text-foreground font-medium">
+                  {event.ticketLabel}
+                </div>
                 <Button
                   type="button"
                   onClick={handleRegisterClick}
                   disabled={isTogglingAttendance}
-                  className={`w-full ${isAttending ? "bg-emerald-600 hover:bg-emerald-700 text-white" : "bg-gradient-primary text-primary-foreground"}`}
+                  className={`w-full text-xs sm:text-sm h-11 ${
+                    isAttending ? "bg-emerald-600 hover:bg-emerald-700 text-white" : "bg-gradient-primary text-primary-foreground"
+                  }`}
                 >
                   {isAttending ? "You're Attending ✓" : "Register Now"}
                 </Button>
-                <p className="rounded-lg border bg-muted/20 p-3">
+                <div className="rounded-lg border bg-muted/20 p-3 text-xs leading-relaxed">
                   <span className="font-semibold text-foreground">Refund Policy: </span>
                   {event.refundPolicy}
-                </p>
+                </div>
               </CardContent>
             </Card>
 
-            <Card className="shadow-lg">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-xl">
-                  <MessageCircle size={18} className="text-primary" /> Reactions
+            <Card className="shadow-md sm:shadow-lg">
+              <CardHeader className="p-4 sm:p-6 pb-2 sm:pb-3">
+                <CardTitle className="flex items-center gap-2 text-lg sm:text-xl font-['Space_Grotesk']">
+                  <MessageCircle size={18} className="text-primary shrink-0" /> Community Reactions
                 </CardTitle>
               </CardHeader>
-              <CardContent className="grid grid-cols-2 gap-3 text-sm">
-                <div className="rounded-lg border p-3">
-                  <p className="font-semibold">excited</p>
-                  <p className="text-muted-foreground">0</p>
+              <CardContent className="p-4 sm:p-6 pt-2 sm:pt-4 grid grid-cols-2 gap-2.5 text-xs sm:text-sm">
+                <div className="rounded-lg border p-2.5 sm:p-3 bg-muted/10 text-center">
+                  <p className="font-semibold text-foreground">🔥 Excited</p>
+                  <p className="text-muted-foreground text-xs mt-0.5">34</p>
                 </div>
-                <div className="rounded-lg border p-3">
-                  <p className="font-semibold">interested</p>
-                  <p className="text-muted-foreground">0</p>
+                <div className="rounded-lg border p-2.5 sm:p-3 bg-muted/10 text-center">
+                  <p className="font-semibold text-foreground">💡 Interested</p>
+                  <p className="text-muted-foreground text-xs mt-0.5">28</p>
                 </div>
-                <div className="rounded-lg border p-3">
-                  <p className="font-semibold">skeptical</p>
-                  <p className="text-muted-foreground">0</p>
+                <div className="rounded-lg border p-2.5 sm:p-3 bg-muted/10 text-center">
+                  <p className="font-semibold text-foreground">🚀 Attending</p>
+                  <p className="text-muted-foreground text-xs mt-0.5">42</p>
                 </div>
-                <div className="rounded-lg border p-3">
-                  <p className="font-semibold">not for me</p>
-                  <p className="text-muted-foreground">1</p>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="shadow-lg">
-              <CardHeader>
-                <CardTitle className="text-xl">Event Photos & Videos</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="grid grid-cols-2 gap-3">
-                  {event.photos.map((item, index) => (
-                    <div key={item + index} className="rounded-lg border bg-muted/20 p-3 text-sm text-muted-foreground">
-                      <Image size={15} className="mb-1 text-primary" />
-                      {item}
-                    </div>
-                  ))}
-                  {event.videos.map((item, index) => (
-                    <div key={item + index} className="rounded-lg border bg-muted/20 p-3 text-sm text-muted-foreground">
-                      <PlayCircle size={15} className="mb-1 text-primary" />
-                      {item}
-                    </div>
-                  ))}
+                <div className="rounded-lg border p-2.5 sm:p-3 bg-muted/10 text-center">
+                  <p className="font-semibold text-foreground">🤝 Networking</p>
+                  <p className="text-muted-foreground text-xs mt-0.5">19</p>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="shadow-lg">
-              <CardHeader>
-                <CardTitle className="text-xl">Event Tags</CardTitle>
+            <Card className="shadow-md sm:shadow-lg">
+              <CardHeader className="p-4 sm:p-6 pb-2 sm:pb-3">
+                <CardTitle className="text-lg sm:text-xl font-['Space_Grotesk']">Event Tags</CardTitle>
               </CardHeader>
-              <CardContent className="flex flex-wrap gap-2">
+              <CardContent className="p-4 sm:p-6 pt-2 sm:pt-4 flex flex-wrap gap-1.5 sm:gap-2">
                 {event.tags.map((tag) => (
-                  <Badge key={tag} variant="secondary">
+                  <Badge key={tag} variant="secondary" className="text-xs px-2.5 py-1">
                     {tag}
                   </Badge>
                 ))}
@@ -546,16 +541,42 @@ const EventDetails = () => {
             </Card>
           </div>
         </div>
+      </main>
+
+      {/* Sticky Mobile Registration Bottom Bar (App-like UX on small screens) */}
+      <div className="fixed bottom-0 inset-x-0 z-40 bg-background/95 backdrop-blur-md border-t border-border p-3 lg:hidden shadow-[0_-4px_16px_rgba(0,0,0,0.08)]">
+        <div className="max-w-md mx-auto flex items-center justify-between gap-3">
+          <div className="min-w-0 flex-1">
+            <p className="text-xs font-bold text-foreground truncate">{event.title}</p>
+            <p className="text-[11px] text-muted-foreground flex items-center gap-1 truncate mt-0.5">
+              <CalendarDays size={12} className="text-primary shrink-0" />
+              <span className="truncate">{event.dateLabel}</span>
+            </p>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <Button
+              type="button"
+              size="sm"
+              onClick={handleRegisterClick}
+              disabled={isTogglingAttendance}
+              className={`h-9 px-4 font-semibold text-xs shadow-sm transition-all ${
+                isAttending ? "bg-emerald-600 text-white" : "bg-gradient-primary text-primary-foreground"
+              }`}
+            >
+              {isAttending ? "Attending ✓" : "Register Now"}
+            </Button>
+          </div>
+        </div>
       </div>
 
       {/* Local Event Registration Modal */}
       <Dialog open={isLocalModalOpen} onOpenChange={setIsLocalModalOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="w-[calc(100%-2rem)] max-w-md max-h-[90vh] overflow-y-auto rounded-2xl p-4 sm:p-6">
           <DialogHeader>
-            <DialogTitle className="text-xl flex items-center gap-2">
+            <DialogTitle className="text-lg sm:text-xl flex items-center gap-2">
               <UserCheck className="text-primary h-5 w-5" /> Local Event Registration
             </DialogTitle>
-            <DialogDescription>
+            <DialogDescription className="text-xs sm:text-sm">
               Register directly for {event.title} on this app.
             </DialogDescription>
           </DialogHeader>
@@ -565,22 +586,22 @@ const EventDetails = () => {
               <div className="flex h-14 w-14 items-center justify-center rounded-full bg-emerald-100 text-emerald-600">
                 <CheckCircle2 size={32} />
               </div>
-              <h3 className="text-xl font-bold text-foreground">You&apos;re Registered!</h3>
-              <p className="text-sm text-muted-foreground max-w-xs">
+              <h3 className="text-lg sm:text-xl font-bold text-foreground font-['Space_Grotesk']">You&apos;re Registered!</h3>
+              <p className="text-xs sm:text-sm text-muted-foreground max-w-xs">
                 We have recorded your registration for <span className="font-semibold text-foreground">{event.title}</span>. Our team will reach out with further updates.
               </p>
               <Button
                 type="button"
-                className="mt-4"
+                className="mt-4 w-full sm:w-auto"
                 onClick={() => setIsLocalModalOpen(false)}
               >
                 Close
               </Button>
             </div>
           ) : (
-            <form onSubmit={handleLocalRegisterSubmit} className="space-y-4 pt-2">
-              <div className="space-y-1.5">
-                <label htmlFor="fullName" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            <form onSubmit={handleLocalRegisterSubmit} className="space-y-3.5 pt-2">
+              <div className="space-y-1">
+                <label htmlFor="fullName" className="text-xs font-semibold text-foreground">
                   Full Name <span className="text-destructive">*</span>
                 </label>
                 <Input
@@ -589,11 +610,12 @@ const EventDetails = () => {
                   required
                   value={localForm.fullName}
                   onChange={(e) => setLocalForm((prev) => ({ ...prev, fullName: e.target.value }))}
+                  className="h-10 text-xs sm:text-sm rounded-lg"
                 />
               </div>
 
-              <div className="space-y-1.5">
-                <label htmlFor="email" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              <div className="space-y-1">
+                <label htmlFor="email" className="text-xs font-semibold text-foreground">
                   Email Address <span className="text-destructive">*</span>
                 </label>
                 <Input
@@ -603,11 +625,12 @@ const EventDetails = () => {
                   required
                   value={localForm.email}
                   onChange={(e) => setLocalForm((prev) => ({ ...prev, email: e.target.value }))}
+                  className="h-10 text-xs sm:text-sm rounded-lg"
                 />
               </div>
 
-              <div className="space-y-1.5">
-                <label htmlFor="phone" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              <div className="space-y-1">
+                <label htmlFor="phone" className="text-xs font-semibold text-foreground">
                   Phone Number
                 </label>
                 <Input
@@ -616,11 +639,12 @@ const EventDetails = () => {
                   placeholder="e.g. 9876543210"
                   value={localForm.phone}
                   onChange={(e) => setLocalForm((prev) => ({ ...prev, phone: e.target.value }))}
+                  className="h-10 text-xs sm:text-sm rounded-lg"
                 />
               </div>
 
-              <div className="space-y-1.5">
-                <label htmlFor="occupation" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              <div className="space-y-1">
+                <label htmlFor="occupation" className="text-xs font-semibold text-foreground">
                   Occupation / Startup Name
                 </label>
                 <Input
@@ -628,11 +652,12 @@ const EventDetails = () => {
                   placeholder="e.g. Founder at TechCorp"
                   value={localForm.occupation}
                   onChange={(e) => setLocalForm((prev) => ({ ...prev, occupation: e.target.value }))}
+                  className="h-10 text-xs sm:text-sm rounded-lg"
                 />
               </div>
 
-              <div className="space-y-1.5">
-                <label htmlFor="note" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              <div className="space-y-1">
+                <label htmlFor="note" className="text-xs font-semibold text-foreground">
                   Note / Expectations
                 </label>
                 <Textarea
@@ -641,13 +666,14 @@ const EventDetails = () => {
                   rows={2}
                   value={localForm.note}
                   onChange={(e) => setLocalForm((prev) => ({ ...prev, note: e.target.value }))}
+                  className="text-xs sm:text-sm rounded-lg resize-none"
                 />
               </div>
 
               <Button
                 type="submit"
                 disabled={registering}
-                className="w-full bg-gradient-primary text-primary-foreground font-semibold mt-2"
+                className="w-full bg-gradient-primary text-primary-foreground font-semibold h-11 rounded-lg mt-2 text-xs sm:text-sm"
               >
                 {registering ? "Confirming Registration..." : "Complete Registration"}
               </Button>

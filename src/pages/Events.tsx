@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { ExternalLink, Search, Filter, MapPin } from "lucide-react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import { ExternalLink, Search, Filter, MapPin, Calendar, History } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import BackButton from "@/components/BackButton";
@@ -67,9 +67,19 @@ const Events = () => {
     canonicalUrl: "https://founders.connect/events",
   });
 
+  const location = useLocation();
+  const queryTab = new URLSearchParams(location.search).get("tab");
   const [eventList, setEventList] = useState<DynamicEvent[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedTag, setSelectedTag] = useState("All");
+  const [statusTab, setStatusTab] = useState<"all" | "upcoming" | "past">(
+    queryTab === "past" ? "past" : queryTab === "upcoming" ? "upcoming" : "all"
+  );
+
+  useEffect(() => {
+    if (queryTab === "past") setStatusTab("past");
+    else if (queryTab === "upcoming") setStatusTab("upcoming");
+  }, [queryTab]);
 
   useEffect(() => {
     getPublicEventsApi()
@@ -90,7 +100,7 @@ const Events = () => {
         <div className="container mx-auto px-4">
           <BackButton className="px-0 mx-0 max-w-none mb-6 animate-reveal-left" />
 
-          <div className="mx-auto mb-10 max-w-3xl text-center">
+          <div className="mx-auto mb-8 max-w-3xl text-center">
             <p className="mb-3 inline-flex items-center gap-2 font-['IBM_Plex_Mono'] text-xs font-semibold uppercase tracking-[0.22em] text-[#6B8F71]">
               <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-[#6B8F71]" />
               Founders Connect Events
@@ -101,6 +111,43 @@ const Events = () => {
             <p className="mt-4 font-[#6B6558] text-sm md:text-base">
               Click any event card to view full details or register directly.
             </p>
+
+            {/* Upcoming / Past Tabs */}
+            <div className="mt-6 inline-flex p-1 bg-white rounded-full border border-[#1B1B1F]/15 shadow-sm">
+              <button
+                type="button"
+                onClick={() => setStatusTab("all")}
+                className={`px-4 py-1.5 rounded-full text-xs sm:text-sm font-semibold transition-all ${
+                  statusTab === "all"
+                    ? "bg-[#1B1B1F] text-white shadow-sm"
+                    : "text-slate-600 hover:text-slate-900"
+                }`}
+              >
+                All Events
+              </button>
+              <button
+                type="button"
+                onClick={() => setStatusTab("upcoming")}
+                className={`px-4 py-1.5 rounded-full text-xs sm:text-sm font-semibold transition-all ${
+                  statusTab === "upcoming"
+                    ? "bg-[#E4572E] text-white shadow-sm"
+                    : "text-slate-600 hover:text-[#E4572E]"
+                }`}
+              >
+                Upcoming Events
+              </button>
+              <button
+                type="button"
+                onClick={() => setStatusTab("past")}
+                className={`px-4 py-1.5 rounded-full text-xs sm:text-sm font-semibold transition-all ${
+                  statusTab === "past"
+                    ? "bg-purple-600 text-white shadow-sm"
+                    : "text-slate-600 hover:text-purple-600"
+                }`}
+              >
+                Past Events
+              </button>
+            </div>
           </div>
 
           <div className="mb-12 flex flex-col items-center justify-between gap-4 rounded-sm border border-[#1B1B1F]/10 bg-white p-4 shadow-[0_6px_16px_rgba(27,27,31,0.08)] sm:flex-row md:mb-16">
@@ -136,7 +183,12 @@ const Events = () => {
               const matchesSearch = (event.title + " " + event.subtitle + " " + event.shortDescription + " " + event.locationLabel)
                 .toLowerCase().includes(searchTerm.toLowerCase());
               const matchesTag = selectedTag === "All" || event.tags.includes(selectedTag);
-              return matchesSearch && matchesTag;
+              const status = getEventStatus(event.dateLabel);
+              const matchesStatus =
+                statusTab === "all" ||
+                (statusTab === "upcoming" && status === "upcoming") ||
+                (statusTab === "past" && status === "past");
+              return matchesSearch && matchesTag && matchesStatus;
             }).map((event, index) => {
               const rotation = CARD_ROTATIONS[index % CARD_ROTATIONS.length];
               const category = (event.tags[0] || "event").toLowerCase();

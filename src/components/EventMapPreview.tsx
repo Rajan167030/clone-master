@@ -36,10 +36,10 @@ const EventMapPreview = ({
         referrerPolicy="no-referrer-when-downgrade"
         style={{ border: 0 }}
       />
-      <div className="absolute bottom-2 right-2 flex items-center gap-1.5 rounded-lg bg-slate-950/85 px-3 py-1.5 font-sans text-xs font-semibold text-white backdrop-blur-md border border-white/10 shadow-lg transition-transform group-hover:scale-105">
-        <MapPin size={14} className="text-red-400" />
-        Open Google Maps
-        <ExternalLink size={12} className="opacity-80" />
+      <div className="absolute bottom-2 right-2 flex items-center gap-1.5 rounded-lg bg-slate-950/90 px-2.5 sm:px-3 py-1 sm:py-1.5 font-sans text-[11px] sm:text-xs font-semibold text-white backdrop-blur-md border border-white/10 shadow-lg transition-transform group-hover:scale-105 max-w-[calc(100%-1rem)] truncate">
+        <MapPin size={13} className="text-red-400 shrink-0" />
+        <span className="truncate">Open in Maps</span>
+        <ExternalLink size={11} className="opacity-80 shrink-0" />
       </div>
     </a>
   );
