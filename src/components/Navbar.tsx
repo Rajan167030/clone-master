@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Menu, X, ChevronDown, LogOut, Sparkles } from "lucide-react";
+import { Menu, X, ChevronDown, LogOut, Sparkles, Crown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { clearSession, getAccount, getToken, isAuthenticated } from "@/lib/session";
 import { getMyFounderAccessApi, sendActivityHeartbeatApi } from "@/lib/api";
@@ -77,6 +77,16 @@ const navigationMenu: NavMenuItem[] = [
       { label: "Contact Us", href: "/contact-us" },
     ],
   },
+  {
+    label: "FALCON Club",
+    href: "/falcon-club",
+    items: [
+      { label: "FALCON Club Overview", href: "/falcon-club" },
+      { label: "5 Membership Levels", href: "/falcon-club#membership-criteria" },
+      { label: "Request Access", href: "/falcon-club#membership-form-section" },
+      { label: "Member Directory", href: "/falcon-club#members-directory" },
+    ],
+  },
 ];
 
 const Navbar = () => {
@@ -133,7 +143,7 @@ const Navbar = () => {
     <header className="sticky top-0 z-50 flex flex-col w-full shadow-sm">
       <nav className="w-full border-b border-white/20 bg-white/60 backdrop-blur-lg backdrop-saturate-150 supports-[backdrop-filter]:bg-white/50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex h-16 items-center justify-between">
+          <div className="flex h-16 items-center justify-between gap-2">
             {/* Logo */}
             <Link to={authed ? "/dashboard" : "/"} className="flex items-center gap-2 flex-shrink-0">
               <img
@@ -143,30 +153,36 @@ const Navbar = () => {
               />
             </Link>
 
-            {/* Desktop Navigation */}
-            <div className="hidden lg:flex items-center gap-0.5 xl:gap-1">
-              {navigationMenu.map((menuItem) => (
+            {/* Desktop Navigation — spread evenly across the space between logo and actions */}
+            <div className="hidden xl:flex flex-1 min-w-0 items-center justify-evenly mx-3">
+              {navigationMenu.map((menuItem) => {
+                const isFalcon = menuItem.label === "FALCON Club";
+                // Every item shares one pill shape so widths and gaps stay uniform.
+                const itemClass = `inline-flex items-center gap-1 whitespace-nowrap rounded-md px-1.5 py-2 text-[13px] transition-colors ${
+                  isFalcon
+                    ? "font-bold text-amber-700 bg-amber-500/10 border border-amber-400/40 hover:text-amber-800"
+                    : "font-medium text-slate-700 hover:text-purple-600 hover:bg-slate-100/50"
+                }`;
+                const label = (
+                  <>
+                    {isFalcon && <Crown size={14} className="text-amber-600" />}
+                    {menuItem.label}
+                    <ChevronDown
+                      size={14}
+                      className={`group-hover:rotate-180 transition-transform duration-200 ${isFalcon ? "text-amber-700" : "text-slate-500"}`}
+                    />
+                  </>
+                );
+
+                return (
                 <div key={menuItem.label} className="relative group">
                   {menuItem.href ? (
-                    <div className="inline-flex items-center">
-                      <Link
-                        to={menuItem.href}
-                        className="px-2.5 py-2 text-sm font-medium text-slate-700 hover:text-purple-600 transition-colors rounded-l-md hover:bg-slate-100/50"
-                      >
-                        {menuItem.label}
-                      </Link>
-                      <button
-                        type="button"
-                        className="p-1 text-slate-500 hover:text-purple-600 transition-colors rounded-r-md hover:bg-slate-100/50"
-                        aria-label={`${menuItem.label} menu`}
-                      >
-                        <ChevronDown size={14} className="group-hover:rotate-180 transition-transform duration-200" />
-                      </button>
-                    </div>
+                    <Link to={menuItem.href} className={itemClass}>
+                      {label}
+                    </Link>
                   ) : (
-                    <button className="inline-flex items-center gap-1 px-2.5 py-2 text-sm font-medium text-slate-700 hover:text-purple-600 transition-colors rounded-md hover:bg-slate-100/50">
-                      {menuItem.label}
-                      <ChevronDown size={14} className="group-hover:rotate-180 transition-transform duration-200" />
+                    <button type="button" className={itemClass}>
+                      {label}
                     </button>
                   )}
 
@@ -185,18 +201,20 @@ const Navbar = () => {
                     </div>
                   </div>
                 </div>
-              ))}
+                );
+              })}
             </div>
 
             {/* Right Section */}
-            <div className="flex items-center gap-2 sm:gap-3">
+            <div className="flex flex-shrink-0 items-center gap-2 sm:gap-3">
               {authed && (
                 <div className="hidden sm:flex items-center gap-3">
-                  <span className="text-xs sm:text-sm text-slate-600">{account?.fullName || account?.email}</span>
+                  {/* Hidden while the full desktop menu is shown — there isn't room beside it */}
+                  <span className="xl:hidden max-w-[10rem] truncate text-sm text-slate-600">{account?.fullName || account?.email}</span>
                   <button
                     onClick={handleLogout}
                     className="inline-flex items-center gap-1 px-3 py-2 text-sm font-medium text-slate-700 hover:text-red-600 transition-colors"
-                    title="Logout"
+                    title={`Logout${account?.fullName || account?.email ? ` (${account?.fullName || account?.email})` : ""}`}
                   >
                     <LogOut size={16} />
                   </button>
@@ -206,10 +224,12 @@ const Navbar = () => {
               {saisRoomTo && (
                 <Link
                   to={saisRoomTo}
-                  className="hidden sm:inline-flex items-center gap-1.5 rounded-xl border border-purple-200 bg-purple-50 px-3 py-2 text-sm font-bold text-purple-700 shadow-sm transition-all hover:bg-purple-100/70"
+                  title="SAIS Room"
+                  aria-label="SAIS Room"
+                  className="hidden sm:inline-flex items-center gap-1.5 rounded-xl border border-purple-200 bg-purple-50 px-2.5 py-2 text-sm font-bold text-purple-700 shadow-sm transition-all hover:bg-purple-100/70"
                 >
                   <Sparkles size={16} />
-                  SAIS Room
+                  <span className="xl:hidden">SAIS Room</span>
                 </Link>
               )}
 
@@ -222,7 +242,7 @@ const Navbar = () => {
               {/* Mobile Menu Button */}
               <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="lg:hidden p-2 text-slate-700 hover:bg-slate-100 rounded-md transition-colors"
+                className="xl:hidden p-2 text-slate-700 hover:bg-slate-100 rounded-md transition-colors"
                 aria-label="Toggle navigation menu"
               >
                 {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
@@ -233,7 +253,7 @@ const Navbar = () => {
 
         {/* Mobile Menu — curtain reveal from the top */}
         <div
-          className={`lg:hidden grid overflow-hidden transition-[grid-template-rows,opacity] duration-300 ease-out ${
+          className={`xl:hidden grid overflow-hidden transition-[grid-template-rows,opacity] duration-300 ease-out ${
             isMobileMenuOpen ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
           }`}
         >
@@ -245,9 +265,14 @@ const Navbar = () => {
                     {menuItem.href ? (
                       <Link
                         to={menuItem.href}
-                        className="text-sm font-semibold text-slate-800 hover:text-purple-600 py-1.5"
+                        className={`text-sm font-semibold py-1.5 flex items-center gap-1.5 ${
+                          menuItem.label === "FALCON Club"
+                            ? "text-amber-700 font-bold"
+                            : "text-slate-800 hover:text-purple-600"
+                        }`}
                         onClick={() => setIsMobileMenuOpen(false)}
                       >
+                        {menuItem.label === "FALCON Club" && <Crown size={14} className="text-amber-600" />}
                         {menuItem.label}
                       </Link>
                     ) : (

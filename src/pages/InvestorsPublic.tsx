@@ -3,36 +3,17 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import BackButton from "@/components/BackButton";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useSEO } from "@/hooks/useSEO";
-import {
-  TrendingUp,
-  Clock,
-  ArrowRight,
-  ShieldCheck,
-  Sparkles,
-  Users,
-  Loader2,
-  ExternalLink,
-} from "lucide-react";
+import { Clock, ArrowRight, Loader2 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { DetailedProfileModal, PremiumProfileCard } from "@/components/ProfileShowcaseCard";
 import { getPublicSpeakerInvestorProfilesApi, type SpeakerInvestorProfile } from "@/lib/api";
-
-const LinkedinIcon = ({ size = 14 }: { size?: number }) => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="currentColor"
-    style={{ width: size, height: size }}
-    aria-hidden="true"
-  >
-    <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.779-1.75-1.75s.784-1.75 1.75-1.75 1.75.779 1.75 1.75-.784 1.75-1.75 1.75zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" />
-  </svg>
-);
 
 const InvestorsPublic = () => {
   const [investors, setInvestors] = useState<SpeakerInvestorProfile[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedInvestor, setSelectedInvestor] = useState<SpeakerInvestorProfile | null>(null);
 
   useSEO({
     title: "Investors Network | Founders Connect",
@@ -98,54 +79,17 @@ const InvestorsPublic = () => {
             </div>
           ) : investors.length > 0 ? (
             /* Real Investors from Database */
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 sm:gap-6 justify-items-center">
               {investors.map((inv) => (
-                <Card
+                <PremiumProfileCard
                   key={inv._id || inv.slug}
-                  className="rounded-2xl border-slate-200 overflow-hidden hover:border-purple-300 hover:shadow-lg transition-all bg-white flex flex-col justify-between"
-                >
-                  <CardContent className="p-6">
-                    <div className="flex items-center gap-4 mb-4">
-                      {inv.photoUrl ? (
-                        <img
-                          src={inv.photoUrl}
-                          alt={inv.name}
-                          className="h-14 w-14 rounded-full object-cover border border-slate-100"
-                        />
-                      ) : (
-                        <div className="h-14 w-14 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 text-white font-bold flex items-center justify-center text-lg">
-                          {inv.name.charAt(0)}
-                        </div>
-                      )}
-                      <div>
-                        <h3 className="font-['Space_Grotesk'] font-bold text-slate-900 text-base">
-                          {inv.name}
-                        </h3>
-                        <p className="text-xs text-purple-600 font-medium">{inv.designation}</p>
-                        {inv.company && (
-                          <p className="text-xs text-slate-500">{inv.company}</p>
-                        )}
-                      </div>
-                    </div>
-
-                    {inv.summary && (
-                      <p className="text-xs text-slate-600 line-clamp-3 leading-relaxed mb-4">
-                        {inv.summary}
-                      </p>
-                    )}
-
-                    {inv.linkedinUrl && (
-                      <a
-                        href={inv.linkedinUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 text-xs text-slate-500 hover:text-purple-600 transition-colors"
-                      >
-                        <LinkedinIcon size={14} /> View LinkedIn
-                      </a>
-                    )}
-                  </CardContent>
-                </Card>
+                  profile={inv}
+                  photoUrl={inv.photoUrl}
+                  photoAlt={inv.photoAlt || inv.name}
+                  fallbackLabel="Independent Investor"
+                  accent="indigo"
+                  onCardClick={() => setSelectedInvestor(inv)}
+                />
               ))}
             </div>
           ) : (
@@ -203,6 +147,14 @@ const InvestorsPublic = () => {
       </section>
 
       <Footer />
+
+      {selectedInvestor && (
+        <DetailedProfileModal
+          profile={selectedInvestor}
+          photoUrl={selectedInvestor.photoUrl}
+          onClose={() => setSelectedInvestor(null)}
+        />
+      )}
     </div>
   );
 };

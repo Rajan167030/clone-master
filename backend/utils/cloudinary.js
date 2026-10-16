@@ -28,13 +28,16 @@ const buildSignature = (params, apiSecret) => {
   return crypto.createHash("sha1").update(`${serialized}${apiSecret}`).digest("hex");
 };
 
-export const createCloudinaryUploadSignature = ({ folder = "founders-connect", publicId = "", resourceType = "image" } = {}) => {
+// `type: "authenticated"` keeps the asset off public delivery URLs; it can then
+// only be fetched through a signed URL from createCloudinaryAuthenticatedUrl.
+export const createCloudinaryUploadSignature = ({ folder = "founders-connect", publicId = "", resourceType = "image", type = "" } = {}) => {
   const { cloudName, apiKey, apiSecret } = getCloudinaryEnv();
   const timestamp = Math.floor(Date.now() / 1000);
   const paramsToSign = {
     folder,
     public_id: publicId || undefined,
     timestamp,
+    type: type || undefined,
   };
 
   return {
@@ -44,6 +47,22 @@ export const createCloudinaryUploadSignature = ({ folder = "founders-connect", p
     timestamp,
     signature: buildSignature(paramsToSign, apiSecret),
     publicId: publicId || undefined,
+    type: type || undefined,
     uploadUrl: `https://api.cloudinary.com/v1_1/${cloudName}/${resourceType}/upload`,
   };
+};
+
+// Signed delivery URL for an asset uploaded with type "authenticated".
+export const createCloudinaryAuthenticatedUrl = ({ publicId, resourceType = "image", format = "" }) => {
+  const { cloudName, apiSecret } = getCloudinaryEnv();
+  const source = format ? `${publicId}.${format}` : publicId;
+  const signature = crypto
+    .createHash("sha1")
+    .update(`${source}${apiSecret}`)
+    .digest("base64")
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .slice(0, 8);
+
+  return `https://res.cloudinary.com/${cloudName}/${resourceType}/authenticated/s--${signature}--/${source}`;
 };

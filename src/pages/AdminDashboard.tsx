@@ -117,6 +117,7 @@ import AdminAnalyticsOverview from "@/components/AdminAnalyticsOverview";
 import AdminCookieConsent from "@/components/AdminCookieConsent";
 import EventMapPreview from "@/components/EventMapPreview";
 import PitchDeckViewerModal from "@/components/PitchDeckViewerModal";
+import AdminFalconClubTab from "@/components/AdminFalconClubTab";
 import {
   BarChart3,
   Calendar,
@@ -149,6 +150,7 @@ import {
   Sparkles,
   Trophy,
   Cookie,
+  Crown,
 } from "lucide-react";
 
 const emptyEventForm = {
@@ -438,7 +440,7 @@ const AdminDashboard = () => {
   const [showPromotionForm, setShowPromotionForm] = useState(false);
   const [uploadingPromotionImage, setUploadingPromotionImage] = useState(false);
   const [promotionImageMode, setPromotionImageMode] = useState<ImageInputMode>("url");
-  const [activeTab, setActiveTab] = useState<"dashboard" | "analytics" | "events" | "blogs" | "members" | "partners" | "newsletter" | "automation" | "funding" | "promotions" | "activity" | "investor-invites" | "team" | "chat" | "tasks" | "cookies">("dashboard");
+  const [activeTab, setActiveTab] = useState<"dashboard" | "analytics" | "events" | "blogs" | "members" | "partners" | "newsletter" | "automation" | "funding" | "promotions" | "activity" | "investor-invites" | "team" | "chat" | "tasks" | "cookies" | "falcon-club">("dashboard");
   const [investorInvites, setInvestorInvites] = useState<InvestorInvite[]>([]);
   const [investorLeads, setInvestorLeads] = useState<AdminInvestorDetail[]>([]);
 
@@ -1856,6 +1858,7 @@ const AdminDashboard = () => {
     { label: "Newsletter", id: "newsletter", icon: Mail },
     { label: "Email Automation", id: "automation", icon: Send },
     { label: "Funding", id: "funding", icon: Rocket },
+    { label: "FALCON Club", id: "falcon-club", icon: Crown },
     { label: "Investor Invites", id: "investor-invites", icon: Link2 },
     { label: "Admin Chat", id: "chat", icon: MessageSquare },
     { label: "Tasks", id: "tasks", icon: CheckCircle2 },
@@ -2008,6 +2011,7 @@ const AdminDashboard = () => {
               {activeTab === "chat" && "Admin Chat"}
               {activeTab === "tasks" && "Tasks"}
               {activeTab === "cookies" && "Cookie Consent"}
+              {activeTab === "falcon-club" && "FALCON Club"}
             </h1>
             <p className="mt-3 max-w-3xl text-slate-600">
               {activeTab === "dashboard" && "Welcome back! Here's your admin overview."}
@@ -2026,6 +2030,7 @@ const AdminDashboard = () => {
               {activeTab === "chat" && "Message other admins in real time."}
               {activeTab === "tasks" && "Create, assign, and track tasks across the admin team."}
               {activeTab === "cookies" && "Monitor how visitors respond to the cookie consent banner."}
+              {activeTab === "falcon-club" && "Review membership applications, request verification, and approve tiers."}
             </p>
           </div>
 
@@ -2281,6 +2286,9 @@ const AdminDashboard = () => {
 
           {/* Cookie Consent Tab */}
           {activeTab === "cookies" && <AdminCookieConsent />}
+
+          {/* FALCON Club Tab */}
+          {activeTab === "falcon-club" && <AdminFalconClubTab token={token} />}
 
           {/* Events Tab */}
           {activeTab === "events" && (

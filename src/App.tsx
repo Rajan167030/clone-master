@@ -63,6 +63,8 @@ const CohortPage = lazy(() => import("./pages/CohortPage.tsx"));
 const StartupResources = lazy(() => import("./pages/StartupResources.tsx"));
 const BecomeAMember = lazy(() => import("./pages/BecomeAMember.tsx"));
 const ContactUs = lazy(() => import("./pages/ContactUs.tsx"));
+const FalconClub = lazy(() => import("./pages/FalconClub.tsx"));
+const FalconClubVerify = lazy(() => import("./pages/FalconClubVerify.tsx"));
 
 const queryClient = new QueryClient();
 
@@ -157,6 +159,9 @@ const App = () => (
             />
             <Route path="/about" element={<About />} />
             <Route path="/join-us" element={<JoinUs />} />
+            <Route path="/falcon-club" element={<FalconClub />} />
+            <Route path="/fable-club" element={<FalconClub />} />
+            <Route path="/falcon-club/verify/:token" element={<FalconClubVerify />} />
             <Route path="/become-a-member" element={<BecomeAMember />} />
             <Route path="/membership" element={<BecomeAMember />} />
             <Route path="/contact-us" element={<ContactUs />} />

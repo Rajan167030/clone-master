@@ -8,6 +8,7 @@ import GallerySection from "@/components/GallerySection";
 import StatsSection from "@/components/StatsSection";
 import PortfolioMarquee from "@/components/PortfolioMarquee";
 import ExploreNetwork from "@/components/ExploreNetwork";
+import FalconClubSection from "@/components/FalconClubSection";
 import InvestorsSection from "@/components/InvestorsSection";
 import UpcomingEventsSection from "@/components/UpcomingEventsSection";
 import ActivityResultsSection from "@/components/ActivityResultsSection";
@@ -128,6 +129,7 @@ const Index = () => {
       <StatsSection className="gsap-section !py-12 md:!py-16" />
       <PortfolioMarquee className="gsap-section !py-12 md:!py-16" />
       <ExploreNetwork className="gsap-section !py-12 md:!py-16" />
+      <FalconClubSection className="gsap-section !py-12 md:!py-16" />
       <InvestorsSection className="gsap-section !py-12 md:!py-16" />
       <UpcomingEventsSection className="gsap-section !py-12 md:!py-16" />
       <ActivityResultsSection className="gsap-section !py-12 md:!py-16" />

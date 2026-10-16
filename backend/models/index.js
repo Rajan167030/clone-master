@@ -42,4 +42,4 @@ export { default as Campaign } from "./campaign.model.js";
 export { default as SendLog } from "./send-log.model.js";
 export { default as Suppression } from "./suppression.model.js";
 export { Cohort } from "./cohort.model.js";
-
+export { FalconClubApplication } from "./falcon-club-application.model.js";

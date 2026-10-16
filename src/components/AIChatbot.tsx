@@ -78,7 +78,7 @@ export default function AIChatbot() {
       {!open && (
         <button
           aria-label="Open chatbot"
-          className="group relative grid h-11 w-11 place-items-center overflow-hidden rounded-full border border-purple-200/50 bg-[linear-gradient(135deg,#9333ea,#7e22ce)] text-white shadow-[0_18px_40px_-14px_rgba(147,51,234,0.7)] transition-transform duration-300 hover:-translate-y-1 hover:brightness-110 sm:h-12 sm:w-12"
+          className="group relative grid h-11 w-11 place-items-center overflow-hidden rounded-full border border-purple-200/50 bg-purple-600 hover:bg-purple-700 text-white shadow-[0_18px_40px_-14px_rgba(147,51,234,0.7)] transition-transform duration-300 hover:-translate-y-1 hover:brightness-110 sm:h-12 sm:w-12"
           onClick={() => setOpen(true)}
         >
           <span className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.3),transparent_60%)]" />

@@ -67,6 +67,7 @@ const Footer = ({ className }: { className?: string }) => {
               <div className="font-heading font-semibold text-foreground mb-4">Explore</div>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li><a href="/events" className="hover:text-primary transition-colors">Events</a></li>
+                <li><a href="/falcon-club" className="text-amber-500 font-semibold hover:text-amber-400 transition-colors">FALCON Club</a></li>
                 <li><a href="/blog" className="hover:text-primary transition-colors">Blog</a></li>
                 <li><a href="/" className="hover:text-primary transition-colors">Home</a></li>
               </ul>
@@ -75,6 +76,7 @@ const Footer = ({ className }: { className?: string }) => {
             <div>
               <div className="font-heading font-semibold text-foreground mb-4">Community</div>
               <ul className="space-y-2 text-sm text-muted-foreground">
+                <li><a href="/falcon-club#members-directory" className="hover:text-primary transition-colors">FALCON Club Directory</a></li>
                 <li><a href="#" className="hover:text-primary transition-colors">Founders</a></li>
                 <li><a href="#" className="hover:text-primary transition-colors">Investors</a></li>
                 <li><a href="#" className="hover:text-primary transition-colors">Partners</a></li>

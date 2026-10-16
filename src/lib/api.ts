@@ -2327,3 +2327,221 @@ export const deleteAdminTeamMemberApi = (token: string, id: string) =>
     headers: { Authorization: `Bearer ${token}` },
   });
 
+// ==========================================
+// FALCON Club (FABLE Club) API & Types
+// ==========================================
+
+export type FalconClubApplication = {
+  _id: string;
+  fullName: string;
+  mobileNumber: string;
+  email: string;
+  currentCity: string;
+  linkedinUrl?: string;
+  companyName: string;
+  companyWebsite?: string;
+  designation: string;
+  customDesignation?: string;
+  industry: string;
+  alternativeInfo?: string;
+  personalNetWorth: string;
+  annualCompanyRevenue: string;
+  companyValuation: string;
+  valuationBasis: string;
+  whyJoin?: string;
+  referredBy?: string;
+  confirmedAccurate: boolean;
+  agreedTerms: boolean;
+  suggestedTier: string;
+  suggestedTierReason?: string;
+  status:
+    | "New Application"
+    | "Under Review"
+    | "Verification Required"
+    | "Approved"
+    | "Rejected"
+    | "Waitlisted";
+  approvedTier: string;
+  adminNotes?: string;
+  verificationRequestSent?: boolean;
+  verificationRequestDate?: string;
+  verificationRequestNote?: string;
+  showInDirectory?: boolean;
+  allowPublicLinkedin?: boolean;
+  consentDirectory?: boolean;
+  consentLinkedin?: boolean;
+  documents?: FalconClubDocument[];
+  documentsSubmittedAt?: string;
+  verificationTokenExpires?: string;
+  reviewedBy?: { fullName?: string; email?: string };
+  reviewedAt?: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type FalconClubDocument = {
+  _id: string;
+  label?: string;
+  originalName?: string;
+  uploadedAt: string;
+};
+
+export type FalconClubVerificationRequest = {
+  fullName: string;
+  companyName: string;
+  note: string;
+  expiresAt: string;
+  submittedAt?: string;
+  documents: FalconClubDocument[];
+};
+
+export type FalconClubPublicMember = {
+  _id: string;
+  fullName: string;
+  companyName: string;
+  designation: string;
+  industry: string;
+  currentCity: string;
+  membershipTier: string;
+  linkedinUrl?: string;
+  memberSince: string;
+};
+
+export type FalconClubAdminStats = {
+  total: number;
+  newApps: number;
+  underReview: number;
+  verificationRequired: number;
+  approved: number;
+  waitlisted: number;
+  rejected: number;
+  bySuggestedTier: Record<string, number>;
+  byApprovedTier: Record<string, number>;
+};
+
+export const submitFalconClubApplicationApi = (payload: Record<string, unknown>) =>
+  request<{
+    success: boolean;
+    message: string;
+    application: {
+      _id: string;
+      fullName: string;
+      companyName: string;
+      suggestedTier: string;
+      suggestedTierReason?: string;
+      status: string;
+    };
+  }>("/falcon-club/apply", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+
+export const getFalconClubMembersApi = (
+  token: string,
+  params?: { search?: string; tier?: string; page?: number; limit?: number }
+) => {
+  const query = new URLSearchParams();
+  if (params?.search) query.set("search", params.search);
+  if (params?.tier) query.set("tier", params.tier);
+  if (params?.page) query.set("page", String(params.page));
+  if (params?.limit) query.set("limit", String(params.limit));
+  const qs = query.toString();
+  return request<{
+    success: boolean;
+    members: FalconClubPublicMember[];
+    pagination: { total: number; page: number; limit: number; totalPages: number };
+  }>(`/falcon-club/members${qs ? `?${qs}` : ""}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+};
+
+export const getFalconClubAdminApplicationsApi = (
+  token: string,
+  params?: { search?: string; status?: string; tier?: string; page?: number; limit?: number }
+) => {
+  const query = new URLSearchParams();
+  if (params?.search) query.set("search", params.search);
+  if (params?.status) query.set("status", params.status);
+  if (params?.tier) query.set("tier", params.tier);
+  if (params?.page) query.set("page", String(params.page));
+  if (params?.limit) query.set("limit", String(params.limit));
+  const qs = query.toString();
+  return request<{
+    success: boolean;
+    applications: FalconClubApplication[];
+    pagination: { total: number; page: number; limit: number; totalPages: number };
+  }>(`/falcon-club/admin/applications${qs ? `?${qs}` : ""}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+};
+
+export const updateFalconClubApplicationApi = (
+  token: string,
+  id: string,
+  payload: Partial<FalconClubApplication>
+) =>
+  request<{ success: boolean; message: string; application: FalconClubApplication }>(
+    `/falcon-club/admin/applications/${id}`,
+    {
+      method: "PATCH",
+      headers: { Authorization: `Bearer ${token}` },
+      body: JSON.stringify(payload),
+    }
+  );
+
+export const requestFalconClubVerificationApi = (token: string, id: string, note: string) =>
+  request<{ success: boolean; message: string; application: FalconClubApplication }>(
+    `/falcon-club/admin/applications/${id}/request-verification`,
+    {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ note }),
+    }
+  );
+
+export const deleteFalconClubApplicationApi = (token: string, id: string) =>
+  request<{ success: boolean; message: string }>(`/falcon-club/admin/applications/${id}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const getFalconClubAdminStatsApi = (token: string) =>
+  request<{ success: boolean; stats: FalconClubAdminStats }>("/falcon-club/admin/stats", {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const getFalconClubDocumentUrlApi = (token: string, applicationId: string, documentId: string) =>
+  request<{ success: boolean; url: string }>(
+    `/falcon-club/admin/applications/${applicationId}/documents/${documentId}`,
+    { headers: { Authorization: `Bearer ${token}` } }
+  );
+
+export const getFalconClubVerificationApi = (verifyToken: string) =>
+  request<{ success: boolean; request: FalconClubVerificationRequest }>(`/falcon-club/verify/${verifyToken}`);
+
+export const signFalconClubVerificationUploadApi = (verifyToken: string) =>
+  request<CloudinarySignedUploadResponse & { type?: string }>(`/falcon-club/verify/${verifyToken}/sign-upload`, {
+    method: "POST",
+  });
+
+export const addFalconClubVerificationDocumentApi = (
+  verifyToken: string,
+  payload: {
+    publicId: string;
+    resourceType: string;
+    format?: string;
+    bytes?: number;
+    originalName: string;
+    label?: string;
+  }
+) =>
+  request<{ success: boolean; request: FalconClubVerificationRequest }>(
+    `/falcon-club/verify/${verifyToken}/documents`,
+    { method: "POST", body: JSON.stringify(payload) }
+  );
+
+export const submitFalconClubVerificationApi = (verifyToken: string) =>
+  request<{ success: boolean; message: string; request: FalconClubVerificationRequest }>(
+    `/falcon-club/verify/${verifyToken}/submit`,
+    { method: "POST" }
+  );
