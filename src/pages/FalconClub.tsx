@@ -139,6 +139,27 @@ const MEMBERSHIP_TIERS = [
   },
 ];
 
+// Fixed positions so the hero background is identical on every render.
+const HERO_SPECKS = [
+  { top: "14%", left: "12%", size: 3, opacity: 0.35, duration: 4 },
+  { top: "22%", left: "84%", size: 2, opacity: 0.3, duration: 5 },
+  { top: "36%", left: "6%", size: 2, opacity: 0.25, duration: 6 },
+  { top: "62%", left: "90%", size: 3, opacity: 0.3, duration: 4.5 },
+  { top: "74%", left: "18%", size: 2, opacity: 0.25, duration: 5.5 },
+  { top: "10%", left: "58%", size: 2, opacity: 0.25, duration: 6.5 },
+  { top: "84%", left: "70%", size: 2, opacity: 0.3, duration: 5 },
+  { top: "48%", left: "95%", size: 2, opacity: 0.2, duration: 7 },
+  { top: "56%", left: "3%", size: 3, opacity: 0.25, duration: 4 },
+  { top: "28%", left: "30%", size: 2, opacity: 0.2, duration: 6 },
+];
+
+// Hero background: repeating "pleated" beams — each band ramps from dark to
+// gold, then drops off sharply — plus an SVG noise tile for grain.
+const HERO_BEAMS =
+  "repeating-linear-gradient(112deg, transparent 0px, transparent 26px, rgba(180,83,9,0.10) 50px, rgba(245,158,11,0.30) 94px, rgba(9,10,15,0.85) 96px, transparent 124px)";
+const HERO_GRAIN =
+  "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>\")";
+
 // Dropdown options matching specifications
 const NET_WORTH_OPTIONS = [
   "Below ₹1 Cr",
@@ -367,11 +388,54 @@ export default function FalconClub() {
 
       {/* Hero Section */}
       <section className="relative overflow-hidden pt-12 pb-24 md:pt-20 md:pb-32 border-b border-amber-500/10">
-        {/* Ambient luxury lighting */}
-        <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-          <div className="h-[550px] w-[550px] rounded-full bg-gradient-to-tr from-amber-600/[0.06] via-purple-600/[0.04] to-transparent blur-[140px]" />
-          <div className="absolute top-10 right-1/4 h-[350px] w-[350px] rounded-full bg-amber-500/[0.04] blur-[120px]" />
+        {/* Diagonal gold light beams with film grain, brightest behind the headline */}
+        <div aria-hidden className="pointer-events-none absolute inset-0">
+          <div
+            className="absolute inset-0 [mask-image:radial-gradient(ellipse_65%_80%_at_50%_40%,black_20%,transparent_75%)]"
+            style={{ backgroundImage: HERO_BEAMS }}
+          />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_38%_45%_at_50%_38%,rgba(251,191,36,0.12),transparent_70%)]" />
+          <div className="absolute inset-0 opacity-[0.22] mix-blend-overlay" style={{ backgroundImage: HERO_GRAIN }} />
+          <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-b from-transparent to-[#090a0f]" />
         </div>
+
+        {/* Fine gold grid, faded out toward the edges */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 [background-image:linear-gradient(rgba(245,158,11,0.06)_1px,transparent_1px),linear-gradient(90deg,rgba(245,158,11,0.06)_1px,transparent_1px)] [background-size:56px_56px] [mask-image:radial-gradient(ellipse_at_center,black_20%,transparent_70%)]"
+        />
+
+        {/* Concentric "seal" rings behind the headline */}
+        <div aria-hidden className="pointer-events-none absolute left-1/2 top-[42%] -translate-x-1/2 -translate-y-1/2">
+          <div className="relative h-[680px] w-[680px] sm:h-[820px] sm:w-[820px]">
+            <div className="absolute inset-0 rounded-full border border-amber-500/[0.07]" />
+            <div className="absolute inset-[12%] rounded-full border border-dashed border-amber-400/[0.09] motion-safe:animate-[spin_140s_linear_infinite]" />
+            <div className="absolute inset-[26%] rounded-full border border-amber-500/[0.06]" />
+            <div className="absolute inset-[38%] rounded-full border border-purple-400/[0.06]" />
+          </div>
+        </div>
+
+        {/* Scattered gold specks */}
+        <div aria-hidden className="pointer-events-none absolute inset-0">
+          {HERO_SPECKS.map((speck, index) => (
+            <span
+              key={index}
+              className="absolute rounded-full bg-amber-300 motion-safe:animate-pulse"
+              style={{
+                top: speck.top,
+                left: speck.left,
+                width: speck.size,
+                height: speck.size,
+                opacity: speck.opacity,
+                animationDuration: `${speck.duration}s`,
+                animationDelay: `${index * 0.4}s`,
+              }}
+            />
+          ))}
+        </div>
+
+        {/* Soft fade into the next section */}
+        <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 h-32 bg-gradient-to-b from-transparent to-[#090a0f]" />
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           {/* Elite Circle Badge */}
