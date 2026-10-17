@@ -1,31 +1,27 @@
-import { useMemo, useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import { getPublicSliderEventsApi, getPublicSliderPromotionsApi } from "@/lib/api";
 import { optimizeCloudinaryUrl } from "@/lib/cloudinary";
 
-// No-photo branded slide — used only if the API returns zero featured events/promotions.
-const fallbackSlides = [
-  {
-    title: "Founders Connect",
-    highlight: "India's Founder & Investor Network",
-    link: "/join-us",
-    image: "",
-    alt: "Join Founders Connect",
-    buttonLabel: "Join now",
-  },
-];
+type Slide = {
+  type: "event" | "promotion";
+  title: string;
+  highlight: string;
+  link: string;
+  image: string;
+  alt: string;
+  buttonLabel: string;
+};
+
+const SLIDER_HEIGHT = "h-[300px] sm:h-[400px] md:h-[500px] lg:h-[600px]";
 
 const HeroSlider = ({ className }: { className?: string }) => {
   const [current, setCurrent] = useState(0);
-  const [slides, setSlides] = useState(fallbackSlides);
-  const currentSlide = slides[current] ?? fallbackSlides[0];
-  const heroTitle = useMemo(() => {
-    const title = currentSlide?.title?.trim() || "Founders Connect";
-    const highlight = currentSlide?.highlight?.trim() || "Join now";
-    return `${title} ${highlight}`;
-  }, [currentSlide]);
+  const [slides, setSlides] = useState<Slide[]>([]);
+  const [loaded, setLoaded] = useState(false);
+  const currentSlide = slides[current] ?? slides[0];
 
   useEffect(() => {
     // Fetch featured slider events and promotions
@@ -36,11 +32,11 @@ const HeroSlider = ({ className }: { className?: string }) => {
           getPublicSliderPromotionsApi(),
         ]);
 
-        const allSlides: Array<Record<string, unknown>> = [];
+        const allSlides: Slide[] = [];
 
         // Add event slides (second slider onwards from admin panel)
         if (eventsResponse?.events && eventsResponse.events.length > 0) {
-          const eventSlides = eventsResponse.events.map((event: any) => ({
+          const eventSlides = eventsResponse.events.map((event: any): Slide => ({
             type: "event",
             title: event.title,
             highlight: event.subtitle || event.title,
@@ -54,23 +50,24 @@ const HeroSlider = ({ className }: { className?: string }) => {
 
         // Add promotion slides (second feature)
         if (promotionsResponse?.promotions && promotionsResponse.promotions.length > 0) {
-          const promotionSlides = promotionsResponse.promotions.map((promo: any) => ({
+          const promotionSlides = promotionsResponse.promotions.map((promo: any): Slide => ({
             type: "promotion",
             title: promo.title,
             highlight: promo.description || promo.title,
             link: promo.linkUrl || "",
-            image: optimizeCloudinaryUrl(promo.imageUrl, 1600),
+            image: optimizeCloudinaryUrl(promo.imageUrl, 1600) || "",
             alt: promo.altText || promo.title,
             buttonLabel: promo.buttonLabel || "View More",
           }));
           allSlides.push(...promotionSlides);
         }
 
-        setSlides(allSlides.length > 0 ? (allSlides as typeof fallbackSlides) : fallbackSlides);
+        setSlides(allSlides);
       } catch (error) {
         console.error("Failed to fetch slider content:", error);
-        // Keep fallback slides on error
-        setSlides(fallbackSlides);
+        setSlides([]);
+      } finally {
+        setLoaded(true);
       }
     };
 
@@ -78,16 +75,29 @@ const HeroSlider = ({ className }: { className?: string }) => {
   }, []);
 
   useEffect(() => {
+    if (slides.length < 2) return undefined;
     const timer = setInterval(() => {
       setCurrent((prev) => (prev + 1) % slides.length);
     }, 5000);
     return () => clearInterval(timer);
   }, [slides.length]);
 
+  // Hold the space with a plain dark block while loading, so the page doesn't jump.
+  if (!loaded) {
+    return (
+      <section className={`relative ${className}`} aria-hidden>
+        <div className={`${SLIDER_HEIGHT} w-full animate-pulse bg-slate-950`} />
+      </section>
+    );
+  }
+
+  // Nothing featured in the admin panel: don't render a placeholder slide.
+  if (!currentSlide) return null;
+
   return (
     <section className={`relative ${className}`}>
       <div className="w-full">
-        <div className="relative overflow-hidden h-[300px] sm:h-[400px] md:h-[500px] lg:h-[600px] bg-slate-950">
+        <div className={`relative overflow-hidden ${SLIDER_HEIGHT} bg-slate-950`}>
           <Link
             to={currentSlide.link}
             aria-label={`Open ${currentSlide.highlight}`}
@@ -130,14 +140,11 @@ const HeroSlider = ({ className }: { className?: string }) => {
                     />
                   </>
                 ) : (
-                  // No-photo branded fallback (only shown if zero events/promotions are configured)
-                  <div className="absolute inset-0 w-full h-full bg-gradient-to-br from-violet-950 via-slate-950 to-indigo-950">
-                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(168,85,247,0.35),transparent_55%)]" />
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <span className="text-2xl sm:text-4xl md:text-5xl font-black tracking-tight text-white/90">
-                        Founders Connect
-                      </span>
-                    </div>
+                  // Event/promotion without an image: plain dark backdrop with its title.
+                  <div className="absolute inset-0 flex h-full w-full items-center justify-center bg-slate-950 px-6">
+                    <span className="text-center text-2xl font-black tracking-tight text-white/90 sm:text-4xl md:text-5xl">
+                      {currentSlide.title}
+                    </span>
                   </div>
                 )}
               </motion.div>
@@ -153,12 +160,13 @@ const HeroSlider = ({ className }: { className?: string }) => {
                 to={currentSlide.link}
                 className="pointer-events-auto inline-flex items-center gap-2 rounded-full border border-purple-400/55 bg-purple-500/20 px-5 sm:px-7 py-2 sm:py-3 text-sm sm:text-lg font-medium text-white backdrop-blur-sm transition-all hover:bg-purple-500/35 active:scale-95"
               >
-                {(currentSlide as any).buttonLabel || "Join now"}
+                {currentSlide.buttonLabel}
                 <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5" />
               </Link>
             )}
           </div>
 
+          {slides.length > 1 && (
           <div className="absolute bottom-6 left-1/2 z-40 flex -translate-x-1/2 gap-2">
             {slides.map((_, i) => (
               <button
@@ -171,6 +179,7 @@ const HeroSlider = ({ className }: { className?: string }) => {
               />
             ))}
           </div>
+          )}
         </div>
       </div>
     </section>
