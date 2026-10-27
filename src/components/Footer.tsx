@@ -108,11 +108,11 @@ const Footer = ({ className }: { className?: string }) => {
                     +91 8860 573 577
                   </a>
                 </li>
-                <li className="flex items-center gap-3">
+                <li className="flex items-start gap-3">
                   <span className="text-primary text-base flex-shrink-0">📍</span>
-                  <span className="leading-relaxed">
-                    Delhi, India
-                  </span>
+                  <address className="not-italic leading-relaxed">
+                    Unit No: 8125, 8th Floor, Gaur City Mall Office, Gautam Buddha Nagar, Uttar Pradesh, India – 201318
+                  </address>
                 </li>
               </ul>
             </div>
@@ -127,9 +127,14 @@ const Footer = ({ className }: { className?: string }) => {
           </div>
 
           <div className="pt-4 border-t border-border/40 flex flex-col md:flex-row items-center justify-between gap-4 relative z-10">
-            <p className="text-sm text-muted-foreground">
-              © {new Date().getFullYear()} Founders Connect. All rights reserved.
-            </p>
+            <div className="text-center md:text-left">
+              <p className="text-sm text-muted-foreground">
+                © {new Date().getFullYear()} FC Global Network Private Limited. All rights reserved.
+              </p>
+              <p className="mt-1 text-xs text-muted-foreground/80">
+                CIN: U82300UW2026PTC259800 · GST: 09AAHCF3021G1ZX
+              </p>
+            </div>
             <div className="flex items-center gap-6 text-sm text-muted-foreground">
               <a href="/privacy-policy" className="hover:text-primary transition-colors">Privacy Policy</a>
               <a href="/terms-of-service" className="hover:text-primary transition-colors">Terms of Service</a>
