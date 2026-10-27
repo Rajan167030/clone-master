@@ -11,16 +11,51 @@ type Slide = {
   highlight: string;
   link: string;
   image: string;
+  imageSrcSet: string;
+  imageBlur: string;
   alt: string;
   buttonLabel: string;
 };
 
 const SLIDER_HEIGHT = "h-[300px] sm:h-[400px] md:h-[500px] lg:h-[600px]";
 
+// Last successful slide list, so a refresh paints the banner immediately
+// (images then come from the browser cache) while fresh data loads.
+const SLIDES_CACHE_KEY = "fc_hero_slides_v1";
+
+const readCachedSlides = (): Slide[] => {
+  try {
+    const parsed = JSON.parse(window.localStorage.getItem(SLIDES_CACHE_KEY) || "null");
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+};
+
+const writeCachedSlides = (slides: Slide[]) => {
+  try {
+    window.localStorage.setItem(SLIDES_CACHE_KEY, JSON.stringify(slides));
+  } catch {
+    // Storage unavailable or full — caching is only an optimisation.
+  }
+};
+
+const imageFields = (url?: string | null) => {
+  if (!url) return { image: "", imageSrcSet: "", imageBlur: "" };
+  const srcSet = [800, 1200, 1600].map((w) => `${optimizeCloudinaryUrl(url, w)} ${w}w`).join(", ");
+  return {
+    image: optimizeCloudinaryUrl(url, 1600),
+    // Only Cloudinary URLs can be resized on the fly.
+    imageSrcSet: url.includes("res.cloudinary.com") ? srcSet : "",
+    // The backdrop is blurred heavily, so a tiny version looks identical and loads instantly.
+    imageBlur: url.includes("res.cloudinary.com") ? optimizeCloudinaryUrl(url, 64) : optimizeCloudinaryUrl(url, 1600),
+  };
+};
+
 const HeroSlider = ({ className }: { className?: string }) => {
   const [current, setCurrent] = useState(0);
-  const [slides, setSlides] = useState<Slide[]>([]);
-  const [loaded, setLoaded] = useState(false);
+  const [slides, setSlides] = useState<Slide[]>(readCachedSlides);
+  const [loaded, setLoaded] = useState(() => slides.length > 0);
   const currentSlide = slides[current] ?? slides[0];
 
   useEffect(() => {
@@ -41,7 +76,7 @@ const HeroSlider = ({ className }: { className?: string }) => {
             title: event.title,
             highlight: event.subtitle || event.title,
             link: `/events/${event.slug}`,
-            image: optimizeCloudinaryUrl(event.bannerImage, 1600) || "",
+            ...imageFields(event.bannerImage),
             alt: event.bannerAlt || event.title,
             buttonLabel: "Join now",
           }));
@@ -55,7 +90,7 @@ const HeroSlider = ({ className }: { className?: string }) => {
             title: promo.title,
             highlight: promo.description || promo.title,
             link: promo.linkUrl || "",
-            image: optimizeCloudinaryUrl(promo.imageUrl, 1600) || "",
+            ...imageFields(promo.imageUrl),
             alt: promo.altText || promo.title,
             buttonLabel: promo.buttonLabel || "View More",
           }));
@@ -63,9 +98,11 @@ const HeroSlider = ({ className }: { className?: string }) => {
         }
 
         setSlides(allSlides);
+        setCurrent((prev) => (prev < allSlides.length ? prev : 0));
+        writeCachedSlides(allSlides);
       } catch (error) {
+        // Keep whatever is cached rather than blanking the banner on a failed request.
         console.error("Failed to fetch slider content:", error);
-        setSlides([]);
       } finally {
         setLoaded(true);
       }
@@ -116,7 +153,7 @@ const HeroSlider = ({ className }: { className?: string }) => {
                   <>
                     {/* Blurred Background */}
                     <img
-                      src={currentSlide.image}
+                      src={currentSlide.imageBlur || currentSlide.image}
                       alt=""
                       loading={current === 0 ? "eager" : "lazy"}
                       decoding="async"
@@ -126,6 +163,8 @@ const HeroSlider = ({ className }: { className?: string }) => {
                     {/* Foreground Image */}
                     <motion.img
                       src={currentSlide.image}
+                      srcSet={currentSlide.imageSrcSet || undefined}
+                      sizes="100vw"
                       alt={currentSlide.alt}
                       width={1600}
                       height={900}

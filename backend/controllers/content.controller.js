@@ -197,18 +197,23 @@ export const listPublicEvents = async (req, res, next) => {
   }
 };
 
+// Lets Vercel's CDN serve the homepage slider without waking the function or the DB.
+const SLIDER_CACHE_HEADER = "public, max-age=60, s-maxage=300, stale-while-revalidate=600";
+
 export const listPublicSliderEvents = async (req, res, next) => {
   try {
     const cacheKey = "public:slider-events";
     const cached = await getCache(cacheKey);
-    if (cached) return res.status(200).json(cached);
+    if (cached) return res.set("Cache-Control", SLIDER_CACHE_HEADER).status(200).json(cached);
 
+    // The slider only needs these fields — skip full event bodies to keep the payload small.
     const events = await EventContent.find({ isPublished: true, featuredOnSlider: true })
+      .select("title subtitle slug bannerImage bannerAlt sliderOrder")
       .sort({ sliderOrder: 1, createdAt: -1 })
       .lean();
     const payload = { events };
     await setCache(cacheKey, payload, 300);
-    return res.status(200).json(payload);
+    return res.set("Cache-Control", SLIDER_CACHE_HEADER).status(200).json(payload);
   } catch (error) {
     return next(error);
   }
@@ -921,14 +926,14 @@ export const listPublicSliderPromotions = async (req, res, next) => {
   try {
     const cacheKey = "public:slider-promotions";
     const cached = await getCache(cacheKey);
-    if (cached) return res.status(200).json(cached);
+    if (cached) return res.set("Cache-Control", SLIDER_CACHE_HEADER).status(200).json(cached);
 
     const promotions = await SliderPromotion.find({ isActive: true })
       .sort({ order: 1, createdAt: -1 })
       .lean();
     const payload = { promotions };
     await setCache(cacheKey, payload, 300);
-    return res.status(200).json(payload);
+    return res.set("Cache-Control", SLIDER_CACHE_HEADER).status(200).json(payload);
   } catch (error) {
     return next(error);
   }
