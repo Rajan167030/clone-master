@@ -102,18 +102,6 @@ const Footer = ({ className }: { className?: string }) => {
                     info@foundersconnect.co.in
                   </a>
                 </li>
-                <li className="flex items-center gap-3">
-                  <span className="text-primary text-base flex-shrink-0">📞</span>
-                  <a href="tel:+916202655116" className="hover:text-primary transition-colors">
-                    +91 6202 655 116
-                  </a>
-                </li>
-                <li className="flex items-start gap-3">
-                  <span className="text-primary text-base flex-shrink-0">📍</span>
-                  <address className="not-italic leading-relaxed">
-                    Unit No: 8125, 8th Floor, Gaur City Mall Office, Gautam Buddha Nagar, Uttar Pradesh, India – 201318
-                  </address>
-                </li>
               </ul>
             </div>
 
