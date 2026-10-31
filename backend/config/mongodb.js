@@ -1,10 +1,12 @@
 import mongoose from "mongoose";
 
-const DEFAULT_URI = "mongodb+srv://shivanshbyahut3_db_user:shiv13dsa@cluster0.umnpfsd.mongodb.net/";
-
 let connectionPromise;
 
-export const connectMongo = async (mongoUri = process.env.MONGODB_URI || DEFAULT_URI) => {
+export const connectMongo = async (mongoUri = process.env.MONGODB_URI) => {
+  if (!mongoUri) {
+    throw new Error("MONGODB_URI is not set.");
+  }
+
   mongoose.set("strictQuery", true);
 
   if (mongoose.connection.readyState === 1) {
