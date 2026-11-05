@@ -16,6 +16,7 @@ import {
 } from "../controllers/content.controller.js";
 import { listPublicPartnerTypes } from "../controllers/partner-type.controller.js";
 import { listPublicCohorts, getPublicCohortBySlug } from "../controllers/cohort.controller.js";
+import { submitCohortApplication } from "../controllers/cohort-application.controller.js";
 import { subscribeNewsletter, unsubscribeNewsletter } from "../controllers/newsletter.controller.js";
 import { submitJoinRequest } from "../controllers/join.controller.js";
 import { submitPartnerInquiry } from "../controllers/partner-inquiry.controller.js";
@@ -49,6 +50,7 @@ contentRouter.get("/testimonials", listPublicTestimonials);
 contentRouter.get("/team", getTeamMembers);
 contentRouter.get("/cohorts", listPublicCohorts);
 contentRouter.get("/cohorts/:slug", getPublicCohortBySlug);
+contentRouter.post("/cohorts/:slug/apply", submitCohortApplication);
 contentRouter.get("/partner-types", listPublicPartnerTypes);
 
 contentRouter.get("/slider-promotions", listPublicSliderPromotions);

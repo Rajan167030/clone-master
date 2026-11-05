@@ -82,6 +82,18 @@ const QrLoginBadge = ({ qrValue, status, onExpire }: QrLoginBadgeProps) => (
   </section>
 );
 
+const PasswordToggle = ({ shown, onToggle }: { shown: boolean; onToggle: () => void }) => (
+  <button
+    type="button"
+    onClick={onToggle}
+    aria-label={shown ? "Hide password" : "Show password"}
+    aria-pressed={shown}
+    className="absolute inset-y-0 right-0 flex w-12 items-center justify-center text-slate-400 transition-colors hover:text-violet-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-4px] focus-visible:outline-violet-600 rounded-r-md"
+  >
+    {shown ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+  </button>
+);
+
 const Login = ({ role = "user" }: LoginProps) => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -280,14 +292,18 @@ const Login = ({ role = "user" }: LoginProps) => {
                       Forgot?
                     </button>
                   </div>
-                  <Input
-                    id="password"
-                    name="password"
-                    type="password"
-                    placeholder="········"
-                    className="h-12 border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 focus:border-violet-500/60 focus:ring-violet-500/30"
-                    required
-                  />
+                  <div className="relative">
+                    <Input
+                      id="password"
+                      name="password"
+                      type={showPassword ? "text" : "password"}
+                      placeholder="········"
+                      autoComplete="current-password"
+                      className="h-12 border-slate-200 bg-white pr-12 text-slate-900 placeholder:text-slate-400 focus:border-violet-500/60 focus:ring-violet-500/30"
+                      required
+                    />
+                    <PasswordToggle shown={showPassword} onToggle={() => setShowPassword((v) => !v)} />
+                  </div>
                 </div>
 
                 <div className="flex items-center justify-start gap-4 pt-1 text-sm text-slate-600">
@@ -428,28 +444,36 @@ const Login = ({ role = "user" }: LoginProps) => {
                   <label htmlFor="newPassword" className="text-sm font-semibold text-slate-700">
                     New Password
                   </label>
-                  <Input
-                    id="newPassword"
-                    name="newPassword"
-                    type="password"
-                    placeholder="········"
-                    className="h-12 border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 focus:border-violet-500/60 focus:ring-violet-500/30"
-                    minLength={6}
-                    required
-                  />
+                  <div className="relative">
+                    <Input
+                      id="newPassword"
+                      name="newPassword"
+                      type={showPassword ? "text" : "password"}
+                      placeholder="········"
+                      autoComplete="new-password"
+                      className="h-12 border-slate-200 bg-white pr-12 text-slate-900 placeholder:text-slate-400 focus:border-violet-500/60 focus:ring-violet-500/30"
+                      minLength={6}
+                      required
+                    />
+                    <PasswordToggle shown={showPassword} onToggle={() => setShowPassword((v) => !v)} />
+                  </div>
                 </div>
                 <div className="space-y-2">
                   <label htmlFor="confirmPassword" className="text-sm font-semibold text-slate-700">
                     Confirm Password
                   </label>
-                  <Input
-                    id="confirmPassword"
-                    name="confirmPassword"
-                    type="password"
-                    placeholder="········"
-                    className="h-12 border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 focus:border-violet-500/60 focus:ring-violet-500/30"
-                    required
-                  />
+                  <div className="relative">
+                    <Input
+                      id="confirmPassword"
+                      name="confirmPassword"
+                      type={showPassword ? "text" : "password"}
+                      placeholder="········"
+                      autoComplete="new-password"
+                      className="h-12 border-slate-200 bg-white pr-12 text-slate-900 placeholder:text-slate-400 focus:border-violet-500/60 focus:ring-violet-500/30"
+                      required
+                    />
+                    <PasswordToggle shown={showPassword} onToggle={() => setShowPassword((v) => !v)} />
+                  </div>
                 </div>
 
                 <Button

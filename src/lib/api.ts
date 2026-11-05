@@ -355,12 +355,60 @@ export type Cohort = {
   startDate?: string;
   status?: string;
   applicationUrl?: string;
+  applicationDeadline?: string;
+  seats?: number;
+  fee?: string;
+  acceptingApplications?: boolean;
   highlights?: string[];
   order: number;
   isActive: boolean;
+  applicationStats?: { total: number; accepted: number; new: number };
   createdAt?: string;
   updatedAt?: string;
 };
+
+export type CohortApplicationStatus =
+  | "new"
+  | "reviewing"
+  | "shortlisted"
+  | "interview"
+  | "accepted"
+  | "waitlisted"
+  | "rejected";
+
+export type CohortApplicationInput = {
+  founderName: string;
+  email: string;
+  phone: string;
+  city: string;
+  linkedinUrl: string;
+  startupName: string;
+  website: string;
+  industry: string;
+  stage: string;
+  teamSize: string;
+  monthlyRevenue: string;
+  fundingRaised: string;
+  pitch: string;
+  whyJoin: string;
+  deckUrl: string;
+  referralSource: string;
+};
+
+export type CohortApplication = CohortApplicationInput & {
+  _id: string;
+  cohortSlug: string;
+  cohortTitle: string;
+  status: CohortApplicationStatus;
+  score: number | null;
+  adminNotes: string;
+  statusHistory: { status: CohortApplicationStatus; note: string; changedBy: string; changedAt: string }[];
+  isDemo?: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type CohortApplicationStats = Record<CohortApplicationStatus, number> & { total: number };
 
 export type PartnerInquiry = {
   _id: string;
@@ -693,6 +741,12 @@ export const getPublicCohortsApi = (category?: string) =>
     {
       method: "GET",
     },
+  );
+
+export const submitCohortApplicationApi = (slug: string, payload: CohortApplicationInput) =>
+  request<{ message: string; application: { _id: string; cohortTitle: string; status: CohortApplicationStatus } }>(
+    `/content/cohorts/${encodeURIComponent(slug)}/apply`,
+    { method: "POST", body: JSON.stringify(payload) }
   );
 
 export const getPublicCohortBySlugApi = (slug: string) =>
@@ -1192,6 +1246,43 @@ export const updateAdminCohortApi = (token: string, slug: string, payload: Parti
 
 export const deleteAdminCohortApi = (token: string, slug: string) =>
   request<{ message: string }>(`/admin/cohorts/${encodeURIComponent(slug)}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const getAdminCohortApplicationsApi = (
+  token: string,
+  params: { cohort?: string; status?: string; search?: string; page?: number; limit?: number } = {}
+) => {
+  const query = new URLSearchParams();
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined && value !== "") query.set(key, String(value));
+  });
+  return request<{
+    applications: CohortApplication[];
+    total: number;
+    page: number;
+    pages: number;
+    stats: CohortApplicationStats;
+  }>(`/admin/cohort-applications?${query.toString()}`, {
+    method: "GET",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+};
+
+export const updateAdminCohortApplicationApi = (
+  token: string,
+  id: string,
+  payload: { status?: CohortApplicationStatus; statusNote?: string; adminNotes?: string; score?: number | null }
+) =>
+  request<{ message: string; application: CohortApplication }>(`/admin/cohort-applications/${id}`, {
+    method: "PATCH",
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify(payload),
+  });
+
+export const deleteAdminCohortApplicationApi = (token: string, id: string) =>
+  request<{ message: string }>(`/admin/cohort-applications/${id}`, {
     method: "DELETE",
     headers: { Authorization: `Bearer ${token}` },
   });

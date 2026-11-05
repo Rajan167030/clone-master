@@ -12,7 +12,11 @@ import {
   Clock,
   Sparkles,
   ExternalLink,
+  Inbox,
+  Users,
 } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import AdminCohortApplications from "@/components/AdminCohortApplications";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -41,6 +45,10 @@ type CohortForm = {
   startDate: string;
   status: string;
   applicationUrl: string;
+  applicationDeadline: string;
+  seats: string;
+  fee: string;
+  acceptingApplications: boolean;
   highlightsText: string;
   order: string;
   isActive: boolean;
@@ -62,7 +70,11 @@ const emptyForm: CohortForm = {
   mode: "Hybrid (Bengaluru & Remote)",
   startDate: "",
   status: "Applications Open",
-  applicationUrl: "/join-us",
+  applicationUrl: "",
+  applicationDeadline: "",
+  seats: "20",
+  fee: "Free · Zero equity",
+  acceptingApplications: true,
   highlightsText: "1-on-1 Operator Mentorship\nDirect Pitch to 40+ Top VCs\n$100K+ in Cloud & SaaS Credits",
   order: "0",
   isActive: true,
@@ -77,6 +89,8 @@ const AdminCohorts = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [tab, setTab] = useState("programs");
+  const [applicationsCohort, setApplicationsCohort] = useState("all");
 
   const loadCohorts = () => {
     if (!token) return;
@@ -160,7 +174,11 @@ const AdminCohorts = () => {
       mode: cohort.mode || "Hybrid",
       startDate: cohort.startDate || "",
       status: cohort.status || "Waitlist Open",
-      applicationUrl: cohort.applicationUrl || "/join-us",
+      applicationUrl: cohort.applicationUrl || "",
+      applicationDeadline: cohort.applicationDeadline || "",
+      seats: String(cohort.seats ?? 0),
+      fee: cohort.fee ?? "",
+      acceptingApplications: cohort.acceptingApplications ?? true,
       highlightsText: (cohort.highlights || []).join("\n"),
       order: String(cohort.order ?? 0),
       isActive: cohort.isActive ?? true,
@@ -202,6 +220,10 @@ const AdminCohorts = () => {
       startDate: form.startDate.trim(),
       status: form.status.trim(),
       applicationUrl: form.applicationUrl.trim(),
+      applicationDeadline: form.applicationDeadline.trim(),
+      seats: Number(form.seats) || 0,
+      fee: form.fee.trim(),
+      acceptingApplications: form.acceptingApplications,
       highlights,
       order: Number(form.order) || 0,
       isActive: form.isActive,
@@ -285,6 +307,26 @@ const AdminCohorts = () => {
       </div>
 
       <main className="container mx-auto px-4 py-8">
+        <Tabs value={tab} onValueChange={setTab}>
+          <TabsList className="mb-6">
+            <TabsTrigger value="programs" className="gap-1.5">
+              <Rocket size={14} /> Programs ({cohorts.length})
+            </TabsTrigger>
+            <TabsTrigger value="applications" className="gap-1.5">
+              <Inbox size={14} /> Applications ({cohorts.reduce((sum, c) => sum + (c.applicationStats?.total || 0), 0)})
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="applications">
+            <AdminCohortApplications
+              cohorts={cohorts}
+              cohortFilter={applicationsCohort}
+              onCohortFilterChange={setApplicationsCohort}
+              onChanged={loadCohorts}
+            />
+          </TabsContent>
+
+          <TabsContent value="programs">
         <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
           {/* Form Card */}
           <Card className="shadow-sm">
@@ -380,11 +422,39 @@ const AdminCohorts = () => {
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-xs font-semibold text-slate-700">Application Link</label>
+                  <label className="text-xs font-semibold text-slate-700">External Application Link (optional)</label>
                   <Input
-                    placeholder="e.g. /join-us or https://..."
+                    placeholder="Leave empty to collect applications here"
                     value={form.applicationUrl}
                     onChange={(e) => setForm((c) => ({ ...c, applicationUrl: e.target.value }))}
+                  />
+                </div>
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-3">
+                <div className="space-y-1">
+                  <label className="text-xs font-semibold text-slate-700">Application Deadline</label>
+                  <Input
+                    placeholder="e.g. 15 Dec 2026"
+                    value={form.applicationDeadline}
+                    onChange={(e) => setForm((c) => ({ ...c, applicationDeadline: e.target.value }))}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-semibold text-slate-700">Seats</label>
+                  <Input
+                    type="number"
+                    min={0}
+                    value={form.seats}
+                    onChange={(e) => setForm((c) => ({ ...c, seats: e.target.value }))}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-semibold text-slate-700">Fee / Equity</label>
+                  <Input
+                    placeholder="e.g. Free · Zero equity"
+                    value={form.fee}
+                    onChange={(e) => setForm((c) => ({ ...c, fee: e.target.value }))}
                   />
                 </div>
               </div>
@@ -462,6 +532,18 @@ const AdminCohorts = () => {
                   />
                   <label htmlFor="isActive" className="text-sm font-medium text-slate-700 cursor-pointer">
                     Publish Live (Active)
+                  </label>
+                </div>
+                <div className="flex items-center gap-2 sm:col-span-2">
+                  <input
+                    id="acceptingApplications"
+                    type="checkbox"
+                    checked={form.acceptingApplications}
+                    onChange={(e) => setForm((c) => ({ ...c, acceptingApplications: e.target.checked }))}
+                    className="h-4 w-4 rounded border-slate-300 text-purple-600 focus:ring-purple-500"
+                  />
+                  <label htmlFor="acceptingApplications" className="text-sm font-medium text-slate-700 cursor-pointer">
+                    Accepting applications
                   </label>
                 </div>
               </div>
@@ -544,6 +626,20 @@ const AdminCohorts = () => {
                           {cohort.mode && <span>📍 {cohort.mode}</span>}
                           {cohort.startDate && <span>🗓️ {cohort.startDate}</span>}
                         </div>
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setApplicationsCohort(cohort.slug);
+                            setTab("applications");
+                          }}
+                          className="mt-2.5 inline-flex items-center gap-1.5 rounded-md bg-purple-50 px-2 py-1 text-[11px] font-semibold text-purple-700 hover:bg-purple-100"
+                        >
+                          <Users size={12} />
+                          {cohort.applicationStats?.total || 0} applications
+                          {cohort.applicationStats?.new ? ` · ${cohort.applicationStats.new} new` : ""}
+                          {cohort.seats ? ` · ${cohort.applicationStats?.accepted || 0}/${cohort.seats} seats filled` : ""}
+                        </button>
                       </div>
 
                       <div className="flex sm:flex-col items-center justify-end gap-2 shrink-0 border-t sm:border-t-0 pt-2 sm:pt-0">
@@ -571,6 +667,8 @@ const AdminCohorts = () => {
             )}
           </div>
         </div>
+          </TabsContent>
+        </Tabs>
       </main>
     </div>
   );

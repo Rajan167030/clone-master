@@ -39,44 +39,44 @@ const FalconClubSection = ({ className }: { className?: string }) => {
   const tier = TIERS[activeTier];
 
   return (
-    <section className={cn("py-16", className)}>
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="relative overflow-hidden rounded-[2rem] border border-purple-200 bg-gradient-to-br from-purple-50 via-white to-white p-6 sm:p-10 lg:p-14">
+    <section className={cn("py-10", className)}>
+      <div className="max-w-[95%] 2xl:max-w-[1500px] mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="relative overflow-hidden rounded-[2rem] border border-[#C2A980]/20 bg-[#050505] px-6 py-6 sm:px-10 sm:py-8 lg:px-16 lg:py-10">
           {/* Soft dotted grid + corner glow */}
           <div
             aria-hidden
-            className="pointer-events-none absolute inset-0 opacity-[0.35] [background-image:radial-gradient(#c4b5fd_1px,transparent_1px)] [background-size:22px_22px] [mask-image:linear-gradient(to_bottom_left,black,transparent_60%)]"
+            className="pointer-events-none absolute inset-0 opacity-[0.12] [background-image:radial-gradient(#C2A980_1px,transparent_1px)] [background-size:22px_22px] [mask-image:linear-gradient(to_bottom_left,black,transparent_60%)]"
           />
-          <div aria-hidden className="pointer-events-none absolute -top-24 -right-24 h-72 w-72 rounded-full bg-purple-300/30 blur-3xl" />
-          <div aria-hidden className="pointer-events-none absolute -bottom-28 -left-20 h-64 w-64 rounded-full bg-amber-200/30 blur-3xl" />
+          <div aria-hidden className="pointer-events-none absolute -top-24 -right-24 h-72 w-72 rounded-full bg-[#C2A980]/20 blur-3xl" />
+          <div aria-hidden className="pointer-events-none absolute -bottom-28 -left-20 h-64 w-64 rounded-full bg-[#665442]/30 blur-3xl" />
 
-          <div className="relative grid gap-12 lg:grid-cols-[1.05fr_1fr] lg:items-center">
+          <div className="relative grid gap-8 lg:gap-14 lg:grid-cols-[1.05fr_1fr] lg:items-center">
             {/* Pitch */}
             <motion.div initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.3 }}>
               <motion.div
                 variants={fadeUp}
                 custom={0}
-                className="inline-flex items-center gap-2 rounded-full border border-amber-200 bg-white/80 px-3.5 py-1.5 text-xs font-semibold uppercase tracking-wider text-slate-700 shadow-sm"
+                className="inline-flex items-center gap-2 rounded-full border border-[#C2A980]/30 bg-white/[0.03] px-3.5 py-1.5 text-xs font-semibold uppercase tracking-wider text-[#E6D5B8]"
               >
-                <Crown size={14} className="text-amber-500" />
+                <Crown size={14} className="text-[#C2A980]" />
                 FALCON Club
-                <span className="h-1 w-1 rounded-full bg-slate-300" />
-                <span className="text-purple-700">Invite-only</span>
+                <span className="h-1 w-1 rounded-full bg-[#C2A980]/40" />
+                <span className="text-[#C2A980]">Invite-only</span>
               </motion.div>
 
               <motion.h2
                 variants={fadeUp}
                 custom={0.1}
-                className="mt-5 text-3xl sm:text-4xl lg:text-[2.75rem] font-extrabold leading-[1.1] tracking-tight text-slate-900"
+                className="mt-5 text-3xl sm:text-4xl lg:text-[2.75rem] font-extrabold leading-[1.1] tracking-tight text-[#F5EFE6]"
               >
                 A private circle for India’s{" "}
-                <span className="relative whitespace-nowrap text-purple-700">
+                <span className="relative whitespace-nowrap text-[#C2A980]">
                   most ambitious
                   <svg
                     aria-hidden
                     viewBox="0 0 200 12"
                     preserveAspectRatio="none"
-                    className="absolute -bottom-1.5 left-0 h-2.5 w-full text-amber-400"
+                    className="absolute -bottom-1.5 left-0 h-2.5 w-full text-[#8F7751]"
                   >
                     <path d="M2 9 C 50 2, 150 2, 198 8" stroke="currentColor" strokeWidth="4" fill="none" strokeLinecap="round" />
                   </svg>
@@ -84,10 +84,10 @@ const FalconClubSection = ({ className }: { className?: string }) => {
                 founders
               </motion.h2>
 
-              <motion.p variants={fadeUp} custom={0.2} className="mt-5 text-base sm:text-lg font-semibold text-slate-800">
+              <motion.p variants={fadeUp} custom={0.2} className="mt-5 text-base sm:text-lg font-semibold text-[#D9C29C]">
                 Request Access. Get Verified. Earn Your Place.
               </motion.p>
-              <motion.p variants={fadeUp} custom={0.25} className="mt-2 text-sm sm:text-base text-slate-600 leading-relaxed max-w-xl">
+              <motion.p variants={fadeUp} custom={0.25} className="mt-2 text-sm sm:text-base text-[#A39A8C] leading-relaxed max-w-xl">
                 For unicorn founders, successful entrepreneurs, business owners and selected investors. Membership is
                 never automatic — every application is manually verified and approved.
               </motion.p>
@@ -97,16 +97,16 @@ const FalconClubSection = ({ className }: { className?: string }) => {
                 {STEPS.map(({ icon: Icon, title, desc }, index) => (
                   <li
                     key={title}
-                    className="group relative rounded-2xl border border-purple-100 bg-white/90 p-4 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-purple-300 hover:shadow-md"
+                    className="group relative rounded-2xl border border-[#C2A980]/15 bg-white/[0.03] p-4 transition-all duration-300 hover:-translate-y-1 hover:border-[#C2A980]/50 hover:bg-[#B59667]/10"
                   >
                     <div className="flex items-center justify-between">
-                      <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-purple-50 text-purple-700 transition-colors group-hover:bg-purple-700 group-hover:text-white">
+                      <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#B59667]/10 text-[#C2A980] transition-colors group-hover:bg-[#C2A980] group-hover:text-black">
                         <Icon size={18} />
                       </span>
-                      <span className="text-xs font-bold text-purple-200">0{index + 1}</span>
+                      <span className="text-xs font-bold text-[#C2A980]/40">0{index + 1}</span>
                     </div>
-                    <p className="mt-3 text-sm font-semibold text-slate-900">{title}</p>
-                    <p className="mt-1 text-xs text-slate-500 leading-snug">{desc}</p>
+                    <p className="mt-3 text-sm font-semibold text-[#F5EFE6]">{title}</p>
+                    <p className="mt-1 text-xs text-stone-500 leading-snug">{desc}</p>
                   </li>
                 ))}
               </motion.ol>
@@ -115,14 +115,14 @@ const FalconClubSection = ({ className }: { className?: string }) => {
               <motion.div variants={fadeUp} custom={0.45} className="mt-8 flex flex-col sm:flex-row gap-3">
                 <Link
                   to="/falcon-club#membership-form-section"
-                  className="group inline-flex items-center justify-center gap-2 rounded-xl bg-purple-700 px-6 py-3.5 text-sm font-semibold text-white shadow-lg shadow-purple-700/20 transition-all hover:-translate-y-0.5 hover:bg-purple-800"
+                  className="group inline-flex items-center justify-center gap-2 rounded-xl bg-[#C2A980] px-6 py-3.5 text-sm font-semibold text-black shadow-lg shadow-[#C2A980]/20 transition-all hover:-translate-y-0.5 hover:bg-[#D9C29C]"
                 >
                   Request Access
                   <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
                 </Link>
                 <Link
                   to="/falcon-club#membership-criteria"
-                  className="inline-flex items-center justify-center rounded-xl border border-purple-200 bg-white px-6 py-3.5 text-sm font-semibold text-purple-800 transition-colors hover:bg-purple-50"
+                  className="inline-flex items-center justify-center rounded-xl border border-[#C2A980]/40 bg-transparent px-6 py-3.5 text-sm font-semibold text-[#E6D5B8] transition-colors hover:border-[#C2A980] hover:bg-[#C2A980]/10"
                 >
                   View Membership Levels
                 </Link>
@@ -130,8 +130,8 @@ const FalconClubSection = ({ className }: { className?: string }) => {
 
               <motion.ul variants={fadeUp} custom={0.55} className="mt-6 flex flex-wrap gap-x-5 gap-y-2">
                 {TRUST_POINTS.map((point) => (
-                  <li key={point} className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-600">
-                    <ShieldCheck size={14} className="text-purple-600" />
+                  <li key={point} className="inline-flex items-center gap-1.5 text-xs font-medium text-[#A39A8C]">
+                    <ShieldCheck size={14} className="text-[#C2A980]" />
                     {point}
                   </li>
                 ))}
@@ -150,20 +150,20 @@ const FalconClubSection = ({ className }: { className?: string }) => {
               <motion.div
                 animate={reduceMotion ? undefined : { y: [0, -8, 0] }}
                 transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-                className="relative z-10 mx-auto max-w-sm -rotate-2 rounded-2xl border border-purple-200 border-t-4 border-t-purple-700 bg-white p-6 shadow-xl shadow-purple-900/10"
+                className="relative z-10 mx-auto max-w-sm -rotate-2 rounded-2xl border border-[#C2A980]/25 border-t-4 border-t-[#C2A980] bg-[#0c0b09] p-6 shadow-2xl shadow-black/60"
               >
                 <div className="flex items-start justify-between">
                   <div>
-                    <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-purple-700">FALCON Club</p>
-                    <p className="text-[10px] text-slate-400">by Founders Connect</p>
+                    <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-[#C2A980]">FALCON Club</p>
+                    <p className="text-[10px] text-stone-500">by Founders Connect</p>
                   </div>
-                  <span className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-50 ring-1 ring-amber-200">
-                    <Crown size={20} className="text-amber-500" />
+                  <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#B59667]/10 ring-1 ring-[#C2A980]/30">
+                    <Crown size={20} className="text-[#C2A980]" />
                   </span>
                 </div>
 
                 <div className="mt-8">
-                  <p className="text-[10px] uppercase tracking-widest text-slate-400">Membership level</p>
+                  <p className="text-[10px] uppercase tracking-widest text-stone-500">Membership level</p>
                   <div className="relative mt-1 h-9 overflow-hidden">
                     <AnimatePresence mode="wait">
                       <motion.p
@@ -172,7 +172,7 @@ const FalconClubSection = ({ className }: { className?: string }) => {
                         animate={{ y: 0, opacity: 1 }}
                         exit={{ y: -24, opacity: 0 }}
                         transition={{ duration: 0.35 }}
-                        className="absolute inset-0 text-2xl font-extrabold uppercase tracking-wide text-slate-900"
+                        className="absolute inset-0 text-2xl font-extrabold uppercase tracking-wide text-[#F5EFE6]"
                       >
                         {tier.name}
                       </motion.p>
@@ -180,12 +180,12 @@ const FalconClubSection = ({ className }: { className?: string }) => {
                   </div>
                 </div>
 
-                <div className="mt-6 flex items-end justify-between border-t border-dashed border-purple-100 pt-4">
+                <div className="mt-6 flex items-end justify-between border-t border-dashed border-[#C2A980]/15 pt-4">
                   <div>
-                    <p className="text-[10px] uppercase tracking-widest text-slate-400">Member</p>
-                    <p className="text-sm font-semibold text-slate-700">Your name here</p>
+                    <p className="text-[10px] uppercase tracking-widest text-stone-500">Member</p>
+                    <p className="text-sm font-semibold text-stone-300">Your name here</p>
                   </div>
-                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-semibold text-emerald-700 ring-1 ring-emerald-200">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2.5 py-1 text-[10px] font-semibold text-emerald-300 ring-1 ring-emerald-500/30">
                     <BadgeCheck size={12} />
                     Verified
                   </span>
@@ -193,7 +193,7 @@ const FalconClubSection = ({ className }: { className?: string }) => {
               </motion.div>
 
               {/* Tier ladder */}
-              <div className="relative -mt-6 rounded-2xl border border-purple-100 bg-white/90 p-5 pt-12 shadow-sm backdrop-blur sm:p-6 sm:pt-14">
+              <div className="relative -mt-6 rounded-2xl border border-[#C2A980]/15 bg-[#0b0a08]/90 p-5 pt-12 backdrop-blur sm:p-6 sm:pt-14">
                 <div className="flex h-40 items-end gap-2 sm:gap-3">
                   {TIERS.map((t, index) => {
                     const active = index === activeTier;
@@ -210,7 +210,7 @@ const FalconClubSection = ({ className }: { className?: string }) => {
                         <span
                           className={cn(
                             "text-[10px] sm:text-xs font-bold transition-colors",
-                            active ? "text-purple-700" : "text-slate-400"
+                            active ? "text-[#C2A980]" : "text-stone-500"
                           )}
                         >
                           {t.threshold}
@@ -222,28 +222,28 @@ const FalconClubSection = ({ className }: { className?: string }) => {
                           transition={{ duration: 0.6, delay: 0.3 + index * 0.08, ease: "easeOut" }}
                           className={cn(
                             "w-full rounded-t-lg transition-colors duration-300",
-                            active ? "bg-purple-700" : "bg-purple-100 group-hover:bg-purple-200"
+                            active ? "bg-[#C2A980]" : "bg-[#C2A980]/15 group-hover:bg-[#C2A980]/30"
                           )}
                         />
                       </button>
                     );
                   })}
                 </div>
-                <div className="mt-2 flex gap-2 sm:gap-3 border-t border-slate-100 pt-2">
+                <div className="mt-2 flex gap-2 sm:gap-3 border-t border-white/10 pt-2">
                   {TIERS.map((t, index) => (
                     <span
                       key={t.name}
                       className={cn(
                         "flex-1 text-center text-[9px] sm:text-[10px] font-semibold uppercase tracking-wide truncate",
-                        index === activeTier ? "text-slate-900" : "text-slate-400"
+                        index === activeTier ? "text-[#F5EFE6]" : "text-stone-500"
                       )}
                     >
                       {t.name}
                     </span>
                   ))}
                 </div>
-                <p className="mt-4 flex items-start gap-2 text-[11px] leading-snug text-slate-500">
-                  <Lock size={12} className="mt-0.5 shrink-0 text-purple-600" />
+                <p className="mt-4 flex items-start gap-2 text-[11px] leading-snug text-stone-500">
+                  <Lock size={12} className="mt-0.5 shrink-0 text-[#C2A980]" />
                   Qualify via any one: net worth, revenue or valuation (Legacy: ₹50 Cr+ net worth or ₹100 Cr+
                   revenue/valuation). Financials are never shown publicly.
                 </p>

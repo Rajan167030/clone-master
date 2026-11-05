@@ -44,6 +44,11 @@ import {
   updateAdminCohort,
   deleteAdminCohort,
 } from "../controllers/cohort.controller.js";
+import {
+  listAdminCohortApplications,
+  updateAdminCohortApplication,
+  deleteAdminCohortApplication,
+} from "../controllers/cohort-application.controller.js";
 import { getConsentStats } from "../controllers/cookie-consent.controller.js";
 import { sendBulkEmail } from "../controllers/email-automation.controller.js";
 import {
@@ -150,6 +155,9 @@ adminRouter.get("/cohorts", listAdminCohorts);
 adminRouter.post("/cohorts", createAdminCohort);
 adminRouter.patch("/cohorts/:slug", updateAdminCohort);
 adminRouter.delete("/cohorts/:slug", deleteAdminCohort);
+adminRouter.get("/cohort-applications", listAdminCohortApplications);
+adminRouter.patch("/cohort-applications/:id", updateAdminCohortApplication);
+adminRouter.delete("/cohort-applications/:id", deleteAdminCohortApplication);
 
 adminRouter.get("/blogs", listAdminBlogs);
 adminRouter.post("/blogs", createAdminBlog);

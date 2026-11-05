@@ -1,4 +1,4 @@
-import { Cohort } from "../models/index.js";
+import { Cohort, CohortApplication } from "../models/index.js";
 import { deleteCache, getCache, setCache } from "../utils/cache.js";
 
 const slugify = (value) =>
@@ -31,7 +31,12 @@ const sanitizeCohortPayload = (body = {}) => {
     mode: String(body.mode || "Hybrid").trim(),
     startDate: String(body.startDate || "").trim(),
     status: String(body.status || "Waitlist Open").trim(),
-    applicationUrl: String(body.applicationUrl || "/join-us").trim(),
+    // Empty means applications come through the on-site form.
+    applicationUrl: String(body.applicationUrl || "").trim(),
+    applicationDeadline: String(body.applicationDeadline || "").trim(),
+    seats: Math.max(0, Number(body.seats) || 0),
+    fee: String(body.fee ?? "Free · Zero equity").trim(),
+    acceptingApplications: typeof body.acceptingApplications === "boolean" ? body.acceptingApplications : true,
     highlights: normalizeStringArray(body.highlights),
     order: Number(body.order || 0),
     isActive: typeof body.isActive === "boolean" ? body.isActive : true,
@@ -88,8 +93,28 @@ export const listAdminCohorts = async (req, res, next) => {
     const cached = await getCache(cacheKey);
     if (cached) return res.status(200).json(cached);
 
-    const cohorts = await Cohort.find({}).sort({ order: 1, updatedAt: -1 }).lean();
-    const payload = { cohorts };
+    const [cohorts, counts] = await Promise.all([
+      Cohort.find({}).sort({ order: 1, updatedAt: -1 }).lean(),
+      CohortApplication.aggregate([
+        { $group: { _id: { slug: "$cohortSlug", status: "$status" }, count: { $sum: 1 } } },
+      ]),
+    ]);
+
+    // Attach application totals per cohort for the admin list.
+    const stats = {};
+    counts.forEach(({ _id, count }) => {
+      stats[_id.slug] = stats[_id.slug] || { total: 0, accepted: 0, new: 0 };
+      stats[_id.slug].total += count;
+      if (_id.status === "accepted") stats[_id.slug].accepted += count;
+      if (_id.status === "new") stats[_id.slug].new += count;
+    });
+
+    const payload = {
+      cohorts: cohorts.map((cohort) => ({
+        ...cohort,
+        applicationStats: stats[cohort.slug] || { total: 0, accepted: 0, new: 0 },
+      })),
+    };
     await setCache(cacheKey, payload, 60);
     return res.status(200).json(payload);
   } catch (error) {
@@ -155,6 +180,12 @@ export const updateAdminCohort = async (req, res, next) => {
     if (!cohort) {
       return res.status(404).json({ message: "Cohort program not found." });
     }
+
+    // Keep existing applications attached when the slug or title changes.
+    await CohortApplication.updateMany(
+      { cohortSlug: currentSlug },
+      { $set: { cohortSlug: cohort.slug, cohortTitle: cohort.title, cohort: cohort._id } }
+    );
 
     await deleteCache(
       "public:cohorts",

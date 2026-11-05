@@ -29,11 +29,21 @@ const socials = [
 
 const Footer = ({ className }: { className?: string }) => {
   return (
-    <footer className={`relative pt-2 overflow-hidden bg-background ${className || ""}`}>
+    <footer className={`relative pt-10 pb-10 overflow-hidden bg-background ${className || ""}`}>
+      {/* Event photo behind the footer card */}
+      <img
+        src="https://res.cloudinary.com/dbgsxczyi/image/upload/f_auto,q_auto,w_1920/v1786222082/founders-connect/gallery/uuasihojyktrhraetyci.jpg"
+        alt=""
+        aria-hidden="true"
+        loading="lazy"
+        className="pointer-events-none absolute inset-0 h-full w-full object-cover"
+      />
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-black/30" />
+
       <div className="relative px-4 sm:px-6 lg:px-8">
-
-        <div className="mx-auto w-full max-w-[95%] rounded-[2rem] border border-border/70 bg-secondary/35 px-6 pt-8 pb-5 shadow-[0_20px_50px_-25px_hsl(var(--primary)/0.4),0_25px_60px_-20px_hsl(var(--foreground)/0.25)] backdrop-blur-md sm:px-8 lg:px-10 relative overflow-hidden">
-
+        {/* Solid base so the card looks exactly as before */}
+        <div className="mx-auto w-full max-w-[95%] rounded-[2rem] bg-background">
+        <div className="w-full rounded-[2rem] border border-border/70 bg-secondary/35 px-6 pt-8 pb-5 shadow-[0_20px_50px_-25px_hsl(var(--primary)/0.4),0_25px_60px_-20px_hsl(var(--foreground)/0.25)] backdrop-blur-md sm:px-8 lg:px-10 relative overflow-hidden">
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1.6fr_1fr_1fr_1fr_1fr_1.3fr] gap-6 lg:gap-8 mb-4 relative z-10">
             <div className="sm:col-span-2 lg:col-span-1">
@@ -129,6 +139,7 @@ const Footer = ({ className }: { className?: string }) => {
               <a href="/privacy-policy" className="hover:text-primary transition-colors">Cookie Policy</a>
             </div>
           </div>
+        </div>
         </div>
       </div>
     </footer>
