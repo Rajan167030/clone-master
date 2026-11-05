@@ -40,8 +40,8 @@ const FalconClubSection = ({ className }: { className?: string }) => {
 
   return (
     <section className={cn("py-10", className)}>
-      <div className="max-w-[95%] 2xl:max-w-[1500px] mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="relative overflow-hidden rounded-[2rem] border border-[#C2A980]/20 bg-[#050505] px-6 py-6 sm:px-10 sm:py-8 lg:px-16 lg:py-10">
+      <div className="mx-auto w-full px-3 sm:max-w-[95%] sm:px-6 lg:px-8 2xl:max-w-[1500px]">
+        <div className="relative overflow-hidden rounded-3xl sm:rounded-[2rem] border border-[#C2A980]/20 bg-[#050505] px-5 py-8 sm:px-10 sm:py-8 lg:px-16 lg:py-10">
           {/* Soft dotted grid + corner glow */}
           <div
             aria-hidden
@@ -56,7 +56,7 @@ const FalconClubSection = ({ className }: { className?: string }) => {
               <motion.div
                 variants={fadeUp}
                 custom={0}
-                className="inline-flex items-center gap-2 rounded-full border border-[#C2A980]/30 bg-white/[0.03] px-3.5 py-1.5 text-xs font-semibold uppercase tracking-wider text-[#E6D5B8]"
+                className="inline-flex items-center gap-2 rounded-full border border-[#C2A980]/30 bg-white/[0.03] px-3 py-1.5 text-[11px] sm:px-3.5 sm:text-xs font-semibold uppercase tracking-wider text-[#E6D5B8]"
               >
                 <Crown size={14} className="text-[#C2A980]" />
                 FALCON Club
@@ -67,7 +67,7 @@ const FalconClubSection = ({ className }: { className?: string }) => {
               <motion.h2
                 variants={fadeUp}
                 custom={0.1}
-                className="mt-5 text-3xl sm:text-4xl lg:text-[2.75rem] font-extrabold leading-[1.1] tracking-tight text-[#F5EFE6]"
+                className="mt-5 text-[1.85rem] sm:text-4xl lg:text-[2.75rem] font-extrabold leading-[1.1] tracking-tight text-[#F5EFE6]"
               >
                 A private circle for India’s{" "}
                 <span className="relative whitespace-nowrap text-[#C2A980]">
@@ -84,7 +84,7 @@ const FalconClubSection = ({ className }: { className?: string }) => {
                 founders
               </motion.h2>
 
-              <motion.p variants={fadeUp} custom={0.2} className="mt-5 text-base sm:text-lg font-semibold text-[#D9C29C]">
+              <motion.p variants={fadeUp} custom={0.2} className="mt-4 text-[15px] sm:mt-5 sm:text-lg font-semibold text-[#D9C29C]">
                 Request Access. Get Verified. Earn Your Place.
               </motion.p>
               <motion.p variants={fadeUp} custom={0.25} className="mt-2 text-sm sm:text-base text-[#A39A8C] leading-relaxed max-w-xl">
@@ -93,26 +93,28 @@ const FalconClubSection = ({ className }: { className?: string }) => {
               </motion.p>
 
               {/* Steps */}
-              <motion.ol variants={fadeUp} custom={0.35} className="mt-7 grid gap-3 sm:grid-cols-3">
+              <motion.ol variants={fadeUp} custom={0.35} className="mt-6 grid gap-2.5 sm:mt-7 sm:grid-cols-3 sm:gap-3">
                 {STEPS.map(({ icon: Icon, title, desc }, index) => (
                   <li
                     key={title}
-                    className="group relative rounded-2xl border border-[#C2A980]/15 bg-white/[0.03] p-4 transition-all duration-300 hover:-translate-y-1 hover:border-[#C2A980]/50 hover:bg-[#B59667]/10"
+                    className="group relative rounded-2xl border border-[#C2A980]/15 flex items-center gap-3 bg-white/[0.03] p-3 sm:block sm:p-4 transition-all duration-300 hover:-translate-y-1 hover:border-[#C2A980]/50 hover:bg-[#B59667]/10"
                   >
-                    <div className="flex items-center justify-between">
+                    <div className="flex shrink-0 items-center justify-between">
                       <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#B59667]/10 text-[#C2A980] transition-colors group-hover:bg-[#C2A980] group-hover:text-black">
                         <Icon size={18} />
                       </span>
-                      <span className="text-xs font-bold text-[#C2A980]/40">0{index + 1}</span>
+                      <span className="hidden text-xs font-bold text-[#C2A980]/40 sm:inline">0{index + 1}</span>
                     </div>
-                    <p className="mt-3 text-sm font-semibold text-[#F5EFE6]">{title}</p>
-                    <p className="mt-1 text-xs text-stone-500 leading-snug">{desc}</p>
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-[#F5EFE6] sm:mt-3">{title}</p>
+                      <p className="mt-0.5 text-xs text-stone-500 leading-snug sm:mt-1">{desc}</p>
+                    </div>
                   </li>
                 ))}
               </motion.ol>
 
               {/* CTAs */}
-              <motion.div variants={fadeUp} custom={0.45} className="mt-8 flex flex-col sm:flex-row gap-3">
+              <motion.div variants={fadeUp} custom={0.45} className="mt-7 flex flex-col sm:mt-8 sm:flex-row gap-3">
                 <Link
                   to="/falcon-club#membership-form-section"
                   className="group inline-flex items-center justify-center gap-2 rounded-xl bg-[#C2A980] px-6 py-3.5 text-sm font-semibold text-black shadow-lg shadow-[#C2A980]/20 transition-all hover:-translate-y-0.5 hover:bg-[#D9C29C]"
@@ -128,7 +130,7 @@ const FalconClubSection = ({ className }: { className?: string }) => {
                 </Link>
               </motion.div>
 
-              <motion.ul variants={fadeUp} custom={0.55} className="mt-6 flex flex-wrap gap-x-5 gap-y-2">
+              <motion.ul variants={fadeUp} custom={0.55} className="mt-5 flex flex-wrap gap-x-4 gap-y-2 sm:mt-6 sm:gap-x-5">
                 {TRUST_POINTS.map((point) => (
                   <li key={point} className="inline-flex items-center gap-1.5 text-xs font-medium text-[#A39A8C]">
                     <ShieldCheck size={14} className="text-[#C2A980]" />
@@ -150,7 +152,7 @@ const FalconClubSection = ({ className }: { className?: string }) => {
               <motion.div
                 animate={reduceMotion ? undefined : { y: [0, -8, 0] }}
                 transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-                className="relative z-10 mx-auto max-w-sm -rotate-2 rounded-2xl border border-[#C2A980]/25 border-t-4 border-t-[#C2A980] bg-[#0c0b09] p-6 shadow-2xl shadow-black/60"
+                className="relative z-10 mx-auto w-[92%] max-w-sm sm:-rotate-2 rounded-2xl border border-[#C2A980]/25 border-t-4 border-t-[#C2A980] bg-[#0c0b09] p-5 sm:p-6 shadow-2xl shadow-black/60"
               >
                 <div className="flex items-start justify-between">
                   <div>
@@ -162,7 +164,7 @@ const FalconClubSection = ({ className }: { className?: string }) => {
                   </span>
                 </div>
 
-                <div className="mt-8">
+                <div className="mt-6 sm:mt-8">
                   <p className="text-[10px] uppercase tracking-widest text-stone-500">Membership level</p>
                   <div className="relative mt-1 h-9 overflow-hidden">
                     <AnimatePresence mode="wait">
@@ -193,8 +195,8 @@ const FalconClubSection = ({ className }: { className?: string }) => {
               </motion.div>
 
               {/* Tier ladder */}
-              <div className="relative -mt-6 rounded-2xl border border-[#C2A980]/15 bg-[#0b0a08]/90 p-5 pt-12 backdrop-blur sm:p-6 sm:pt-14">
-                <div className="flex h-40 items-end gap-2 sm:gap-3">
+              <div className="relative -mt-6 rounded-2xl border border-[#C2A980]/15 bg-[#0b0a08]/90 p-4 pt-11 backdrop-blur sm:p-6 sm:pt-14">
+                <div className="flex h-32 items-end gap-1.5 sm:h-40 sm:gap-3">
                   {TIERS.map((t, index) => {
                     const active = index === activeTier;
                     return (
@@ -209,7 +211,7 @@ const FalconClubSection = ({ className }: { className?: string }) => {
                       >
                         <span
                           className={cn(
-                            "text-[10px] sm:text-xs font-bold transition-colors",
+                            "whitespace-nowrap text-[9px] sm:text-xs font-bold transition-colors",
                             active ? "text-[#C2A980]" : "text-stone-500"
                           )}
                         >
@@ -229,7 +231,11 @@ const FalconClubSection = ({ className }: { className?: string }) => {
                     );
                   })}
                 </div>
-                <div className="mt-2 flex gap-2 sm:gap-3 border-t border-white/10 pt-2">
+                {/* Phones: one readable label for the selected level instead of five cramped ones */}
+                <p className="mt-2 border-t border-white/10 pt-2 text-center text-[11px] font-semibold uppercase tracking-wider text-[#F5EFE6] sm:hidden">
+                  {tier.name} <span className="text-[#C2A980]">· {tier.threshold}</span>
+                </p>
+                <div className="mt-2 hidden gap-2 sm:flex sm:gap-3 border-t border-white/10 pt-2">
                   {TIERS.map((t, index) => (
                     <span
                       key={t.name}

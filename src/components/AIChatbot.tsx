@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Bot, Loader2, MessageCircle, Mic, Sparkles, Send, X } from "lucide-react";
+import { ArrowUp, Bot, Loader2, Sparkles, X } from "lucide-react";
 
 const FAQ = [
   { q: "How do I register for an event?", a: "Go to the Events page, select an event, and click 'Register Event'." },
@@ -8,25 +8,60 @@ const FAQ = [
   { q: "How do I contact support?", a: "Type your question here or email support@foundersconnect.com." },
 ];
 
+const SUGGESTIONS = [
+  "How do I register for an event?",
+  "How do I connect with founders?",
+  "How do I reset my password?",
+  "What is the FALCON Club?",
+];
+
+type Message = { from: "bot" | "user"; text: string };
+
 export default function AIChatbot() {
   const [open, setOpen] = useState(false);
-  const [messages, setMessages] = useState([
+  const [messages, setMessages] = useState<Message[]>([
     { from: "bot", text: "Hi! I'm your AI assistant. How can I help you today?" },
   ]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [hintIndex, setHintIndex] = useState(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const rootRef = useRef<HTMLDivElement>(null);
+
+  // Rotate the placeholder hint while the bar is collapsed and empty
+  useEffect(() => {
+    if (open || input) return;
+    const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    if (reduce) return;
+    const t = window.setInterval(() => setHintIndex((i) => (i + 1) % SUGGESTIONS.length), 3200);
+    return () => window.clearInterval(t);
+  }, [open, input]);
 
   useEffect(() => {
     if (!open) return;
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
-  }, [messages, open]);
+  }, [messages, open, loading]);
 
-  const suggestions = [
-    "How do I register for an event?",
-    "How do I connect with founders?",
-    "How do I reset my password?",
-  ];
+  // Escape closes; clicking outside closes
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setOpen(false);
+        inputRef.current?.blur();
+      }
+    };
+    const onPointer = (e: PointerEvent) => {
+      if (rootRef.current && !rootRef.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("keydown", onKey);
+    document.addEventListener("pointerdown", onPointer);
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.removeEventListener("pointerdown", onPointer);
+    };
+  }, [open]);
 
   function getFallbackReply(userText: string) {
     const normalized = userText.toLowerCase();
@@ -39,10 +74,11 @@ export default function AIChatbot() {
     return "AI service unavailable. Try again later or contact info@foundersconnect.co.in";
   }
 
-  async function handleSend() {
-    if (!input.trim()) return;
-    const userText = input.trim();
-    setMessages(msgs => [...msgs, { from: "user", text: userText }]);
+  async function send(text: string) {
+    const userText = text.trim();
+    if (!userText || loading) return;
+    setOpen(true);
+    setMessages((msgs) => [...msgs, { from: "user", text: userText }]);
     setInput("");
     setLoading(true);
 
@@ -55,125 +91,162 @@ export default function AIChatbot() {
 
       if (!res.ok) throw new Error("AI request failed");
       const data = await res.json();
-      const reply = data?.reply || (data?.message || null);
+      const reply = data?.reply || data?.message || null;
 
-      if (reply) {
-        setMessages(msgs => [...msgs, { from: "bot", text: typeof reply === "string" ? reply : JSON.stringify(reply) }]);
-      } else {
-        setMessages(msgs => [...msgs, { from: "bot", text: getFallbackReply(userText) }]);
-      }
-    } catch (err) {
-      setMessages(msgs => [...msgs, { from: "bot", text: getFallbackReply(userText) }]);
+      setMessages((msgs) => [
+        ...msgs,
+        { from: "bot", text: reply ? (typeof reply === "string" ? reply : JSON.stringify(reply)) : getFallbackReply(userText) },
+      ]);
+    } catch {
+      setMessages((msgs) => [...msgs, { from: "bot", text: getFallbackReply(userText) }]);
     } finally {
       setLoading(false);
     }
   }
 
-  function handleSuggestionClick(question: string) {
-    setInput(question);
-  }
+  const hasConversation = messages.length > 1;
 
   return (
-    <div className="fixed bottom-5 right-5 z-[1000] sm:bottom-6 sm:right-6">
-      {!open && (
-        <button
-          aria-label="Open chatbot"
-          className="group relative grid h-11 w-11 place-items-center overflow-hidden rounded-full border border-purple-200/50 bg-purple-600 hover:bg-purple-700 text-white shadow-[0_18px_40px_-14px_rgba(147,51,234,0.7)] transition-transform duration-300 hover:-translate-y-1 hover:brightness-110 sm:h-12 sm:w-12"
-          onClick={() => setOpen(true)}
+    <div
+      ref={rootRef}
+      className="fixed inset-x-4 bottom-4 z-[1000] mx-auto max-w-[28rem] sm:bottom-6"
+    >
+      <div
+        className={`overflow-hidden border bg-white transition-[border-radius,box-shadow,border-color] duration-300 ease-out ${
+          open
+            ? "rounded-[1.5rem] border-violet-200 shadow-[0_28px_80px_-22px_rgba(109,40,217,0.35)]"
+            : "rounded-full border-slate-200/80 shadow-[0_12px_32px_-12px_rgba(15,23,42,0.28)] hover:shadow-[0_16px_40px_-12px_rgba(109,40,217,0.35)]"
+        }`}
+      >
+        {/* Expandable area: header + messages */}
+        <div
+          className={`grid transition-[grid-template-rows,opacity] duration-300 ease-out ${
+            open ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
+          }`}
+          aria-hidden={!open}
         >
-          <span className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.3),transparent_60%)]" />
-          <span className="absolute inset-0 rounded-full ring-1 ring-white/10" />
-          <MessageCircle className="relative z-10 h-5 w-5 sm:h-5.5 sm:w-5.5" />
-        </button>
-      )}
-      {open && (
-        <div className="relative w-[min(92vw,24rem)] overflow-hidden rounded-[1.5rem] border border-purple-200/60 bg-white/95 shadow-[0_28px_80px_-22px_rgba(147,51,234,0.25)] backdrop-blur-2xl">
-          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(147,51,234,0.15),transparent_40%),radial-gradient(circle_at_bottom_right,rgba(147,51,234,0.05),transparent_45%)]" />
-          <div className="relative flex items-center justify-between border-b border-purple-100/80 px-4 py-4">
-            <div className="flex items-center gap-3">
-              <div className="grid h-10 w-10 place-items-center rounded-2xl border border-purple-100 bg-purple-50 text-purple-600 shadow-inner">
-                <Bot className="h-5 w-5" />
-              </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-semibold tracking-wide text-slate-800">AI Assistant</span>
-                  <span className="inline-flex items-center gap-1 rounded-full border border-purple-200 bg-purple-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-purple-600">
-                    <Sparkles className="h-3 w-3" />
-                    Live
-                  </span>
+          <div className="min-h-0">
+            <div className="flex items-center justify-between border-b border-violet-100 px-4 py-3">
+              <div className="flex items-center gap-3">
+                <div className="grid h-9 w-9 place-items-center rounded-xl bg-violet-50 text-violet-600">
+                  <Bot className="h-5 w-5" />
                 </div>
-                <p className="text-xs text-slate-500">Ask about events, community, or support.</p>
-              </div>
-            </div>
-            <button
-              onClick={() => setOpen(false)}
-              className="grid h-9 w-9 place-items-center rounded-full border border-slate-100 bg-slate-50 text-slate-500 transition hover:bg-slate-100 hover:text-slate-700"
-              aria-label="Close chatbot"
-            >
-              <X className="h-4 w-4" />
-            </button>
-          </div>
-          <div className="relative max-h-[24rem] overflow-y-auto px-4 py-4">
-            <div className="mb-4 flex items-center gap-2 rounded-2xl border border-purple-100 bg-purple-50/50 px-3 py-2 text-xs text-purple-700">
-              <Mic className="h-4 w-4 text-purple-500" />
-              Type a question or tap a quick prompt.
-            </div>
-            {messages.map((m, i) => (
-              <div key={i} className={`mb-3 flex ${m.from === "user" ? "justify-end" : "justify-start"}`}>
-                <div
-                  className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-relaxed shadow-sm ${
-                    m.from === "user"
-                      ? "bg-purple-600 text-white"
-                      : "border border-purple-100 bg-purple-50/30 text-slate-800"
-                  }`}
-                >
-                  {m.text}
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-semibold text-slate-800">AI Assistant</span>
+                    <span className="inline-flex items-center gap-1 rounded-full bg-violet-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-violet-600">
+                      <Sparkles className="h-3 w-3" />
+                      Live
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-500">Ask about events, community, or support.</p>
                 </div>
               </div>
-            ))}
-            {loading && (
-              <div className="mb-3 flex justify-start">
-                <div className="flex items-center gap-2 rounded-2xl border border-purple-100 bg-purple-50/30 px-4 py-3 text-sm text-purple-600">
-                  <Loader2 className="h-4 w-4 animate-spin text-purple-500" />
-                  Thinking...
-                </div>
-              </div>
-            )}
-            <div className="mt-4 grid gap-2">
-              {suggestions.map(question => (
-                <button
-                  key={question}
-                  type="button"
-                  onClick={() => handleSuggestionClick(question)}
-                  className="rounded-2xl border border-purple-100 bg-white px-3 py-2 text-left text-xs text-purple-600 transition hover:border-purple-200 hover:bg-purple-50 hover:text-purple-700"
-                >
-                  {question}
-                </button>
-              ))}
-            </div>
-            <div ref={messagesEndRef} />
-          </div>
-          <div className="relative border-t border-purple-100/80 p-3 bg-slate-50/30">
-            <div className="relative">
-              <input
-                className="w-full rounded-2xl border border-purple-200/60 bg-white px-4 py-3 pr-12 text-sm text-slate-800 placeholder:text-slate-400 outline-none transition focus:border-purple-400"
-                placeholder="Ask me about events, community..."
-                value={input}
-                onChange={e => setInput(e.target.value)}
-                onKeyDown={e => e.key === "Enter" && handleSend()}
-              />
               <button
-                className="absolute right-2 top-1/2 -translate-y-1/2 grid h-8 w-8 place-items-center rounded-xl bg-purple-600 text-white shadow-[0_8px_20px_-8px_rgba(147,51,234,0.6)] transition hover:bg-purple-700 disabled:cursor-not-allowed disabled:opacity-60"
-                onClick={handleSend}
-                aria-label="Send message"
-                disabled={loading || !input.trim()}
+                type="button"
+                onClick={() => setOpen(false)}
+                tabIndex={open ? 0 : -1}
+                className="grid h-9 w-9 place-items-center rounded-full text-slate-500 transition hover:bg-slate-100 hover:text-slate-700"
+                aria-label="Close assistant"
               >
-                {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send size={16} />}
+                <X className="h-4 w-4" />
               </button>
+            </div>
+
+            <div className="max-h-[min(55dvh,26rem)] overflow-y-auto overscroll-contain px-4 py-4" aria-live="polite">
+              {messages.map((m, i) => (
+                <div key={i} className={`mb-3 flex ${m.from === "user" ? "justify-end" : "justify-start"}`}>
+                  <div
+                    className={`max-w-[85%] whitespace-pre-wrap rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
+                      m.from === "user"
+                        ? "rounded-br-md bg-violet-600 text-white"
+                        : "rounded-bl-md bg-slate-100 text-slate-800"
+                    }`}
+                  >
+                    {m.text}
+                  </div>
+                </div>
+              ))}
+
+              {loading && (
+                <div className="mb-3 flex justify-start">
+                  <div className="flex items-center gap-2 rounded-2xl rounded-bl-md bg-slate-100 px-4 py-2.5 text-sm text-slate-600">
+                    <Loader2 className="h-4 w-4 animate-spin text-violet-500" />
+                    Thinking...
+                  </div>
+                </div>
+              )}
+
+              {!hasConversation && !loading && (
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {SUGGESTIONS.map((q) => (
+                    <button
+                      key={q}
+                      type="button"
+                      tabIndex={open ? 0 : -1}
+                      onClick={() => send(q)}
+                      className="rounded-full border border-violet-200 bg-white px-3 py-1.5 text-left text-xs font-medium text-violet-700 transition hover:border-violet-300 hover:bg-violet-50"
+                    >
+                      {q}
+                    </button>
+                  ))}
+                </div>
+              )}
+              <div ref={messagesEndRef} />
             </div>
           </div>
         </div>
-      )}
+
+        {/* The pill input — always visible; focusing it expands the assistant */}
+        <form
+          className={`relative flex items-center gap-2 ${open ? "border-t border-violet-100 p-2" : "p-1.5"}`}
+          onSubmit={(e) => {
+            e.preventDefault();
+            send(input);
+          }}
+        >
+          <div className="relative min-w-0 flex-1">
+            <input
+              ref={inputRef}
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onFocus={() => setOpen(true)}
+              onClick={() => setOpen(true)}
+              aria-label="Ask the AI assistant"
+              className="h-10 w-full rounded-full bg-transparent pl-4 pr-2 text-base text-slate-800 outline-none sm:text-sm"
+            />
+            {/* Animated placeholder */}
+            {!input && (
+              <span
+                key={open ? "open" : hintIndex}
+                aria-hidden
+                className="pointer-events-none absolute inset-y-0 left-4 right-2 flex items-center truncate text-base text-slate-400 motion-safe:animate-[fade-in_0.4s_ease-out] sm:text-sm"
+              >
+                <span className="truncate">{open ? "Ask me anything…" : SUGGESTIONS[hintIndex]}</span>
+              </span>
+            )}
+          </div>
+          <button
+            type="submit"
+            aria-label="Send message"
+            disabled={open && (loading || !input.trim())}
+            onClick={(e) => {
+              if (!open && !input.trim()) {
+                e.preventDefault();
+                setOpen(true);
+                inputRef.current?.focus();
+              }
+            }}
+            className={`grid h-10 w-10 shrink-0 place-items-center rounded-full transition ${
+              input.trim()
+                ? "bg-violet-600 text-white hover:bg-violet-700"
+                : "bg-slate-100 text-slate-400"
+            } disabled:cursor-not-allowed`}
+          >
+            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowUp className="h-4 w-4" />}
+          </button>
+        </form>
+      </div>
     </div>
   );
 }
