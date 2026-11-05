@@ -4,6 +4,17 @@ import { createCloudinaryUploadSignature } from "../utils/cloudinary.js";
 
 const SITE_NOTICE_KEY = "landing-page-popup";
 
+// Lets Vercel's edge serve the hero slider data without waking the function/DB.
+// Admin edits show up within ~60s; stale copies are served (and refreshed in the
+// background) for up to 5 minutes after that. The data is public and fetched without
+// credentials, so allow any origin — otherwise a copy cached for www.foundersconnect.co.in
+// would fail CORS on foundersconnect.co.in.
+const setSliderEdgeCache = (res) =>
+  res.set({
+    "Cache-Control": "public, max-age=0, s-maxage=60, stale-while-revalidate=300",
+    "Access-Control-Allow-Origin": "*",
+  });
+
 const normalizeStringArray = (value) =>
   Array.isArray(value)
     ? value.map((item) => String(item || "").trim()).filter(Boolean)
@@ -200,6 +211,7 @@ export const listPublicEvents = async (req, res, next) => {
 export const listPublicSliderEvents = async (req, res, next) => {
   try {
     const cacheKey = "public:slider-events";
+    setSliderEdgeCache(res);
     const cached = await getCache(cacheKey);
     if (cached) return res.status(200).json(cached);
 
@@ -920,6 +932,7 @@ export const updateAdminSiteNotice = async (req, res, next) => {
 export const listPublicSliderPromotions = async (req, res, next) => {
   try {
     const cacheKey = "public:slider-promotions";
+    setSliderEdgeCache(res);
     const cached = await getCache(cacheKey);
     if (cached) return res.status(200).json(cached);
 

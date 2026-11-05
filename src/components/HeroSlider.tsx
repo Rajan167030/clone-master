@@ -74,6 +74,17 @@ const HeroSlider = ({ className }: { className?: string }) => {
     fetchSliderContent();
   }, []);
 
+  // Warm the browser cache for every slide up front, so later slides don't start
+  // downloading only when they rotate in (which showed up as a blank/late slide).
+  useEffect(() => {
+    slides.slice(1).forEach((slide) => {
+      if (!slide.image) return;
+      const img = new Image();
+      img.decoding = "async";
+      img.src = slide.image;
+    });
+  }, [slides]);
+
   useEffect(() => {
     if (slides.length < 2) return undefined;
     const timer = setInterval(() => {

@@ -19,6 +19,7 @@ export default {
       fontFamily: {
         heading: ['"Space Grotesk"', 'sans-serif'],
         body: ['"Plus Jakarta Sans"', 'sans-serif'],
+        display: ['"Playfair Display"', 'Georgia', 'serif'],
       },
       colors: {
         border: "hsl(var(--border))",
