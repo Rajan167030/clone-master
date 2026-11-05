@@ -129,9 +129,6 @@ const Footer = ({ className }: { className?: string }) => {
               <p className="text-sm text-muted-foreground">
                 © {new Date().getFullYear()} FC Global Network Private Limited. All rights reserved.
               </p>
-              <p className="mt-1 text-xs text-muted-foreground/80">
-                CIN: U82300UW2026PTC259800 · GST: 09AAHCF3021G1ZX
-              </p>
             </div>
             <div className="flex items-center gap-6 text-sm text-muted-foreground">
               <a href="/privacy-policy" className="hover:text-primary transition-colors">Privacy Policy</a>
