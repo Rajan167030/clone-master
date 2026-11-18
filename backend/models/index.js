@@ -44,3 +44,7 @@ export { default as Suppression } from "./suppression.model.js";
 export { Cohort } from "./cohort.model.js";
 export { FalconClubApplication } from "./falcon-club-application.model.js";
 export { CohortApplication } from "./cohort-application.model.js";
+export { MentorInvite, MentorApplication, MentorConnectRequest } from "./mentorship.model.js";
+export { Course, Enrollment, AssignmentSubmission, LiveSession } from "./lms.model.js";
+export { AiArtifact, AiChatThread, AiUsage } from "./ai-tools.model.js";
+export { FounderProfile, Connection, Group, GroupMembership, GroupPost, CollabPost, CollabInterest, Opportunity } from "./network.model.js";

@@ -53,6 +53,40 @@ const navigationMenu: NavMenuItem[] = [
     ],
   },
   {
+    label: "Learn",
+    href: "/learn",
+    items: [
+      { label: "Courses", href: "/learn" },
+      { label: "Live Sessions", href: "/learn?tab=live" },
+      { label: "Video Library", href: "/learn?tab=library" },
+      { label: "My Learning", href: "/learn/my" },
+    ],
+  },
+  {
+    label: "Network",
+    href: "/network",
+    items: [
+      { label: "My Network", href: "/network" },
+      { label: "Startup Directory", href: "/startups" },
+      { label: "Co-founder Discovery", href: "/network/cofounders" },
+      { label: "Collaboration Board", href: "/network/collab" },
+      { label: "Groups & Peer Circles", href: "/groups" },
+      { label: "Grants & Competitions", href: "/opportunities" },
+    ],
+  },
+  {
+    label: "AI Tools",
+    href: "/tools",
+    items: [
+      { label: "All AI Tools", href: "/tools" },
+      { label: "Pitch Deck Builder", href: "/tools/pitch-deck" },
+      { label: "Pitch Review", href: "/tools/pitch-review" },
+      { label: "Idea Validation", href: "/tools/validation" },
+      { label: "Investor Readiness", href: "/tools/investor-readiness" },
+      { label: "AI Learning Assistant", href: "/tools/assistant" },
+    ],
+  },
+  {
     label: "About",
     items: [
       { label: "Company", href: "/about" },

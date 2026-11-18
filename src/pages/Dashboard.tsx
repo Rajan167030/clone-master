@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { CalendarDays, FileText, Sparkles, X } from "lucide-react";
+import { CalendarDays, FileText, GraduationCap, Sparkles, X } from "lucide-react";
 import StatCard from "@/components/StatCard";
 import PortfolioTable from "@/components/PortfolioTable";
 import ProfileCard from "@/components/ProfileCard";
@@ -325,6 +325,27 @@ const Dashboard = () => {
                   Update Metrics
                 </button>
               )}
+              <Link
+                to="/learn/my"
+                className="inline-flex items-center justify-center gap-2 rounded-xl border border-purple-200 bg-purple-50 px-4 py-3 text-sm font-bold text-purple-700 shadow-sm transition-all hover:bg-purple-100/70 hover:scale-[1.02] active:scale-95"
+              >
+                <GraduationCap size={16} />
+                My Learning
+              </Link>
+              <Link
+                to="/tools"
+                className="inline-flex items-center justify-center gap-2 rounded-xl border border-purple-200 bg-purple-50 px-4 py-3 text-sm font-bold text-purple-700 shadow-sm transition-all hover:bg-purple-100/70 hover:scale-[1.02] active:scale-95"
+              >
+                <Sparkles size={16} />
+                AI Founder Tools
+              </Link>
+              <Link
+                to="/network"
+                className="inline-flex items-center justify-center gap-2 rounded-xl border border-purple-200 bg-purple-50 px-4 py-3 text-sm font-bold text-purple-700 shadow-sm transition-all hover:bg-purple-100/70 hover:scale-[1.02] active:scale-95"
+              >
+                <Sparkles size={16} />
+                My Network
+              </Link>
               <Link
                 to="/events"
                 className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-100"

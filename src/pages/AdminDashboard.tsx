@@ -151,6 +151,7 @@ import {
   Trophy,
   Cookie,
   Crown,
+  BookOpen,
 } from "lucide-react";
 
 const emptyEventForm = {
@@ -2087,6 +2088,18 @@ const AdminDashboard = () => {
                   <Link to="/admin/cohorts" className="inline-flex items-center gap-2 rounded-lg border border-purple-200 bg-purple-50/50 px-4 py-2 text-sm font-semibold text-purple-700 hover:bg-purple-100">
                     <Rocket className="h-4 w-4 text-purple-600" />
                     Cohorts & Programs
+                  </Link>
+                  <Link to="/admin/community" className="inline-flex items-center gap-2 rounded-lg border border-violet-200 bg-violet-50/50 px-4 py-2 text-sm font-semibold text-violet-700 hover:bg-violet-100">
+                    <Users className="h-4 w-4 text-violet-600" />
+                    Community & Networking
+                  </Link>
+                  <Link to="/admin/learning" className="inline-flex items-center gap-2 rounded-lg border border-violet-200 bg-violet-50/50 px-4 py-2 text-sm font-semibold text-violet-700 hover:bg-violet-100">
+                    <BookOpen className="h-4 w-4 text-violet-600" />
+                    Learning (LMS)
+                  </Link>
+                  <Link to="/admin/mentorship" className="inline-flex items-center gap-2 rounded-lg border border-violet-200 bg-violet-50/50 px-4 py-2 text-sm font-semibold text-violet-700 hover:bg-violet-100">
+                    <Users className="h-4 w-4 text-violet-600" />
+                    Mentorship
                   </Link>
                   <Link to="/admin/speaker-investors" className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium hover:bg-slate-50">
                     <Upload className="h-4 w-4" />

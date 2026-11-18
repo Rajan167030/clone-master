@@ -14,6 +14,10 @@ import communityRouter from "./routes/community.routes.js";
 import matchmakingRouter from "./routes/matchmaking.routes.js";
 import cookieConsentRouter from "./routes/cookie-consent.routes.js";
 import falconClubRouter from "./routes/falcon-club.routes.js";
+import mentorshipRouter from "./routes/mentorship.routes.js";
+import lmsRouter from "./routes/lms.routes.js";
+import aiToolsRouter from "./routes/ai-tools.routes.js";
+import { networkRouter, groupsRouter, opportunitiesRouter } from "./routes/network.routes.js";
 import { errorHandler, notFoundHandler } from "./middlewares/error.middleware.js";
 
 
@@ -89,6 +93,12 @@ app.use("/api/matchmaking", matchmakingRouter);
 app.use("/api/consent", cookieConsentRouter);
 app.use("/api/falcon-club", falconClubRouter);
 app.use("/api/fable-club", falconClubRouter);
+app.use("/api/mentorship", mentorshipRouter);
+app.use("/api/learning", lmsRouter);
+app.use("/api/ai-tools", aiToolsRouter);
+app.use("/api/network", networkRouter);
+app.use("/api/groups", groupsRouter);
+app.use("/api/opportunities", opportunitiesRouter);
 
 app.use(notFoundHandler);
 

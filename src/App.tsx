@@ -55,6 +55,29 @@ const CommunityMessages = lazy(() => import("./pages/CommunityMessages.tsx"));
 const CommunityDirectory = lazy(() => import("./pages/CommunityDirectory.tsx"));
 const Matchmaking = lazy(() => import("./pages/Matchmaking.tsx"));
 const Mentors = lazy(() => import("./pages/Mentors.tsx"));
+const MentorOnboard = lazy(() => import("./pages/MentorOnboard.tsx"));
+const AdminMentorship = lazy(() => import("./pages/AdminMentorship.tsx"));
+const Learn = lazy(() => import("./pages/Learn.tsx"));
+const LearnCourse = lazy(() => import("./pages/LearnCourse.tsx"));
+const MyLearning = lazy(() => import("./pages/MyLearning.tsx"));
+const AdminLearning = lazy(() => import("./pages/AdminLearning.tsx"));
+const AiTools = lazy(() => import("./pages/tools/AiTools.tsx"));
+const PitchDeckBuilder = lazy(() => import("./pages/tools/PitchDeckBuilder.tsx"));
+const PitchReviewPage = lazy(() => import("./pages/tools/PitchReview.tsx"));
+const StartupValidation = lazy(() => import("./pages/tools/StartupValidation.tsx"));
+const InvestorReadiness = lazy(() => import("./pages/tools/InvestorReadiness.tsx"));
+const LearningAssistant = lazy(() => import("./pages/tools/LearningAssistant.tsx"));
+const MyNetwork = lazy(() => import("./pages/network/MyNetwork.tsx"));
+const EditFounderProfile = lazy(() => import("./pages/network/EditFounderProfile.tsx"));
+const StartupDirectory = lazy(() => import("./pages/network/StartupDirectory.tsx"));
+const StartupProfile = lazy(() => import("./pages/network/StartupProfile.tsx"));
+const CofounderDiscovery = lazy(() => import("./pages/network/CofounderDiscovery.tsx"));
+const CollabBoard = lazy(() => import("./pages/network/CollabBoard.tsx"));
+const Groups = lazy(() => import("./pages/network/Groups.tsx"));
+const GroupDetail = lazy(() => import("./pages/network/GroupDetail.tsx"));
+const Opportunities = lazy(() => import("./pages/network/Opportunities.tsx"));
+const OpportunityDetail = lazy(() => import("./pages/network/OpportunityDetail.tsx"));
+const AdminCommunity = lazy(() => import("./pages/AdminCommunity.tsx"));
 const InvestorsPublic = lazy(() => import("./pages/InvestorsPublic.tsx"));
 const CityCommunities = lazy(() => import("./pages/CityCommunities.tsx"));
 const CorporatePartners = lazy(() => import("./pages/CorporatePartners.tsx"));
@@ -168,6 +191,110 @@ const App = () => (
             <Route path="/chapters" element={<Chapters />} />
             <Route path="/city-communities" element={<CityCommunities />} />
             <Route path="/mentors" element={<Mentors />} />
+            <Route path="/mentors/join/:token" element={<MentorOnboard />} />
+            <Route path="/learn" element={<Learn />} />
+            <Route
+              path="/learn/my"
+              element={(
+                <ProtectedRoute allowedRoles={["user", "investor", "founder", "admin", "superadmin"]} redirectTo="/login">
+                  <MyLearning />
+                </ProtectedRoute>
+              )}
+            />
+            <Route path="/learn/:slug" element={<LearnCourse />} />
+            <Route path="/tools" element={<AiTools />} />
+            <Route path="/startups" element={<StartupDirectory />} />
+            <Route path="/startups/:slug" element={<StartupProfile />} />
+            <Route path="/opportunities" element={<Opportunities />} />
+            <Route path="/opportunities/:slug" element={<OpportunityDetail />} />
+            <Route
+              path="/network"
+              element={(
+                <ProtectedRoute allowedRoles={["user", "investor", "founder", "admin", "superadmin"]} redirectTo="/login">
+                  <MyNetwork />
+                </ProtectedRoute>
+              )}
+            />
+            <Route
+              path="/network/profile"
+              element={(
+                <ProtectedRoute allowedRoles={["user", "investor", "founder", "admin", "superadmin"]} redirectTo="/login">
+                  <EditFounderProfile />
+                </ProtectedRoute>
+              )}
+            />
+            <Route
+              path="/network/cofounders"
+              element={(
+                <ProtectedRoute allowedRoles={["user", "investor", "founder", "admin", "superadmin"]} redirectTo="/login">
+                  <CofounderDiscovery />
+                </ProtectedRoute>
+              )}
+            />
+            <Route
+              path="/network/collab"
+              element={(
+                <ProtectedRoute allowedRoles={["user", "investor", "founder", "admin", "superadmin"]} redirectTo="/login">
+                  <CollabBoard />
+                </ProtectedRoute>
+              )}
+            />
+            <Route
+              path="/groups"
+              element={(
+                <ProtectedRoute allowedRoles={["user", "investor", "founder", "admin", "superadmin"]} redirectTo="/login">
+                  <Groups />
+                </ProtectedRoute>
+              )}
+            />
+            <Route
+              path="/groups/:slug"
+              element={(
+                <ProtectedRoute allowedRoles={["user", "investor", "founder", "admin", "superadmin"]} redirectTo="/login">
+                  <GroupDetail />
+                </ProtectedRoute>
+              )}
+            />
+            <Route
+              path="/tools/pitch-deck"
+              element={(
+                <ProtectedRoute allowedRoles={["user", "investor", "founder", "admin", "superadmin"]} redirectTo="/login">
+                  <PitchDeckBuilder />
+                </ProtectedRoute>
+              )}
+            />
+            <Route
+              path="/tools/pitch-review"
+              element={(
+                <ProtectedRoute allowedRoles={["user", "investor", "founder", "admin", "superadmin"]} redirectTo="/login">
+                  <PitchReviewPage />
+                </ProtectedRoute>
+              )}
+            />
+            <Route
+              path="/tools/validation"
+              element={(
+                <ProtectedRoute allowedRoles={["user", "investor", "founder", "admin", "superadmin"]} redirectTo="/login">
+                  <StartupValidation />
+                </ProtectedRoute>
+              )}
+            />
+            <Route
+              path="/tools/investor-readiness"
+              element={(
+                <ProtectedRoute allowedRoles={["user", "investor", "founder", "admin", "superadmin"]} redirectTo="/login">
+                  <InvestorReadiness />
+                </ProtectedRoute>
+              )}
+            />
+            <Route
+              path="/tools/assistant"
+              element={(
+                <ProtectedRoute allowedRoles={["user", "investor", "founder", "admin", "superadmin"]} redirectTo="/login">
+                  <LearningAssistant />
+                </ProtectedRoute>
+              )}
+            />
             <Route path="/investors" element={<InvestorsPublic />} />
             <Route path="/speakers" element={<PastSpeakersInvestors />} />
             <Route path="/corporate-partners" element={<CorporatePartners />} />
@@ -200,6 +327,30 @@ const App = () => (
               element={(
                 <ProtectedRoute allowedRoles={["admin", "superadmin"]}>
                   <AdminSpeakerInvestors />
+                </ProtectedRoute>
+              )}
+            />
+            <Route
+              path="/admin/community"
+              element={(
+                <ProtectedRoute allowedRoles={["admin", "superadmin"]}>
+                  <AdminCommunity />
+                </ProtectedRoute>
+              )}
+            />
+            <Route
+              path="/admin/learning"
+              element={(
+                <ProtectedRoute allowedRoles={["admin", "superadmin"]}>
+                  <AdminLearning />
+                </ProtectedRoute>
+              )}
+            />
+            <Route
+              path="/admin/mentorship"
+              element={(
+                <ProtectedRoute allowedRoles={["admin", "superadmin"]}>
+                  <AdminMentorship />
                 </ProtectedRoute>
               )}
             />

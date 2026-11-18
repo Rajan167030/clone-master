@@ -338,6 +338,13 @@ export type SpeakerInvestorProfile = {
   websiteUrl?: string;
   order: number;
   isActive: boolean;
+  metadata?: {
+    expertise?: string[];
+    industries?: string[];
+    yearsOfExperience?: number;
+    availability?: string;
+    [key: string]: unknown;
+  };
   createdAt?: string;
   updatedAt?: string;
 };
@@ -2636,3 +2643,985 @@ export const submitFalconClubVerificationApi = (verifyToken: string) =>
     `/falcon-club/verify/${verifyToken}/submit`,
     { method: "POST" }
   );
+
+/* ------------------------------------------------------------------ */
+/* Mentorship (invite-only mentor onboarding + founder connect requests) */
+/* ------------------------------------------------------------------ */
+
+export type MentorInvite = {
+  _id: string;
+  token: string;
+  label: string;
+  email: string;
+  isActive: boolean;
+  expiresAt: string | null;
+  usedAt: string | null;
+  applicationId: string | null;
+  createdAt: string;
+};
+
+export type MentorApplicationStatus = "pending" | "approved" | "rejected";
+
+export type MentorApplication = {
+  _id: string;
+  fullName: string;
+  email: string;
+  phone?: string;
+  designation: string;
+  company?: string;
+  linkedinUrl?: string;
+  websiteUrl?: string;
+  photoUrl?: string;
+  bio: string;
+  expertise: string[];
+  industries: string[];
+  yearsOfExperience: number;
+  availability?: string;
+  status: MentorApplicationStatus;
+  adminNotes?: string;
+  reviewedAt?: string | null;
+  profileId?: string | null;
+  createdAt: string;
+};
+
+export type MentorApplicationPayload = {
+  fullName: string;
+  email: string;
+  phone?: string;
+  designation: string;
+  company?: string;
+  linkedinUrl?: string;
+  websiteUrl?: string;
+  photoUrl?: string;
+  bio: string;
+  expertise: string[];
+  industries?: string[];
+  yearsOfExperience?: number;
+  availability?: string;
+};
+
+export type MentorConnectStatus = "new" | "forwarded" | "scheduled" | "completed" | "declined";
+export type MentorConnectMode = "video" | "in-person" | "chat" | "any";
+
+export type MentorConnectRequest = {
+  _id: string;
+  mentorSlug: string;
+  mentorName: string;
+  fullName: string;
+  email: string;
+  phone?: string;
+  startupName?: string;
+  stage?: string;
+  topic: string;
+  message: string;
+  preferredMode: MentorConnectMode;
+  status: MentorConnectStatus;
+  adminNotes?: string;
+  createdAt: string;
+};
+
+export type MentorConnectPayload = {
+  fullName: string;
+  email: string;
+  phone?: string;
+  startupName?: string;
+  stage?: string;
+  topic: string;
+  message: string;
+  preferredMode?: MentorConnectMode;
+};
+
+const authHeaders = (token: string) => ({ Authorization: `Bearer ${token}` });
+
+export const validateMentorInviteApi = (token: string) =>
+  request<{ valid: boolean; label?: string; email?: string; message?: string }>(
+    `/mentorship/invites/${encodeURIComponent(token)}`,
+  );
+
+export const submitMentorApplicationApi = (token: string, payload: MentorApplicationPayload) =>
+  request<{ message: string }>(`/mentorship/invites/${encodeURIComponent(token)}/apply`, {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+
+export const submitMentorConnectRequestApi = (slug: string, payload: MentorConnectPayload, authToken?: string | null) =>
+  request<{ message: string }>(`/mentorship/mentors/${encodeURIComponent(slug)}/connect`, {
+    method: "POST",
+    headers: authToken ? authHeaders(authToken) : {},
+    body: JSON.stringify(payload),
+  });
+
+export const getAdminMentorshipStatsApi = (token: string) =>
+  request<{ pendingApplications: number; newRequests: number; activeMentors: number }>(
+    "/mentorship/admin/stats",
+    { headers: authHeaders(token) },
+  );
+
+export const listAdminMentorInvitesApi = (token: string) =>
+  request<{ invites: MentorInvite[] }>("/mentorship/admin/invites", { headers: authHeaders(token) });
+
+export const createAdminMentorInviteApi = (
+  token: string,
+  payload: { label?: string; email?: string; expiresInDays?: number },
+) =>
+  request<{ message: string; invite: MentorInvite; link: string; emailed: boolean }>("/mentorship/admin/invites", {
+    method: "POST",
+    headers: authHeaders(token),
+    body: JSON.stringify(payload),
+  });
+
+export const setAdminMentorInviteActiveApi = (token: string, id: string, isActive: boolean) =>
+  request<{ message: string; invite: MentorInvite }>(`/mentorship/admin/invites/${id}`, {
+    method: "PATCH",
+    headers: authHeaders(token),
+    body: JSON.stringify({ isActive }),
+  });
+
+export const deleteAdminMentorInviteApi = (token: string, id: string) =>
+  request<{ message: string }>(`/mentorship/admin/invites/${id}`, {
+    method: "DELETE",
+    headers: authHeaders(token),
+  });
+
+export const listAdminMentorApplicationsApi = (token: string, status?: MentorApplicationStatus) =>
+  request<{ applications: MentorApplication[] }>(
+    `/mentorship/admin/applications${status ? `?status=${status}` : ""}`,
+    { headers: authHeaders(token) },
+  );
+
+export const reviewAdminMentorApplicationApi = (
+  token: string,
+  id: string,
+  decision: "approve" | "reject",
+  adminNotes?: string,
+) =>
+  request<{ message: string; application: MentorApplication }>(`/mentorship/admin/applications/${id}/review`, {
+    method: "PATCH",
+    headers: authHeaders(token),
+    body: JSON.stringify({ decision, adminNotes }),
+  });
+
+export const listAdminMentorConnectRequestsApi = (token: string, status?: MentorConnectStatus) =>
+  request<{ requests: MentorConnectRequest[] }>(
+    `/mentorship/admin/requests${status ? `?status=${status}` : ""}`,
+    { headers: authHeaders(token) },
+  );
+
+export const updateAdminMentorConnectRequestApi = (
+  token: string,
+  id: string,
+  payload: { status?: MentorConnectStatus; adminNotes?: string },
+) =>
+  request<{ message: string; request: MentorConnectRequest; mentorEmailed: boolean }>(
+    `/mentorship/admin/requests/${id}`,
+    { method: "PATCH", headers: authHeaders(token), body: JSON.stringify(payload) },
+  );
+
+export const deleteAdminMentorConnectRequestApi = (token: string, id: string) =>
+  request<{ message: string }>(`/mentorship/admin/requests/${id}`, {
+    method: "DELETE",
+    headers: authHeaders(token),
+  });
+
+/* ------------------------------------------------------------------ */
+/* Learning (LMS): courses, live sessions, library, progress          */
+/* ------------------------------------------------------------------ */
+
+export type LmsAccess = "public" | "members" | "cohort";
+export type LmsLockReason = "login" | "cohort" | null;
+export type LessonType = "video" | "reading" | "live" | "quiz" | "assignment" | "resource";
+export type LmsResource = { label: string; url: string };
+
+export type CourseSummary = {
+  _id: string;
+  slug: string;
+  title: string;
+  subtitle?: string;
+  coverImageUrl?: string;
+  category?: string;
+  level: "beginner" | "intermediate" | "advanced";
+  tags: string[];
+  instructorName?: string;
+  instructorTitle?: string;
+  instructorPhotoUrl?: string;
+  access: LmsAccess;
+  cohortSlugs: string[];
+  moduleCount: number;
+  lessonCount: number;
+  totalMinutes: number;
+};
+
+export type CourseProgress = {
+  totalLessons: number;
+  completedLessons: number;
+  percent: number;
+  nextLessonId: string | null;
+  nextLessonTitle: string | null;
+};
+
+export type CatalogCourse = CourseSummary & {
+  locked: boolean;
+  lockReason: LmsLockReason;
+  enrolled: boolean;
+  progress: CourseProgress | null;
+};
+
+export type LearnerLesson = {
+  _id: string;
+  title: string;
+  type: LessonType;
+  summary?: string;
+  durationMinutes: number;
+  isPreview: boolean;
+  locked: boolean;
+  liveAt?: string | null;
+  questionCount: number;
+  videoUrl?: string;
+  content?: string;
+  resources?: LmsResource[];
+  liveUrl?: string;
+  quizPassPercent?: number;
+  quizQuestions?: { _id: string; question: string; options: string[] }[];
+  assignmentInstructions?: string;
+};
+
+export type LearnerCourse = CourseSummary & {
+  description?: string;
+  locked: boolean;
+  lockReason: LmsLockReason;
+  modules: { _id: string; title: string; description?: string; lessons: LearnerLesson[] }[];
+};
+
+export type LearnerEnrollment = {
+  completedLessonIds: string[];
+  lastLessonId: string;
+  completedAt: string | null;
+  quizAttempts: { lessonId: string; scorePercent: number; passed: boolean; at: string }[];
+  progress: CourseProgress;
+};
+
+export type SubmissionStatus = "submitted" | "reviewed" | "needs-revision";
+export type LearnerSubmission = {
+  lessonId: string;
+  text: string;
+  linkUrl: string;
+  status: SubmissionStatus;
+  feedback: string;
+  grade: string;
+  updatedAt?: string;
+};
+
+export type QuizResult = {
+  scorePercent: number;
+  passed: boolean;
+  passPercent: number;
+  correct: number;
+  total: number;
+  results: { questionId: string; selectedIndex: number; correctIndex: number; correct: boolean; explanation: string }[];
+  completedLessonIds: string[];
+  progress: CourseProgress;
+};
+
+export type LiveSessionView = {
+  _id: string;
+  title: string;
+  description?: string;
+  hostName?: string;
+  hostTitle?: string;
+  startsAt: string;
+  endsAt: string;
+  durationMinutes: number;
+  coverImageUrl?: string;
+  access: LmsAccess;
+  courseSlug?: string;
+  locked: boolean;
+  lockReason: LmsLockReason;
+  hasRecording: boolean;
+  joinUrl: string;
+  recordingUrl: string;
+};
+
+export type LibraryItem = {
+  kind: "recording" | "lesson";
+  id: string;
+  title: string;
+  subtitle?: string;
+  courseSlug?: string;
+  videoUrl: string;
+  durationMinutes: number;
+  date?: string;
+  thumbnailUrl?: string;
+};
+
+export type MyLearningResponse = {
+  stats: { enrolled: number; completed: number; lessonsCompleted: number; pendingFeedback: number };
+  cohorts: string[];
+  courses: (CourseSummary & { progress: CourseProgress; completedAt: string | null; lastActivityAt: string })[];
+  recommended: CourseSummary[];
+  upcomingSessions: LiveSessionView[];
+  submissions: {
+    _id: string;
+    courseSlug: string;
+    courseTitle: string;
+    lessonId: string;
+    lessonTitle: string;
+    status: SubmissionStatus;
+    feedback: string;
+    grade: string;
+    updatedAt: string;
+  }[];
+};
+
+const optionalAuthHeaders = (token?: string | null): Record<string, string> =>
+  token ? { Authorization: `Bearer ${token}` } : {};
+
+export const listCoursesApi = (token?: string | null) =>
+  request<{ courses: CatalogCourse[] }>("/learning/courses", { headers: optionalAuthHeaders(token) });
+
+export const getCourseApi = (slug: string, token?: string | null) =>
+  request<{ course: LearnerCourse; enrollment: LearnerEnrollment | null; submissions: LearnerSubmission[] }>(
+    `/learning/courses/${encodeURIComponent(slug)}`,
+    { headers: optionalAuthHeaders(token) },
+  );
+
+export const enrollCourseApi = (token: string, slug: string) =>
+  request<{ message: string; progress: CourseProgress }>(`/learning/courses/${encodeURIComponent(slug)}/enroll`, {
+    method: "POST",
+    headers: authHeaders(token),
+  });
+
+export const setLessonCompleteApi = (token: string, slug: string, lessonId: string, complete: boolean) =>
+  request<{ completedLessonIds: string[]; progress: CourseProgress }>(
+    `/learning/courses/${encodeURIComponent(slug)}/lessons/${lessonId}/complete`,
+    { method: complete ? "POST" : "DELETE", headers: authHeaders(token) },
+  );
+
+export const submitQuizApi = (token: string, slug: string, lessonId: string, answers: number[]) =>
+  request<QuizResult>(`/learning/courses/${encodeURIComponent(slug)}/lessons/${lessonId}/quiz`, {
+    method: "POST",
+    headers: authHeaders(token),
+    body: JSON.stringify({ answers }),
+  });
+
+export const submitAssignmentApi = (token: string, slug: string, lessonId: string, payload: { text: string; linkUrl: string }) =>
+  request<{ message: string; submission: LearnerSubmission; completedLessonIds: string[]; progress: CourseProgress }>(
+    `/learning/courses/${encodeURIComponent(slug)}/lessons/${lessonId}/assignment`,
+    { method: "POST", headers: authHeaders(token), body: JSON.stringify(payload) },
+  );
+
+export const listLiveSessionsApi = (token?: string | null) =>
+  request<{ upcoming: LiveSessionView[]; past: LiveSessionView[] }>("/learning/live-sessions", {
+    headers: optionalAuthHeaders(token),
+  });
+
+export const getLibraryApi = (token?: string | null) =>
+  request<{ items: LibraryItem[] }>("/learning/library", { headers: optionalAuthHeaders(token) });
+
+export const getMyLearningApi = (token: string) =>
+  request<MyLearningResponse>("/learning/me", { headers: authHeaders(token) });
+
+/* ---- Admin ---- */
+
+export type AdminQuizQuestion = { _id?: string; question: string; options: string[]; correctIndex: number; explanation: string };
+export type AdminLesson = {
+  _id?: string;
+  title: string;
+  type: LessonType;
+  summary: string;
+  durationMinutes: number;
+  isPreview: boolean;
+  videoUrl: string;
+  content: string;
+  resources: LmsResource[];
+  liveAt: string | null;
+  liveUrl: string;
+  quizPassPercent: number;
+  quizQuestions: AdminQuizQuestion[];
+  assignmentInstructions: string;
+};
+export type AdminModule = { _id?: string; title: string; description: string; lessons: AdminLesson[] };
+export type AdminCourse = {
+  _id?: string;
+  slug?: string;
+  title: string;
+  subtitle: string;
+  description: string;
+  coverImageUrl: string;
+  category: string;
+  level: "beginner" | "intermediate" | "advanced";
+  tags: string[];
+  instructorName: string;
+  instructorTitle: string;
+  instructorPhotoUrl: string;
+  access: LmsAccess;
+  cohortSlugs: string[];
+  isPublished: boolean;
+  order: number;
+  modules: AdminModule[];
+};
+export type AdminCourseRow = CourseSummary & {
+  isPublished: boolean;
+  order: number;
+  updatedAt: string;
+  enrolled: number;
+  completed: number;
+};
+export type AdminLiveSession = {
+  _id?: string;
+  title: string;
+  description: string;
+  hostName: string;
+  hostTitle: string;
+  startsAt: string;
+  durationMinutes: number;
+  joinUrl: string;
+  recordingUrl: string;
+  coverImageUrl: string;
+  access: LmsAccess;
+  cohortSlugs: string[];
+  courseSlug: string;
+  isPublished: boolean;
+};
+export type AdminSubmission = {
+  _id: string;
+  fullName: string;
+  email: string;
+  courseSlug: string;
+  courseTitle: string;
+  lessonId: string;
+  lessonTitle: string;
+  text: string;
+  linkUrl: string;
+  status: SubmissionStatus;
+  feedback: string;
+  grade: string;
+  reviewedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+export type AdminLearner = {
+  _id: string;
+  fullName: string;
+  email: string;
+  progress: CourseProgress;
+  completedAt: string | null;
+  enrolledAt: string;
+  lastActivityAt: string;
+};
+
+export const getAdminLearningStatsApi = (token: string) =>
+  request<{ courses: number; published: number; enrollments: number; completions: number; pendingSubmissions: number; upcomingSessions: number }>(
+    "/learning/admin/stats",
+    { headers: authHeaders(token) },
+  );
+export const listAdminCoursesApi = (token: string) =>
+  request<{ courses: AdminCourseRow[] }>("/learning/admin/courses", { headers: authHeaders(token) });
+export const getAdminCourseApi = (token: string, id: string) =>
+  request<{ course: AdminCourse }>(`/learning/admin/courses/${id}`, { headers: authHeaders(token) });
+export const saveAdminCourseApi = (token: string, course: AdminCourse) =>
+  request<{ message: string; course: AdminCourse }>(
+    course._id ? `/learning/admin/courses/${course._id}` : "/learning/admin/courses",
+    { method: course._id ? "PUT" : "POST", headers: authHeaders(token), body: JSON.stringify(course) },
+  );
+export const deleteAdminCourseApi = (token: string, id: string) =>
+  request<{ message: string }>(`/learning/admin/courses/${id}`, { method: "DELETE", headers: authHeaders(token) });
+export const listAdminCourseLearnersApi = (token: string, id: string) =>
+  request<{ learners: AdminLearner[] }>(`/learning/admin/courses/${id}/learners`, { headers: authHeaders(token) });
+export const listAdminLiveSessionsApi = (token: string) =>
+  request<{ sessions: AdminLiveSession[] }>("/learning/admin/live-sessions", { headers: authHeaders(token) });
+export const saveAdminLiveSessionApi = (token: string, session: AdminLiveSession) =>
+  request<{ message: string; session: AdminLiveSession }>(
+    session._id ? `/learning/admin/live-sessions/${session._id}` : "/learning/admin/live-sessions",
+    { method: session._id ? "PUT" : "POST", headers: authHeaders(token), body: JSON.stringify(session) },
+  );
+export const deleteAdminLiveSessionApi = (token: string, id: string) =>
+  request<{ message: string }>(`/learning/admin/live-sessions/${id}`, { method: "DELETE", headers: authHeaders(token) });
+export const listAdminSubmissionsApi = (token: string, status?: SubmissionStatus) =>
+  request<{ submissions: AdminSubmission[] }>(`/learning/admin/submissions${status ? `?status=${status}` : ""}`, {
+    headers: authHeaders(token),
+  });
+export const reviewAdminSubmissionApi = (
+  token: string,
+  id: string,
+  payload: { status: "reviewed" | "needs-revision"; feedback: string; grade?: string },
+) =>
+  request<{ message: string; submission: AdminSubmission; emailed: boolean }>(`/learning/admin/submissions/${id}`, {
+    method: "PATCH",
+    headers: authHeaders(token),
+    body: JSON.stringify(payload),
+  });
+
+/* ------------------------------------------------------------------ */
+/* AI founder tools                                                    */
+/* ------------------------------------------------------------------ */
+
+export type AiArtifactKind = "pitch_deck" | "pitch_review" | "validation" | "investor_readiness";
+
+export type DeckSlide = {
+  type: string;
+  title: string;
+  headline: string;
+  bullets: string[];
+  speakerNotes: string;
+  visualSuggestion: string;
+};
+export type PitchDeck = { deckTitle: string; tagline: string; slides: DeckSlide[]; tips: string[] };
+
+export type PitchReview = {
+  overallScore: number;
+  verdict: "not_ready" | "needs_work" | "promising" | "investor_ready";
+  summary: string;
+  criteria: { name: string; score: number; feedback: string }[];
+  strengths: string[];
+  weaknesses: string[];
+  redFlags: string[];
+  likelyInvestorQuestions: string[];
+  rewrites: { original: string; improved: string; why: string }[];
+  nextSteps: string[];
+};
+
+export type Level3 = "high" | "medium" | "low";
+export type StartupValidation = {
+  viabilityScore: number;
+  summary: string;
+  leanCanvas: {
+    problem: string[];
+    customerSegments: string[];
+    uniqueValueProposition: string;
+    solution: string[];
+    channels: string[];
+    revenueStreams: string[];
+    costStructure: string[];
+    keyMetrics: string[];
+    unfairAdvantage: string;
+  };
+  assumptions: { assumption: string; risk: Level3; howToTest: string }[];
+  experiments: { name: string; description: string; successMetric: string; effort: Level3; timeframe: string }[];
+  revenueModels: { model: string; fit: Level3; pricingIdea: string; notes: string }[];
+  risks: string[];
+  marketQuestions: string[];
+};
+
+export type InvestorReadiness = {
+  readinessScore: number;
+  level: "early" | "building" | "almost_ready" | "ready";
+  summary: string;
+  dimensions: { name: string; score: number; status: "strong" | "okay" | "gap"; advice: string }[];
+  gaps: { item: string; priority: Level3; action: string }[];
+  suggestedRaise: { amountRange: string; instrument: string; rationale: string };
+  investorTypes: { type: string; why: string }[];
+  ninetyDayPlan: { period: string; focus: string; actions: string[] }[];
+};
+
+export type AiArtifact<T = unknown> = {
+  _id: string;
+  kind: AiArtifactKind;
+  title: string;
+  input: Record<string, unknown>;
+  output: T;
+  provider: string;
+  model: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type AiArtifactRow = {
+  _id: string;
+  kind: AiArtifactKind;
+  title: string;
+  createdAt: string;
+  updatedAt: string;
+  score: number | null;
+  slideCount: number | null;
+};
+
+export type StartupBrief = {
+  startupName: string;
+  oneLiner: string;
+  stage: string;
+  sector: string;
+  problem: string;
+  solution: string;
+  targetCustomer: string;
+  market: string;
+  businessModel: string;
+  traction: string;
+  competition: string;
+  team: string;
+  ask: string;
+  audience?: "investor" | "accelerator" | "demo_day";
+};
+
+export type ValidationInput = {
+  title?: string;
+  idea: string;
+  customer: string;
+  problem: string;
+  currentAlternatives: string;
+  solution: string;
+  pricing: string;
+  geography: string;
+  stage: string;
+  evidence: string;
+};
+
+export type ReadinessInput = {
+  startupName: string;
+  stage: string;
+  sector: string;
+  monthlyRevenue: string;
+  growth: string;
+  customers: string;
+  runwayMonths: string;
+  burn: string;
+  teamSize: string;
+  founders: string;
+  raisedSoFar: string;
+  raiseAmount: string;
+  useOfFunds: string;
+  entity: string;
+  notes: string;
+  checklist: Record<string, boolean>;
+};
+
+export type AssistantMessage = { role: "user" | "assistant"; content: string; at?: string };
+export type AssistantThread = {
+  _id: string;
+  title: string;
+  courseSlug: string;
+  lessonId: string;
+  messageCount: number;
+  updatedAt: string;
+  messages?: AssistantMessage[];
+};
+
+export const getAiUsageApi = (token: string) =>
+  request<{ used: number; limit: number | null; provider: string; model: string }>("/ai-tools/usage", { headers: authHeaders(token) });
+
+const postAi = <T>(token: string, path: string, body: unknown) =>
+  request<{ artifact: AiArtifact<T> }>(`/ai-tools/${path}`, { method: "POST", headers: authHeaders(token), body: JSON.stringify(body) });
+
+export const generatePitchDeckApi = (token: string, brief: StartupBrief) => postAi<PitchDeck>(token, "pitch-deck", brief);
+export const reviewPitchApi = (token: string, payload: { pitchText?: string; deckArtifactId?: string; stage?: string; sector?: string }) =>
+  postAi<PitchReview>(token, "pitch-review", payload);
+export const validateStartupApi = (token: string, payload: ValidationInput) => postAi<StartupValidation>(token, "validation", payload);
+export const assessInvestorReadinessApi = (token: string, payload: ReadinessInput) =>
+  postAi<InvestorReadiness>(token, "investor-readiness", payload);
+
+export const listAiArtifactsApi = (token: string, kind?: AiArtifactKind) =>
+  request<{ artifacts: AiArtifactRow[] }>(`/ai-tools/artifacts${kind ? `?kind=${kind}` : ""}`, { headers: authHeaders(token) });
+export const getAiArtifactApi = <T>(token: string, id: string) =>
+  request<{ artifact: AiArtifact<T> }>(`/ai-tools/artifacts/${id}`, { headers: authHeaders(token) });
+export const updateAiArtifactApi = <T>(token: string, id: string, payload: { title?: string; output?: unknown }) =>
+  request<{ artifact: AiArtifact<T> }>(`/ai-tools/artifacts/${id}`, { method: "PATCH", headers: authHeaders(token), body: JSON.stringify(payload) });
+export const deleteAiArtifactApi = (token: string, id: string) =>
+  request<{ message: string }>(`/ai-tools/artifacts/${id}`, { method: "DELETE", headers: authHeaders(token) });
+
+export const listAssistantThreadsApi = (token: string) =>
+  request<{ threads: AssistantThread[] }>("/ai-tools/assistant/threads", { headers: authHeaders(token) });
+export const getAssistantThreadApi = (token: string, id: string) =>
+  request<{ thread: AssistantThread }>(`/ai-tools/assistant/threads/${id}`, { headers: authHeaders(token) });
+export const deleteAssistantThreadApi = (token: string, id: string) =>
+  request<{ message: string }>(`/ai-tools/assistant/threads/${id}`, { method: "DELETE", headers: authHeaders(token) });
+export const sendAssistantMessageApi = (
+  token: string,
+  payload: { content: string; threadId?: string; courseSlug?: string; lessonId?: string },
+) =>
+  request<{ thread: AssistantThread; reply: string }>("/ai-tools/assistant/messages", {
+    method: "POST",
+    headers: authHeaders(token),
+    body: JSON.stringify(payload),
+  });
+
+/* ------------------------------------------------------------------ */
+/* Founder network: profiles, startups, connections, co-founders,      */
+/* collaboration board, groups & circles, opportunities                */
+/* ------------------------------------------------------------------ */
+
+export type StartupStage = "idea" | "mvp" | "early_revenue" | "growth" | "scaling" | "";
+export type LookingFor = "cofounder" | "mentors" | "investors" | "customers" | "hires" | "partners" | "feedback";
+export type CofounderRole = "tech" | "product" | "business" | "sales" | "marketing" | "design" | "operations" | "finance";
+
+export type NetworkPerson = {
+  id: string;
+  fullName: string;
+  role: string;
+  city: string;
+  headline: string;
+  photo: string;
+  profileId: string;
+  startupSlug: string;
+  startupName: string;
+  startupLogo: string;
+  stage: StartupStage;
+  sectors: string[];
+};
+
+export type FounderProfileData = {
+  _id?: string;
+  accountId?: string;
+  slug: string;
+  bio: string;
+  role: string;
+  skills: string[];
+  linkedinUrl: string;
+  startupName: string;
+  logoUrl: string;
+  oneLiner: string;
+  description: string;
+  website: string;
+  sectors: string[];
+  stage: StartupStage;
+  businessModel: string;
+  city: string;
+  teamSize: number;
+  foundedYear: number | null;
+  fundingStatus: string;
+  lookingFor: LookingFor[];
+  cofounder: {
+    isLooking: boolean;
+    myRole: CofounderRole | "";
+    rolesWanted: CofounderRole[];
+    commitment: "full_time" | "part_time" | "flexible" | "";
+    remoteOk: boolean;
+    equity: string;
+    pitch: string;
+  };
+  isListed: boolean;
+  updatedAt?: string;
+};
+
+export type StartupCard = {
+  slug: string;
+  startupName: string;
+  logoUrl: string;
+  oneLiner: string;
+  sectors: string[];
+  stage: StartupStage;
+  city: string;
+  teamSize: number;
+  lookingFor: LookingFor[];
+  founder: NetworkPerson;
+};
+
+export type ConnectionState = { status: "none" | "self" | "connected" | "outgoing" | "incoming"; connectionId?: string };
+export type ConnectionItem = { _id: string; intent: string; note: string; createdAt: string; person: NetworkPerson };
+
+export type CofounderCard = {
+  person: NetworkPerson;
+  startupSlug: string;
+  startupName: string;
+  oneLiner: string;
+  skills: string[];
+  sectors: string[];
+  city: string;
+  cofounder: FounderProfileData["cofounder"];
+  matchScore: number;
+  matchReasons: string[];
+};
+
+export type CollabType = "cofounder" | "collaboration" | "hiring" | "partnership" | "feedback" | "freelance";
+export type CollabPostData = {
+  _id: string;
+  type: CollabType;
+  title: string;
+  description: string;
+  skills: string[];
+  commitment: string;
+  location: string;
+  remoteOk: boolean;
+  compensation: string;
+  status: "open" | "closed";
+  interestCount: number;
+  createdAt: string;
+  author: NetworkPerson;
+  isMine: boolean;
+  hasExpressedInterest: boolean;
+};
+export type CollabInput = Pick<CollabPostData, "type" | "title" | "description" | "skills" | "commitment" | "location" | "remoteOk" | "compensation">;
+
+export type GroupData = {
+  _id: string;
+  slug: string;
+  name: string;
+  description: string;
+  kind: "group" | "circle";
+  category: "sector" | "city" | "stage" | "topic" | "cohort";
+  tags: string[];
+  coverImageUrl: string;
+  privacy: "open" | "private";
+  maxMembers: number;
+  memberCount: number;
+  meetingCadence: string;
+  nextMeetingAt: string | null;
+  meetingUrl: string;
+  isFeatured: boolean;
+  isArchived: boolean;
+  isFull: boolean;
+  createdAt: string;
+  membership: { role: "owner" | "moderator" | "member"; status: "active" | "pending" } | null;
+  owner?: NetworkPerson;
+};
+export type GroupInput = Partial<Pick<GroupData, "name" | "description" | "kind" | "category" | "tags" | "coverImageUrl" | "privacy" | "maxMembers" | "meetingCadence" | "nextMeetingAt" | "meetingUrl" | "isFeatured" | "isArchived">>;
+export type GroupMemberData = { accountId: string; role: string; status: string; requestNote: string; joinedAt: string; person: NetworkPerson };
+export type GroupPostData = {
+  _id: string;
+  content: string;
+  isPinned: boolean;
+  createdAt: string;
+  author: NetworkPerson;
+  likeCount: number;
+  likedByMe: boolean;
+  comments: { _id: string; content: string; createdAt: string; author: NetworkPerson }[];
+  isMine: boolean;
+};
+
+export type OpportunityType = "grant" | "competition" | "accelerator" | "fellowship" | "credits" | "pitch_event" | "program" | "other";
+export type OpportunityData = {
+  _id: string;
+  slug: string;
+  title: string;
+  type: OpportunityType;
+  organizer: string;
+  summary: string;
+  description: string;
+  eligibility: string;
+  benefits: string;
+  deadline: string | null;
+  startsAt: string | null;
+  location: string;
+  isOnline: boolean;
+  applyUrl: string;
+  logoUrl: string;
+  sectors: string[];
+  stages: string[];
+  tags: string[];
+  isFeatured: boolean;
+  status: "published" | "pending" | "rejected";
+  saveCount: number;
+  isClosed: boolean;
+  closingSoon: boolean;
+  savedByMe: boolean;
+  createdAt: string;
+};
+export type OpportunityInput = Partial<Omit<OpportunityData, "_id" | "slug" | "saveCount" | "isClosed" | "closingSoon" | "savedByMe" | "createdAt">>;
+
+export type NetworkSummary = {
+  profileSlug: string;
+  profileCompleteness: number;
+  connections: number;
+  incomingRequests: number;
+  groups: number;
+  openCollabs: number;
+  savedOpportunities: number;
+};
+
+const qs = (params: Record<string, string | undefined>) => {
+  const entries = Object.entries(params).filter(([, v]) => v);
+  return entries.length ? `?${new URLSearchParams(entries as [string, string][]).toString()}` : "";
+};
+const authJSON = (token: string, method: string, body?: unknown): RequestInit => ({
+  method,
+  headers: authHeaders(token),
+  ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
+});
+
+// Profile & directory
+export const getNetworkSummaryApi = (token: string) => request<NetworkSummary>("/network/summary", { headers: authHeaders(token) });
+export const getMyFounderProfileApi = (token: string) => request<{ profile: FounderProfileData }>("/network/profile/me", { headers: authHeaders(token) });
+export const updateMyFounderProfileApi = (token: string, profile: FounderProfileData) =>
+  request<{ profile: FounderProfileData }>("/network/profile/me", authJSON(token, "PUT", profile));
+export const listStartupsApi = (params: Record<string, string | undefined>, token?: string | null) =>
+  request<{ startups: StartupCard[]; hasMore: boolean; sectors: string[] }>(`/network/startups${qs(params)}`, { headers: optionalAuthHeaders(token) });
+export const getStartupApi = (slug: string, token?: string | null) =>
+  request<{
+    startup: FounderProfileData & { founder: NetworkPerson; connectionsCount: number };
+    connection: ConnectionState;
+    openCollabs: { _id: string; type: CollabType; title: string; createdAt: string }[];
+  }>(`/network/startups/${encodeURIComponent(slug)}`, { headers: optionalAuthHeaders(token) });
+
+// Connections
+export const listConnectionsApi = (token: string) =>
+  request<{ connections: ConnectionItem[]; incoming: ConnectionItem[]; outgoing: ConnectionItem[] }>("/network/connections", { headers: authHeaders(token) });
+export const requestConnectionApi = (token: string, payload: { recipientId: string; intent?: "network" | "cofounder" | "collaboration"; note?: string }) =>
+  request<ConnectionState>("/network/connections", authJSON(token, "POST", payload));
+export const respondConnectionApi = (token: string, id: string, action: "accept" | "decline") =>
+  request<{ status: string }>(`/network/connections/${id}`, authJSON(token, "PATCH", { action }));
+export const removeConnectionApi = (token: string, id: string) => request<{ message: string }>(`/network/connections/${id}`, authJSON(token, "DELETE"));
+export const getConnectionWithApi = (token: string, accountId: string) => request<ConnectionState>(`/network/connections/with/${accountId}`, { headers: authHeaders(token) });
+export const getNetworkSuggestionsApi = (token: string) =>
+  request<{ suggestions: { person: NetworkPerson; reasons: string[] }[] }>("/network/suggestions", { headers: authHeaders(token) });
+
+// Co-founders & collaboration
+export const listCofoundersApi = (token: string, params: Record<string, string | undefined>) =>
+  request<{ myProfileComplete: boolean; cofounders: CofounderCard[] }>(`/network/cofounders${qs(params)}`, { headers: authHeaders(token) });
+export const listCollabApi = (token: string, params: Record<string, string | undefined>) =>
+  request<{ posts: CollabPostData[] }>(`/network/collab${qs(params)}`, { headers: authHeaders(token) });
+export const createCollabApi = (token: string, payload: CollabInput) => request<{ post: CollabPostData }>("/network/collab", authJSON(token, "POST", payload));
+export const updateCollabApi = (token: string, id: string, payload: Partial<CollabInput> & { status?: "open" | "closed" }) =>
+  request<{ post: CollabPostData }>(`/network/collab/${id}`, authJSON(token, "PATCH", payload));
+export const deleteCollabApi = (token: string, id: string) => request<{ message: string }>(`/network/collab/${id}`, authJSON(token, "DELETE"));
+export const expressCollabInterestApi = (token: string, id: string, message: string) =>
+  request<{ message: string; recipientId: string }>(`/network/collab/${id}/interest`, authJSON(token, "POST", { message }));
+export const listCollabInterestsApi = (token: string, id: string) =>
+  request<{ interests: { _id: string; message: string; createdAt: string; person: NetworkPerson }[] }>(`/network/collab/${id}/interests`, { headers: authHeaders(token) });
+
+// Groups & circles
+export const listGroupsApi = (token: string, params: Record<string, string | undefined>) =>
+  request<{ groups: GroupData[] }>(`/groups${qs(params)}`, { headers: authHeaders(token) });
+export const createGroupApi = (token: string, payload: GroupInput) => request<{ group: GroupData }>("/groups", authJSON(token, "POST", payload));
+export const getGroupApi = (token: string, slug: string) =>
+  request<{ group: GroupData; canModerate: boolean; canReadPosts: boolean; pendingCount: number }>(`/groups/${encodeURIComponent(slug)}`, { headers: authHeaders(token) });
+export const updateGroupApi = (token: string, slug: string, payload: GroupInput) =>
+  request<{ group: GroupData }>(`/groups/${encodeURIComponent(slug)}`, authJSON(token, "PATCH", payload));
+export const archiveGroupApi = (token: string, slug: string) => request<{ message: string }>(`/groups/${encodeURIComponent(slug)}`, authJSON(token, "DELETE"));
+export const joinGroupApi = (token: string, slug: string, note?: string) =>
+  request<{ status: string; isFull?: boolean }>(`/groups/${encodeURIComponent(slug)}/join`, authJSON(token, "POST", { note }));
+export const leaveGroupApi = (token: string, slug: string) => request<{ status: string }>(`/groups/${encodeURIComponent(slug)}/join`, authJSON(token, "DELETE"));
+export const listGroupMembersApi = (token: string, slug: string) =>
+  request<{ members: GroupMemberData[] }>(`/groups/${encodeURIComponent(slug)}/members`, { headers: authHeaders(token) });
+export const manageGroupMemberApi = (token: string, slug: string, accountId: string, action: "approve" | "reject" | "remove" | "promote" | "demote") =>
+  request<{ status: string; role?: string }>(`/groups/${encodeURIComponent(slug)}/members/${accountId}`, authJSON(token, "PATCH", { action }));
+export const listGroupPostsApi = (token: string, slug: string, before?: string) =>
+  request<{ posts: GroupPostData[]; hasMore: boolean }>(`/groups/${encodeURIComponent(slug)}/posts${qs({ before })}`, { headers: authHeaders(token) });
+export const createGroupPostApi = (token: string, slug: string, content: string) =>
+  request<{ post: GroupPostData }>(`/groups/${encodeURIComponent(slug)}/posts`, authJSON(token, "POST", { content }));
+export const deleteGroupPostApi = (token: string, slug: string, postId: string) =>
+  request<{ message: string }>(`/groups/${encodeURIComponent(slug)}/posts/${postId}`, authJSON(token, "DELETE"));
+export const likeGroupPostApi = (token: string, slug: string, postId: string) =>
+  request<{ likedByMe: boolean; likeCount: number }>(`/groups/${encodeURIComponent(slug)}/posts/${postId}/like`, authJSON(token, "POST"));
+export const commentGroupPostApi = (token: string, slug: string, postId: string, content: string) =>
+  request<{ post: GroupPostData }>(`/groups/${encodeURIComponent(slug)}/posts/${postId}/comments`, authJSON(token, "POST", { content }));
+export const pinGroupPostApi = (token: string, slug: string, postId: string) =>
+  request<{ isPinned: boolean }>(`/groups/${encodeURIComponent(slug)}/posts/${postId}/pin`, authJSON(token, "POST"));
+
+// Opportunities
+export const listOpportunitiesApi = (params: Record<string, string | undefined>, token?: string | null) =>
+  request<{ opportunities: OpportunityData[] }>(`/opportunities${qs(params)}`, { headers: optionalAuthHeaders(token) });
+export const getOpportunityApi = (slug: string, token?: string | null) =>
+  request<{ opportunity: OpportunityData }>(`/opportunities/${encodeURIComponent(slug)}`, { headers: optionalAuthHeaders(token) });
+export const toggleSaveOpportunityApi = (token: string, id: string) => request<{ savedByMe: boolean }>(`/opportunities/${id}/save`, authJSON(token, "POST"));
+export const suggestOpportunityApi = (token: string, payload: OpportunityInput) =>
+  request<{ message: string; opportunity: OpportunityData }>("/opportunities/suggest", authJSON(token, "POST", payload));
+
+// Admin
+export const getAdminNetworkStatsApi = (token: string) =>
+  request<{ profiles: number; listed: number; cofounders: number; connections: number; groups: number; openCollabs: number; opportunities: number; pendingOpportunities: number }>(
+    "/network/admin/stats",
+    { headers: authHeaders(token) },
+  );
+export const listAdminOpportunitiesApi = (token: string, status?: string) =>
+  request<{ opportunities: OpportunityData[] }>(`/network/admin/opportunities${qs({ status })}`, { headers: authHeaders(token) });
+export const saveAdminOpportunityApi = (token: string, payload: OpportunityInput & { _id?: string }) =>
+  request<{ opportunity: OpportunityData }>(
+    payload._id ? `/network/admin/opportunities/${payload._id}` : "/network/admin/opportunities",
+    authJSON(token, payload._id ? "PUT" : "POST", payload),
+  );
+export const moderateAdminOpportunityApi = (token: string, id: string, payload: { status?: string; isFeatured?: boolean }) =>
+  request<{ opportunity: OpportunityData }>(`/network/admin/opportunities/${id}`, authJSON(token, "PUT", payload));
+export const deleteAdminOpportunityApi = (token: string, id: string) =>
+  request<{ message: string }>(`/network/admin/opportunities/${id}`, authJSON(token, "DELETE"));
+export const listAdminGroupsApi = (token: string) => request<{ groups: GroupData[] }>("/network/admin/groups", { headers: authHeaders(token) });
+export const updateAdminGroupFlagsApi = (token: string, id: string, payload: { isFeatured?: boolean; isArchived?: boolean }) =>
+  request<{ group: GroupData }>(`/network/admin/groups/${id}`, authJSON(token, "PATCH", payload));
+export const listAdminCollabApi = (token: string) => request<{ posts: CollabPostData[] }>("/network/admin/collab", { headers: authHeaders(token) });

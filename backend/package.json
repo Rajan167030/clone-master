@@ -9,6 +9,7 @@
     "seed-blogs": "node scripts/seed-blogs.js"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^1.10.0",
     "agenda": "^6.2.4",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.6",

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import BackButton from "@/components/BackButton";
@@ -17,10 +17,24 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { getPublicMentorsApi, type SpeakerInvestorProfile } from "@/lib/api";
+import MentorConnectDialog from "@/components/MentorConnectDialog";
 
 const Mentors = () => {
   const [mentors, setMentors] = useState<SpeakerInvestorProfile[]>([]);
   const [loading, setLoading] = useState(true);
+  const [activeExpertise, setActiveExpertise] = useState<string>("");
+  const [connectMentor, setConnectMentor] = useState<SpeakerInvestorProfile | null>(null);
+
+  const expertiseOptions = useMemo(() => {
+    const counts = new Map<string, number>();
+    mentors.forEach((m) => (m.metadata?.expertise || []).forEach((e) => counts.set(e, (counts.get(e) || 0) + 1)));
+    return [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 12).map(([e]) => e);
+  }, [mentors]);
+
+  const visibleMentors = useMemo(
+    () => (activeExpertise ? mentors.filter((m) => (m.metadata?.expertise || []).includes(activeExpertise)) : mentors),
+    [mentors, activeExpertise],
+  );
 
   useSEO({
     title: "Mentorship Network | Founders Connect",
@@ -77,15 +91,34 @@ const Mentors = () => {
                   <h2 className="text-2xl sm:text-3xl font-extrabold font-['Space_Grotesk'] text-slate-900">
                     Verified Mentors ({mentors.length})
                   </h2>
-                  <p className="text-sm text-slate-500 mt-1">Book sessions or connect directly with our network.</p>
+                  <p className="text-sm text-slate-500 mt-1">Request a 1-on-1 conversation. Our team reviews and makes the intro.</p>
                 </div>
-                <Button asChild size="sm" className="hidden sm:inline-flex">
-                  <Link to="/contact-us">Apply as Mentor</Link>
+                <Button asChild size="sm" variant="outline" className="hidden sm:inline-flex">
+                  <Link to="/contact-us">Want to mentor? Request an invite</Link>
                 </Button>
               </div>
 
+              {expertiseOptions.length > 0 && (
+                <div className="mb-8 flex flex-wrap gap-2">
+                  {["", ...expertiseOptions].map((e) => (
+                    <button
+                      key={e || "all"}
+                      type="button"
+                      onClick={() => setActiveExpertise(e)}
+                      className={`rounded-full border px-3 py-1 text-xs font-semibold transition-colors ${
+                        activeExpertise === e
+                          ? "border-violet-600 bg-violet-600 text-white"
+                          : "border-slate-200 bg-white text-slate-600 hover:border-violet-300 hover:text-violet-700"
+                      }`}
+                    >
+                      {e || "All"}
+                    </button>
+                  ))}
+                </div>
+              )}
+
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                {mentors.map((mentor) => (
+                {visibleMentors.map((mentor) => (
                   <div
                     key={mentor.slug}
                     className="group flex flex-col rounded-2xl border border-slate-200 bg-white p-5 shadow-sm hover:shadow-md transition-all"
@@ -115,18 +148,32 @@ const Mentors = () => {
                         </p>
                       )}
                     </div>
-                    {mentor.linkedinUrl && (
-                      <div className="mt-4 pt-3 border-t border-slate-100">
+                    {(mentor.metadata?.expertise || []).length > 0 && (
+                      <div className="mt-3 flex flex-wrap gap-1.5">
+                        {(mentor.metadata?.expertise || []).slice(0, 4).map((e) => (
+                          <span key={e} className="rounded-full bg-violet-50 px-2 py-0.5 text-[11px] font-medium text-violet-700">
+                            {e}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                    <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
+                      {mentor.linkedinUrl ? (
                         <a
                           href={mentor.linkedinUrl}
                           target="_blank"
                           rel="noreferrer"
                           className="inline-flex items-center gap-1.5 text-xs font-semibold text-purple-600 hover:text-purple-700"
                         >
-                          <ExternalLink size={13} /> LinkedIn Profile
+                          <ExternalLink size={13} /> LinkedIn
                         </a>
-                      </div>
-                    )}
+                      ) : (
+                        <span />
+                      )}
+                      <Button size="sm" className="h-8 bg-violet-600 hover:bg-violet-700 text-xs" onClick={() => setConnectMentor(mentor)}>
+                        Request to Connect
+                      </Button>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -171,7 +218,7 @@ const Mentors = () => {
               <div className="mt-10 flex flex-wrap gap-4 justify-center">
                 <Button asChild className="btn-metallic btn-metallic-purple text-white px-6">
                   <Link to="/contact-us">
-                    Apply to Become a Mentor <ArrowRight size={16} className="ml-2" />
+                    Request a Mentor Invite <ArrowRight size={16} className="ml-2" />
                   </Link>
                 </Button>
                 <Button asChild variant="outline" className="border-slate-300">
@@ -202,6 +249,8 @@ const Mentors = () => {
           </div>
         </div>
       </section>
+
+      <MentorConnectDialog mentor={connectMentor} onOpenChange={(open) => !open && setConnectMentor(null)} />
 
       <Footer />
     </div>
